@@ -1,0 +1,64 @@
+{
+  "name": "AtlasOne",
+  "version": "1.0.0",
+  "description": "AtlasOne Web Application",
+  "author": "Josiah Buxton",
+  "homepage": "https://atlasone.com",
+  "copyright": "Copyright 2020 Josiah Buxton",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "@material-ui/core": "^4.3.1",
+    "@material/list": "^3.1.0",
+    "bootstrap": "^4.5.2",
+    "dateformat": "^3.0.3",
+    "firebase": "^7.19.1",
+    "font-awesome": "^4.7.0",
+    "jquery": "^3.4.1",
+    "lodash": "^4.17.15",
+    "node-sass": "^4.14.1",
+    "prop-types": "^15.7.2",
+    "react": "^16.13.1",
+    "react-app-polyfill": "^1.0.1",
+    "react-bootstrap": "^1.3.0",
+    "react-dom": "^16.13.1",
+    "react-google-recaptcha": "^1.1.0",
+    "react-loadable": "^5.5.0",
+    "react-redux": "^7.1.0",
+    "react-reveal": "^1.2.2",
+    "react-router-config": "^5.1.1",
+    "react-router-dom": "^5.2.0",
+    "reactstrap": "^8.0.1",
+    "redux": "^4.0.4",
+    "redux-logger": "^3.0.6",
+    "redux-persist": "^5.10.0",
+    "redux-thunk": "^2.3.0",
+    "typescript": "^4.0.2"
+  },
+  "devDependencies": {
+    "react-scripts": "^3.4.3"
+  },
+  "scripts": {
+    "start": "HOST=127.0.0.1 && PORT=8080 react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "test:cov": "react-scripts test --coverage",
+    "test:debug": "react-scripts --inspect-brk test --runInBand",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "TermsAndConditions",
+  "version": "0.0.0",
+  "private": false,
+  "main": "./TermsAndConditions.js"
+}
