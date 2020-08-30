@@ -9,6 +9,9 @@ import {
 // Material UI
 import CircularProgress from '@material-ui/core/CircularProgress';
 
+// Creative Tim
+import "assets/scss/material-kit-react.scss?v=1.9.0";
+
 // Routes
 import UnauthenticatedRoutes from './routes';
 import { CommonRoutes } from '../views';

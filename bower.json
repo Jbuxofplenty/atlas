@@ -1,0 +1,29 @@
+{
+  "name": "material-kit-react",
+  "homepage": "https://atlasone.com",
+  "authors": [
+    "creative-tim",
+    "jbuxofplenty"
+  ],
+  "description": "",
+  "main": "dist/index.js",
+  "keywords": [
+    "material",
+    "design",
+    "material-ui",
+    "google",
+    "twitter",
+    "social",
+    "investing",
+    "trading"
+  ],
+  "license": "MIT License",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "private": true
+}

@@ -7,7 +7,7 @@ import Email from "@material-ui/icons/Email";
 import Lock from "@material-ui/icons/Lock";
 // @font-awesome/icons
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFacebook, faTwitter, faGooglePlusG } from '@fortawesome/free-brands-svg-icons';
+import { faFacebook, faGooglePlusG } from '@fortawesome/free-brands-svg-icons';
 // core components
 import Header from "components/Header/Header.js";
 import HeaderLinks from "components/Header/HeaderLinks.js";
@@ -24,6 +24,18 @@ import CustomInput from "components/CustomInput/CustomInput.js";
 import styles from "assets/jss/material-kit-react/views/loginPage.js";
 
 import image from "assets/img/bg7.jpg";
+
+// Twitter button for future
+// import { faFacebook, faTwitter, faGooglePlusG } from '@fortawesome/free-brands-svg-icons';
+// <Button
+// justIcon
+// href="#pablo"
+// target="_blank"
+// color="transparent"
+// onClick={e => e.preventDefault()}
+// >
+// <FontAwesomeIcon icon={faTwitter} className={classes.socialIcons} style={{cursor: 'pointer'}} />
+// </Button>
 
 const useStyles = makeStyles(styles);
 
@@ -61,16 +73,7 @@ export default function LoginPage(props) {
                     <div className={classes.socialLine}>
                       <Button
                         justIcon
-                        href="#pablo"
-                        target="_blank"
-                        color="transparent"
-                        onClick={e => e.preventDefault()}
-                      >
-                        <FontAwesomeIcon icon={faTwitter} className={classes.socialIcons} style={{cursor: 'pointer'}} />
-                      </Button>
-                      <Button
-                        justIcon
-                        href="#pablo"
+                        href=""
                         target="_blank"
                         color="transparent"
                         onClick={e => e.preventDefault()}
@@ -79,7 +82,7 @@ export default function LoginPage(props) {
                       </Button>
                       <Button
                         justIcon
-                        href="#pablo"
+                        href=""
                         target="_blank"
                         color="transparent"
                         onClick={e => e.preventDefault()}
