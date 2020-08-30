@@ -6,9 +6,6 @@ import {
   Redirect
 } from 'react-router-dom';
 
-// Creative Tim
-import "assets/scss/material-kit-react.scss?v=1.9.0";
-
 // Material UI
 import CircularProgress from '@material-ui/core/CircularProgress';
 
