@@ -1,5 +1,5 @@
-import ReCaptchaModal from './ReCaptchaModal/ReCaptchaModal';
+import ReCaptcha from './ReCaptcha/ReCaptcha';
 
 export {
-  ReCaptchaModal,
+  ReCaptcha,
 };

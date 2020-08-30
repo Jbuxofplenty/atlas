@@ -1,6 +1,6 @@
 import { userConstants } from '../constants';
 import { alertActions, dataActions } from './';
-import fire from "../firebase";
+import { auth, db, firebase, apiBaseUrl } from "../firebase";
 
 export const userActions = {
     login,
@@ -12,7 +12,8 @@ export const userActions = {
     googleLogin,
     facebookLogin,
     reCaptchaUpdate,
-    //delete: _delete
+    testReCaptcha,
+    loginReset,
 };
 
 function loginFailure(loginError, error, user, userData) {
@@ -25,15 +26,22 @@ function loginFailure(loginError, error, user, userData) {
   }
 }
 
+function loginReset() {
+  return {
+    type: userConstants.LOGIN_RESET
+  }
+}
+
 function login(email, password, history) {
   return dispatch => {
-    fire.auth()
+    dispatch(request, true, null);
+    auth
       .signInWithEmailAndPassword(email, password)
       .then(user => {
         var tempUser = {};
         if (user) {
           dispatch(request(true, email));
-          fire.firestore().collection("users").doc(user.user.uid).get().then(function (snapshot) {
+          db.collection("users").doc(user.user.uid).get().then(function (snapshot) {
             tempUser["email"] = snapshot.data().email;
             tempUser["username"] = snapshot.data().username;
             tempUser["phone"] = snapshot.data().phone;
@@ -42,11 +50,9 @@ function login(email, password, history) {
             tempUser["headshot"] = snapshot.data().headshot;
             dispatch(request(false, email));
             dispatch(success(true, user, tempUser));
-            dispatch(alertActions.visible(true));
+            history.push('/');
           },
             error => {
-              document.getElementById("inputEmail").style.borderColor = "red";
-              document.getElementById("inputPassword").style.borderColor = "red";
               dispatch(request(false, email));
               dispatch(loginFailure(true, error.toString(), null, null));
               dispatch(alertActions.error(error.toString()));
@@ -55,8 +61,6 @@ function login(email, password, history) {
         }
       },
       error => {
-          document.getElementById("inputEmail").style.borderColor = "red";
-          document.getElementById("inputPassword").style.borderColor = "red";
           dispatch(request(false, email));
           dispatch(loginFailure(true, error.toString(), null, null));
           dispatch(alertActions.error(error.toString()));
@@ -71,15 +75,14 @@ function login(email, password, history) {
 
 function facebookLogin(history) {
   return dispatch => {
-    var provider = new fire.auth.FacebookAuthProvider();
-    fire.auth().signInWithPopup(provider).then(function(result) {
-      // This gives you a Google Access Token. You can use it to access the Google API.
+    var provider = new firebase.auth.FacebookAuthProvider();
+    auth.signInWithPopup(provider).then(function(result) {
       var token = result.credential.accessToken;
-      // The signed-in user info.
       var user = result.user;
       var tempUser = {};
+      console.log(user)
       if (user) {
-        fire.firestore().collection("users").doc(user.uid).get().then(function (snapshot) {
+        db.collection("users").doc(user.uid).get().then(function (snapshot) {
           if(snapshot.data()) {
             tempUser["email"] = snapshot.data().email;
             tempUser["username"] = snapshot.data().username;
@@ -87,10 +90,10 @@ function facebookLogin(history) {
             tempUser["firstName"] = snapshot.data().firstName;
             tempUser["lastName"] = snapshot.data().lastName;
             tempUser["headshot"] = snapshot.data().headshot;
-            tempUser["googleCredential"] = token;
+            tempUser["facebookCredential"] = token;
           }
           else {
-            fire.firestore().collection("users").doc(user.uid).set({
+            db.collection("users").doc(user.uid).set({
               email: user.email,
               username: user.displayName,
               firstName: "",
@@ -101,11 +104,9 @@ function facebookLogin(history) {
           }
           dispatch(request(false, result.email));
           dispatch(success(true, user, tempUser));
-          dispatch(alertActions.visible(true));
+          history.push('/');
         },
           error => {
-            document.getElementById("inputEmail").style.borderColor = "red";
-            document.getElementById("inputPassword").style.borderColor = "red";
             dispatch(request(false, result.email));
             dispatch(loginFailure(true, error.toString(), null, null));
             dispatch(alertActions.error(error.toString()));
@@ -127,15 +128,15 @@ function facebookLogin(history) {
 
 function googleLogin(history) {
   return dispatch => {
-    var provider = new fire.auth.GoogleAuthProvider();
-    fire.auth().signInWithPopup(provider).then(function(result) {
+    var provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider).then(function(result) {
       // This gives you a Google Access Token. You can use it to access the Google API.
       var token = result.credential.accessToken;
       // The signed-in user info.
       var user = result.user;
       var tempUser = {};
       if (user) {
-        fire.firestore().collection("users").doc(user.uid).get().then(function (snapshot) {
+        db.collection("users").doc(user.uid).get().then(function (snapshot) {
           if(snapshot.data()) {
             tempUser["email"] = snapshot.data().email;
             tempUser["username"] = snapshot.data().username;
@@ -146,7 +147,7 @@ function googleLogin(history) {
             tempUser["googleCredential"] = token;
           }
           else {
-            fire.firestore().collection("users").doc(user.uid).set({
+            db.collection("users").doc(user.uid).set({
               email: user.email,
               username: user.displayName,
               firstName: "",
@@ -157,11 +158,9 @@ function googleLogin(history) {
           }
           dispatch(request(false, result.email));
           dispatch(success(true, user, tempUser));
-          dispatch(alertActions.visible(true));
+          history.push('/');
         },
           error => {
-            document.getElementById("inputEmail").style.borderColor = "red";
-            document.getElementById("inputPassword").style.borderColor = "red";
             dispatch(request(false, result.email));
             dispatch(loginFailure(true, error.toString(), null, null));
             dispatch(alertActions.error(error.toString()));
@@ -188,12 +187,44 @@ function reset() {
   }
 }
 
-function reCaptchaUpdate(human, signUp, latestAction) {
-  return { type: userConstants.UPDATE_CAPTCHA, human, signUp, latestAction }
+function reCaptchaUpdate(human, signUp) {
+  return { type: userConstants.UPDATE_CAPTCHA, human, signUp}
+}
+
+function testReCaptcha(value, signUp) {
+  return dispatch => {
+    console.log(value)
+    fetch(apiBaseUrl + 'checkRecaptcha/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        "response": value
+      })
+    })
+    .then((response) => response.json())
+    .then((responseJson) => {
+      if(responseJson.type === "success") {
+        dispatch(reCaptchaUpdate(true, signUp));
+        alertActions.clear();
+      }
+      else {
+        dispatch(reCaptchaUpdate(false, signUp));
+        alertActions.visible(true);
+        alertActions.error(responseJson.type);
+      }
+    })
+    .catch((error) => {
+      dispatch(reCaptchaUpdate(false, signUp));
+      alertActions.visible(true);
+      alertActions.error(error);
+    });
+  }
 }
 
 function logout() {
-  //fire.auth().signOut();
+  auth.signOut();
   return dispatch => {
     dispatch(userLogout());
   }
@@ -201,14 +232,13 @@ function logout() {
   function userLogout() { return { type: userConstants.LOGOUT } }
 }
 
-function register(email, username, password, history, document) {
+function register(email, firstName, password, history) {
    return dispatch => {
-       dispatch(request(email));
-       fire.auth().createUserWithEmailAndPassword(email, password).then((authData) => {
-        fire.firestore().collection("users").doc(authData.user.uid).set({
+      dispatch(request, true, null);
+      auth.createUserWithEmailAndPassword(email, password).then((authData) => {
+        db.collection("users").doc(authData.user.uid).set({
           email: email,
-          username: username,
-          firstName: "",
+          firstName: firstName,
           lastName: "",
           phone: "",
           headshot: "https://s3.amazonaws.com/dejafood.com/mobile_assets/deja_gradient.png",
@@ -217,24 +247,20 @@ function register(email, username, password, history, document) {
         dispatch(login(email, password, history));
         dispatch(alertActions.visible(false));
         dispatch(alertActions.clear());
-       }).catch(function(error) {
-        dispatch(failure(true, error.toString(), null, null));
-        dispatch(alertActions.error(error.toString()));
-        dispatch(alertActions.visible(true));
-        document.getElementById("inputEmail").style.borderColor = "red";
-        document.getElementById("inputUsername").style.borderColor = "red";
-        document.getElementById("inputPassword").style.borderColor = "red";
-      });
-     };
+      }).catch(function(error) {
+      dispatch(loginFailure(true, error.toString(), null, null));
+      dispatch(alertActions.error(error.toString()));
+      dispatch(alertActions.visible(true));
+    });
+  };
 
-   function request(user) { return { type: userConstants.REGISTER_REQUEST, user } }
-   function success(user) { return { type: userConstants.REGISTER_SUCCESS, user } }
-   function failure(error) { return { type: userConstants.REGISTER_FAILURE, error } }
+  function request(isLoginPending, user) { return { type: userConstants.LOGIN_REQUEST, isLoginPending, user } }
+  function success(user) { return { type: userConstants.REGISTER_SUCCESS, user } }
 }
 
 function forgotPassword(emailAddress, document) {
    return dispatch => {
-     fire.auth().sendPasswordResetEmail(emailAddress).then(() => {
+     auth.sendPasswordResetEmail(emailAddress).then(() => {
       dispatch(alertActions.visible(true));
       dispatch(alertActions.error("Successfully sent password reset email!"));
     }).catch(function(error) {
@@ -244,20 +270,3 @@ function forgotPassword(emailAddress, document) {
     });
    };
 }
-
-//// prefixed function name with underscore because delete is a reserved word in javascript
-//function _delete(id) {
-//    return dispatch => {
-//        dispatch(request(id));
-
-//        userService.delete(id)
-//            .then(
-//                user => dispatch(success(id)),
-//                error => dispatch(failure(id, error.toString()))
-//            );
-//    };
-
-//    function request(id) { return { type: userConstants.DELETE_REQUEST, id } }
-//    function success(id) { return { type: userConstants.DELETE_SUCCESS, id } }
-//    function failure(id, error) { return { type: userConstants.DELETE_FAILURE, id, error } }
-//}

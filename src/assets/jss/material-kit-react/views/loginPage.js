@@ -73,10 +73,22 @@ const signupPageStyle = {
     textAlign: "center"
   },
   cardFooter: {
+    flexDirection: "column",
     paddingTop: "0rem",
     border: "0",
     borderRadius: "6px",
     justifyContent: "center !important"
+  },
+  errorMessage: {
+    textAlign: "center",
+    color: "red"
+  },
+  successMessage: {
+    textAlign: "center",
+    color: "green"
+  },
+  message: {
+    textAlign: "center"
   },
   socialLine: {
     marginTop: "1rem",

@@ -3,24 +3,29 @@ import { userConstants } from '../constants';
 const initialState = {
   isLoginSuccess: false,
   isLoginPending: false,
-  loginError: null,
+  loginError: false,
   user: null,
   userData: null,
   human: true,
   signUp: false,
 }
 
-export function authentication(state = { initialState }, action) {
+export function authentication(state = initialState, action) {
   switch (action.type) {
     case userConstants.LOGIN_RESET:
-      return Object.assign({}, state, initialState);
+      return {
+        isLoginPending: false,
+        user: null,
+        isLoginSuccess: false,
+        loginError: false,
+      };
     case userConstants.LOGIN_REQUEST:
       return {
         ...state,
         isLoginPending: action.isLoginPending,
         user: action.user,
         isLoginSuccess: false,
-        loginError: null,
+        loginError: false,
       };
     case userConstants.LOGIN_SUCCESS:
       return {
@@ -33,18 +38,33 @@ export function authentication(state = { initialState }, action) {
       return {
         ...state,
         loginError: action.loginError,
+        isLoginSuccess: false,
         user: action.user,
         userData: action.userData
       };
+    case userConstants.UPDATE_REQUEST:
+      return {
+        ...state,
+        loggedIn: true,
+        user: action.user,
+        userData: action.userData,
+      };
+    case userConstants.UPDATE_SUCCESS:
+      return {
+        ...state,
+        loggedIn: true,
+        user: action.user
+      };
+    case userConstants.UPDATE_FAILURE:
+      return initialState;
     case userConstants.UPDATE_CAPTCHA:
       return {
         ...state,
         human: action.human,
-        signUp: action.signUp,
-        latestAction: action.latestAction
+        signUp: action.signUp
       }
     case userConstants.LOGOUT:
-      return Object.assign({}, state, initialState);
+      return initialState;
     default:
       return state
   }

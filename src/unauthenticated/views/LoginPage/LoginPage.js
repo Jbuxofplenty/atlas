@@ -1,4 +1,7 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { useHistory } from "react-router";
+import { connect } from 'react-redux';
+import { alertActions, userActions } from 'actions';
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
 import InputAdornment from "@material-ui/core/InputAdornment";
@@ -20,10 +23,12 @@ import CardBody from "components/Card/CardBody.js";
 import CardHeader from "components/Card/CardHeader.js";
 import CardFooter from "components/Card/CardFooter.js";
 import CustomInput from "components/CustomInput/CustomInput.js";
+import ReCaptcha from "components/ReCaptcha/ReCaptcha.js";
 
 import styles from "assets/jss/material-kit-react/views/loginPage.js";
 
 import image from "assets/img/bg7.jpg";
+
 
 // Twitter button for future
 // import { faFacebook, faTwitter, faGooglePlusG } from '@fortawesome/free-brands-svg-icons';
@@ -39,13 +44,106 @@ import image from "assets/img/bg7.jpg";
 
 const useStyles = makeStyles(styles);
 
-export default function LoginPage(props) {
+function SignupPage(props) {
+  const history = useHistory();
   const [cardAnimaton, setCardAnimation] = React.useState("cardHidden");
   setTimeout(function() {
     setCardAnimation("");
   }, 700);
+
+  // Component did mount
+  useEffect(() => {
+    props.loginReset();
+    props.errorVisible(false);
+    props.error("");
+  // eslint-disable-next-line
+  }, []);
+
   const classes = useStyles();
   const { ...rest } = props;
+  const [human, setHuman] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [emailError, setEmailError] = useState(false);
+  const [passwordError, setPasswordError] = useState(false);
+
+  useEffect(() => {
+    setHuman(props.human);
+  }, [props.human]);
+
+
+  useEffect(() => {
+    if(props.loginError) {
+      setEmailError(true);
+      setPasswordError(true);
+    }
+    else {
+      setEmailError(false);
+      setPasswordError(false);
+    }
+  }, [props.loginError]);
+
+  const isInvalid =
+      email === '' ||
+      password === '';
+
+  const submit = () => {
+    props.errorVisible(false);
+    props.error("");
+    if(!human) {
+      var errorMessage = "Please complete the captcha to prove you're a human!";
+      props.errorVisible(true);
+      props.error(errorMessage);
+      props.loginFailure(true, errorMessage, null, null);
+      return;
+    }
+    setEmailError(false);
+    setPasswordError(false);
+    if(!validate(email, password)) {
+      return;
+    }
+    props.login(email, password, history);
+  }
+
+  const validate = (email, password) => {
+    var errorMessage = "";
+    var re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@(([[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    if (!re.test(String(email).toLowerCase())) {
+      errorMessage = "Email formatted incorrectly!";
+      props.errorVisible(true);
+      props.error(errorMessage);
+      props.loginFailure(true, errorMessage, null, null);
+      setEmailError(true);
+      return false;
+    }
+    if (password.length < 6) {
+      errorMessage = "Password not at least 6 characters long!";
+      props.errorVisible(true);
+      props.error(errorMessage);
+      props.loginFailure(true, errorMessage, null, null);
+      setPasswordError(true);
+      return false;
+    }
+    return true;
+  }
+
+  const loginFacebook = (e) => {
+    e.preventDefault(); 
+    props.errorVisible(false);
+    props.error("");
+    props.loginReset();
+    props.facebookLogin(history);
+  }
+
+  const loginGoogle = (e) => {
+    e.preventDefault(); 
+    props.errorVisible(false);
+    props.error("");
+    props.loginReset();
+    props.facebookLogin(history);
+  }
+
   return (
     <div>
       <Header
@@ -69,14 +167,14 @@ export default function LoginPage(props) {
               <Card className={classes[cardAnimaton]}>
                 <form className={classes.form}>
                   <CardHeader color="primary" className={classes.cardHeader}>
-                    <h4>Login</h4>
+                    <h4>Signup with Provider</h4>
                     <div className={classes.socialLine}>
                       <Button
                         justIcon
                         href=""
                         target="_blank"
                         color="transparent"
-                        onClick={e => e.preventDefault()}
+                        onClick={loginFacebook}
                       >
                         <FontAwesomeIcon icon={faFacebook} className={classes.socialIcons} style={{cursor: 'pointer'}} />
                       </Button>
@@ -85,7 +183,7 @@ export default function LoginPage(props) {
                         href=""
                         target="_blank"
                         color="transparent"
-                        onClick={e => e.preventDefault()}
+                        onClick={loginGoogle}
                       >
                         <FontAwesomeIcon icon={faGooglePlusG} className={classes.socialIcons} style={{cursor: 'pointer'}} />
                       </Button>
@@ -99,6 +197,8 @@ export default function LoginPage(props) {
                       formControlProps={{
                         fullWidth: true
                       }}
+                      error={emailError}
+                      onChange={(e) => setEmail(e.target.value)}
                       inputProps={{
                         type: "email",
                         endAdornment: (
@@ -114,6 +214,8 @@ export default function LoginPage(props) {
                       formControlProps={{
                         fullWidth: true
                       }}
+                      error={passwordError}
+                      onChange={(e) => setPassword(e.target.value)}
                       inputProps={{
                         type: "password",
                         endAdornment: (
@@ -124,11 +226,15 @@ export default function LoginPage(props) {
                         autoComplete: "off"
                       }}
                     />
+                    <ReCaptcha show={!human} signUp={true} />
                   </CardBody>
                   <CardFooter className={classes.cardFooter}>
-                    <Button simple color="primary" size="lg">
+                    <Button disabled={isInvalid} simple color="primary" size="lg" onClick={submit}>
                       Login
                     </Button>
+                    { props.isLoginPending  && <div className={classes.message}>Please wait...</div> }
+                    { props.isLoginSuccess  && <div className={classes.successMessage}>Success.</div> }
+                    { (props.loginError || props.errorVisible) && <div className={classes.errorMessage}>{props.errorMessage}</div> }
                   </CardFooter>
                 </form>
               </Card>
@@ -140,3 +246,32 @@ export default function LoginPage(props) {
     </div>
   );
 }
+
+
+const mapStateToProps = (state) => {
+  return {
+    isLoginPending: state.authentication.isLoginPending,
+    isLoginSuccess: state.authentication.isLoginSuccess,
+    loginError: state.authentication.loginError,
+    errorMessage: state.alert.message,
+    visible: state.alert.visible,
+    signUp: state.authentication.signUp,
+    human: state.authentication.human,
+  };
+}
+
+const mapDispatchToProps = (dispatch, history) => {
+  return {
+    errorVisible: (show) => dispatch(alertActions.visible(show)),
+    testReCaptcha: (value, signUp, latestAction) => dispatch(userActions.testReCaptcha(value, signUp, latestAction)),
+    error: (errorMessage) => dispatch(alertActions.error(errorMessage)),
+    loginFailure: (loginError, error, user, userData) => dispatch(userActions.loginFailure(loginError, error, user, userData)),
+    loginReset: () => dispatch(userActions.loginReset()),
+    login: (email, password, history) => dispatch(userActions.login(email, password, history)),
+    googleLogin: (history) => dispatch(userActions.googleLogin(history)),
+    facebookLogin: (history) => dispatch(userActions.facebookLogin(history)),
+  };
+}
+
+const Signup = connect(mapStateToProps, mapDispatchToProps)(SignupPage);
+export default Signup;

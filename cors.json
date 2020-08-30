@@ -1,0 +1,12 @@
+[
+  {
+    "origin": ["http://127.0.0.1:3000", "http://localhost:3000", "http://jbuxofplenty-mac.local:3000"],
+    "method": ["GET", "POST", "HEAD", "DELETE"],
+    "maxAgeSeconds": 3600
+  },
+  {
+    "origin": ["https://atlasone-45064.web.app/"],
+    "method": ["GET", "POST", "HEAD", "DELETE"],
+    "maxAgeSeconds": 3600
+  }
+]
