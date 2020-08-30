@@ -1,5 +1,11 @@
-import Home from './Home';
+import { ProfilePage } from './ProfilePage';
+import { Components } from './Components';
+import { LandingPage } from './LandingPage';
+import { LoginPage } from './LoginPage';
 
 export {
-  Home,
-};
+    ProfilePage,
+    LandingPage,
+    LoginPage,
+    Components,
+}

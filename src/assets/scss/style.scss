@@ -1,0 +1,19 @@
+@font-face {
+  font-family: Edmondsans;
+  src: url(../../assets/fonts/Edmondsans-Regular.otf) format('opentype'),
+       url(../../assets/fonts/Edmondsans-Bold.otf) format('opentype'),
+       url(../../assets/fonts/Edmondsans-Medium.otf) format('opentype');
+}
+
+// Overrides
+@import "variables";
+
+// Option A: Include all of Bootstrap
+@import "../node_modules/bootstrap/scss/bootstrap";
+
+// ie fixes
+@import "ie-fix";
+
+// Custom
+@import "custom";
+@import "404";

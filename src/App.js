@@ -5,7 +5,7 @@ const AuthenticatedApp = React.lazy(() => import('./authenticated/AuthenticatedA
 const UnauthenticatedApp = React.lazy(() => import('./unauthenticated/UnauthenticatedApp'))
 
 function App() {
-  const user = true;
+  const user = false;
   return user ? <AuthenticatedApp /> : <UnauthenticatedApp />
 }
 
