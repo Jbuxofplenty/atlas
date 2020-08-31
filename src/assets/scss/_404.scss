@@ -101,7 +101,7 @@
     line-height: 6rem;
     text-shadow: 0 0 7px #c3d168a2;
 }
-.circle {
+.circle-404 {
     user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
@@ -116,7 +116,7 @@
     border-radius: 50%;
     box-shadow: 0 0 7px #e7f1a3a2;
 }
-.circle:after {
+.circle-404:after {
     display: block;
     position: absolute;
     content: '';
@@ -131,7 +131,7 @@
     border-bottom: 4px solid #fafafa;
     z-index: 2
 }
-.circle:before {
+.circle-404:before {
     display: block;
     position: absolute;
     content: '';
@@ -149,7 +149,7 @@
     0% { transform: translate(-2.5rem, 0) rotate(0deg); }
     100% { transform: translate(-2.5rem, 0) rotate(360deg); }
 }
-main p {
+.p-404{
     margin-top: 3rem;
     text-align: center;
     text-shadow: 0 0 5px #c3d168a2;
@@ -157,6 +157,6 @@ main p {
 .button-404 {
     text-align: center;
 }
-main button:hover {
+.main-404 button:hover {
     cursor: pointer;
 }

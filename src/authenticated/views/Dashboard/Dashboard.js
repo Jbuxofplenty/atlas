@@ -1,28 +1,252 @@
-import React, { Component } from 'react';
-import { dataActions } from '../../../actions';
-import { connect } from 'react-redux';
+import React from 'react';
+import {
+  Row,
+  Col,
+  Progress,
+  Table,
+  Label,
+  Input,
+} from 'reactstrap';
 
-class DashboardPage extends Component {
+import Widget from 'components/Widget';
+
+import Rickshaw from './components/rickshaw/Rickshaw';
+
+import s from './Dashboard.module.scss';
+
+class Dashboard extends React.Component {
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      graph: null,
+      checkedArr: [false, false, false],
+    };
+    this.checkTable = this.checkTable.bind(this);
+  }
+
+  checkTable(id) {
+    let arr = [];
+    if (id === 0) {
+      const val = !this.state.checkedArr[0];
+      for (let i = 0; i < this.state.checkedArr.length; i += 1) {
+        arr[i] = val;
+      }
+    } else {
+      arr = this.state.checkedArr;
+      arr[id] = !arr[id];
+    }
+    if (arr[0]) {
+      let count = 1;
+      for (let i = 1; i < arr.length; i += 1) {
+        if (arr[i]) {
+          count += 1;
+        }
+      }
+      if (count !== arr.length) {
+        arr[0] = !arr[0];
+      }
+    }
+    this.setState({
+      checkedArr: arr,
+    });
+  }
+
   render() {
     return (
-      <div className="esans">
-        authenticated
+      <div className={s.root}>
+        <h1 className="page-title">Dashboard &nbsp;
+
+        </h1>
+        <Row>
+          <Col lg={4} xs={12}>
+            <Widget
+              title={<h6> USERBASE GROWTH </h6>}
+              close settings
+            >
+              <div className="stats-row">
+                <div className="stat-item">
+                  <h6 className="name">Overall Growth</h6>
+                  <p className="value">76.38%</p>
+                </div>
+                <div className="stat-item">
+                  <h6 className="name">Montly</h6>
+                  <p className="value">10.38%</p>
+                </div>
+                <div className="stat-item">
+                  <h6 className="name">24h</h6>
+                  <p className="value">3.38%</p>
+                </div>
+              </div>
+              <Progress color="success" value="60" className="bg-custom-dark progress-xs" />
+              <p>
+                <small>
+                  <span className="circle bg-default text-white">
+                    <i className="fa fa-chevron-up" />
+                  </span>
+                </small>
+                <span className="fw-semi-bold">&nbsp;17% higher</span>
+                &nbsp;than last month
+              </p>
+            </Widget>
+          </Col>
+          <Col lg={4} xs={12}>
+            <Widget
+              title={<h6> TRAFFIC VALUES </h6>}
+              close settings
+            >
+              <div className="stats-row">
+                <div className="stat-item">
+                  <h6 className="name">Overall Values</h6>
+                  <p className="value">17 567 318</p>
+                </div>
+                <div className="stat-item">
+                  <h6 className="name">Montly</h6>
+                  <p className="value">55 120</p>
+                </div>
+                <div className="stat-item">
+                  <h6 className="name">24h</h6>
+                  <p className="value">9 695</p>
+                </div>
+              </div>
+              <Progress color="danger" value="60" className="bg-custom-dark progress-xs" />
+              <p>
+                <small><span className="circle bg-default text-white"><i className="fa fa-chevron-down" /></span></small>
+                <span className="fw-semi-bold">&nbsp;8% lower</span>
+                &nbsp;than last month
+              </p>
+            </Widget>
+          </Col>
+          <Col lg={4} xs={12}>
+            <Widget
+              title={<h6> RANDOM VALUES </h6>}
+              close settings
+            >
+              <div className="stats-row">
+                <div className="stat-item">
+                  <h6 className="name fs-sm">Overcome T.</h6>
+                  <p className="value">104.85%</p>
+                </div>
+                <div className="stat-item">
+                  <h6 className="name fs-sm">Takeoff Angle</h6>
+                  <p className="value">14.29&deg;</p>
+                </div>
+                <div className="stat-item">
+                  <h6 className="name fs-sm">World Pop.</h6>
+                  <p className="value">7,211M</p>
+                </div>
+              </div>
+              <Progress color="bg-primary" value="60" className="bg-custom-dark progress-xs" />
+              <p>
+                <small><span className="circle bg-default text-white"><i className="fa fa-plus" /></span></small>
+                <span className="fw-semi-bold">&nbsp;8 734 higher</span>
+                &nbsp;than last month
+              </p>
+            </Widget>
+          </Col>
+
+        </Row>
+
+        <Row>
+          <Col lg={4} xs={12}>
+            <Widget
+              title={<h6><span className="badge badge-success">New</span> Messages</h6>}
+              refresh close
+            >
+              <div className="widget-body undo_padding">
+                <div className="list-group list-group-lg">
+                  <button className="list-group-item text-left">
+                    <span className="thumb-sm float-left mr">
+                      <img className="rounded-circle" src={""} alt="..." />
+                      <i className="status status-bottom bg-success" />
+                    </span>
+                  </button>
+                </div>
+              </div>
+              <footer className="bg-widget-transparent mt">
+                <input type="search" className="form-control form-control-sm bg-custom-dark border-0" placeholder="Search" />
+              </footer>
+
+            </Widget>
+          </Col>
+
+          <Col lg={4} xs={12}>
+            <Widget
+              title={<h6> Market <span className="fw-semi-bold">Stats</span></h6>} close
+            >
+
+              <div className="widget-body">
+                <h3>$720 Earned</h3>
+                <p className="fs-mini text-muted mb mt-sm">
+                  Target <span className="fw-semi-bold">$820</span> day earnings
+                  is <span className="fw-semi-bold">96%</span> reached.
+                </p>
+              </div>
+              <div className={`widget-table-overflow ${s.table}`}>
+                <Table striped size="sm">
+                  <thead className="no-bd">
+                    <tr>
+                      <th>
+                        <div className="checkbox abc-checkbox">
+                          <Input
+                            className="mt-0"
+                            id="checkbox210" type="checkbox" onClick={() => this.checkTable(0)}
+                            checked={this.state.checkedArr[0]}
+                            readOnly
+                          />{' '}
+                          <Label for="checkbox210" />
+                        </div>
+                      </th>
+                      <th>&nbsp;</th>
+                      <th>&nbsp;</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <div className="checkbox abc-checkbox">
+                          <Input
+                            className="mt-0"
+                            id="checkbox212" type="checkbox" onClick={() => this.checkTable(1)}
+                            checked={this.state.checkedArr[1]}
+                            readOnly
+                          />{' '}
+                          <Label for="checkbox212" />
+                        </div>
+                      </td>
+                      <td>HP Core i7</td>
+                      <td className="text-align-right fw-semi-bold">$346.1</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div className="checkbox abc-checkbox">
+                          <Input
+                            className="mt-0"
+                            id="checkbox214" onClick={() => this.checkTable(2)} type="checkbox"
+                            checked={this.state.checkedArr[2]}
+                            readOnly
+                          />{' '}
+                          <Label for="checkbox214" />
+                        </div>
+                      </td>
+                      <td>Air Pro</td>
+                      <td className="text-align-right fw-semi-bold">$533.1</td>
+                    </tr>
+                  </tbody>
+                </Table>
+              </div>
+
+              <div className="widget-body mt-xlg chart-overflow-bottom" style={{ height: '100px' }}>
+                <Rickshaw height={100} />
+              </div>
+
+            </Widget>
+          </Col>
+        </Row>
+
       </div>
-    )
+    );
   }
 }
 
-const mapStateToProps = (state) => {
-  return {
-    isLoginSuccess: state.authentication.isLoginSuccess,
-  };
-}
-
-const mapDispatchToProps = (dispatch, history) => {
-  return {
-    dataReset: () => dispatch(dataActions.dataReset())
-  };
-}
-
-const Dashboard = connect(mapStateToProps, mapDispatchToProps)(DashboardPage);
 export default Dashboard;

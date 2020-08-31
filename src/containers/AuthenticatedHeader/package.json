@@ -1,0 +1,6 @@
+{
+  "name": "AuthenticatedHeader",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./AuthenticatedHeader.js"
+}

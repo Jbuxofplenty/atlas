@@ -8,12 +8,12 @@ import { makeStyles } from "@material-ui/core/styles";
 // @material-ui/icons
 
 // core components
-import Header from "components/Header/Header.js";
-import Footer from "components/Footer/Footer.js";
+import UnauthenticatedHeader from "containers/UnauthenticatedHeader/UnauthenticatedHeader.js";
+import Footer from "containers/Footer/Footer.js";
 import GridContainer from "components/Grid/GridContainer.js";
 import GridItem from "components/Grid/GridItem.js";
 import Button from "components/CustomButtons/Button.js";
-import HeaderLinks from "components/Header/HeaderLinks.js";
+import HeaderLinks from "containers/UnauthenticatedHeader/HeaderLinks.js";
 import Parallax from "components/Parallax/Parallax.js";
 
 import styles from "assets/jss/material-kit-react/views/landingPage.js";
@@ -39,7 +39,7 @@ export default function LandingPage(props) {
 
   return (
     <div>
-      <Header
+      <UnauthenticatedHeader
         color="transparent"
         routes={dashboardRoutes}
         brand="Atlas One"
@@ -83,7 +83,7 @@ export default function LandingPage(props) {
           <WorkSection />
         </div>
       </div>
-      <Footer />
+      <Footer authenticated={false} />
     </div>
   );
 }

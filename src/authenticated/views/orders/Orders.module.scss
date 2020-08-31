@@ -1,0 +1,13 @@
+@import 'assets/scss/app';
+
+.root {
+
+}
+
+.mainTableWidget {
+  :global {
+    .table td {
+      border: none;
+    }
+  }
+}

@@ -12,9 +12,9 @@ import Lock from "@material-ui/icons/Lock";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFacebook, faGooglePlusG } from '@fortawesome/free-brands-svg-icons';
 // core components
-import Header from "components/Header/Header.js";
-import HeaderLinks from "components/Header/HeaderLinks.js";
-import Footer from "components/Footer/Footer.js";
+import UnauthenticatedHeader from "containers/UnauthenticatedHeader/UnauthenticatedHeader.js";
+import HeaderLinks from "containers/UnauthenticatedHeader/HeaderLinks.js";
+import Footer from "containers/Footer/Footer.js";
 import GridContainer from "components/Grid/GridContainer.js";
 import GridItem from "components/Grid/GridItem.js";
 import Button from "components/CustomButtons/Button.js";
@@ -146,7 +146,7 @@ function SignupPage(props) {
 
   return (
     <div>
-      <Header
+      <UnauthenticatedHeader
         absolute
         color="transparent"
         brand="Atlas One"
@@ -241,7 +241,7 @@ function SignupPage(props) {
             </GridItem>
           </GridContainer>
         </div>
-        <Footer whiteFont />
+        <Footer authenticated={false} whiteFont />
       </div>
     </div>
   );

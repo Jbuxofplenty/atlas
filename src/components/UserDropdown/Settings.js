@@ -1,0 +1,37 @@
+import React from 'react';
+import {
+  ListGroup,
+  ListGroupItem,
+} from 'reactstrap';
+import { withRouter } from 'react-router';
+
+import s from './ListGroup.module.scss'; // eslint-disable-line
+
+class MessagesDemo extends React.Component {
+  render() {
+    return (
+      <ListGroup className={[s.listGroup, 'thin-scroll'].join(' ')}>
+        <ListGroupItem className={s.listGroupItem} onClick={() => this.props.history.push('/app/profile')}>
+          <span className={[s.notificationIcon, 'thumb-sm'].join(' ')}>
+            <i className="fa fa-gear" />
+          </span>
+          <h5 className="m-0 mt-2">Settings</h5>
+        </ListGroupItem>
+        <ListGroupItem className={s.listGroupItem} onClick={() => this.props.history.push('/app/profile')}>
+          <span className={[s.notificationIcon, 'thumb-sm'].join(' ')}>
+            <i className="fa fa-user" />
+          </span>
+          <h5 className="m-0 mt-2">Profile</h5>
+        </ListGroupItem>
+        <ListGroupItem className={s.listGroupItem} onClick={() => this.props.history.push('/app/profile')}>
+          <span className={[s.notificationIcon, 'thumb-sm'].join(' ')}>
+            <i className="fa fa-sign-out" />
+          </span>
+          <h5 className="m-0 mt-2">Sign out</h5>
+        </ListGroupItem>
+      </ListGroup>
+    );
+  }
+}
+
+export default withRouter(MessagesDemo);

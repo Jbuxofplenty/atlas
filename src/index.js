@@ -7,7 +7,7 @@ import App from './App';
 import * as serviceWorker from './serviceWorker';
 import { PersistGate } from 'redux-persist/integration/react';
 import { MuiThemeProvider } from '@material-ui/core/styles';
-import CircularProgress from '@material-ui/core/CircularProgress';
+import Loader from 'components/Loader';
 
 import theme from './theme';
 
@@ -18,7 +18,7 @@ ReactDOM.render(
   <MuiThemeProvider theme={theme}>
     <Provider store={store} >
       <PersistGate loading={null} persistor={persistor}>
-        <Suspense fallback={<CircularProgress className="center-screen"/>}>
+        <Suspense fallback={<Loader className="center-screen" size={40} />}>
           <App />
         </Suspense>
       </PersistGate>

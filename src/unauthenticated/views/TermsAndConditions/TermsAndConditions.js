@@ -10,9 +10,9 @@ import CommonTermsAndConditions from 'views/TermsAndConditions/TermsAndCondition
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
 // core components
-import Header from "components/Header/Header.js";
-import Footer from "components/Footer/Footer.js";
-import HeaderLinks from "components/Header/HeaderLinks.js";
+import UnauthenticatedHeader from "containers/UnauthenticatedHeader/UnauthenticatedHeader.js";
+import Footer from "containers/Footer/Footer.js";
+import HeaderLinks from "containers/UnauthenticatedHeader/HeaderLinks.js";
 
 import styles from "assets/jss/material-kit-react/views/privacyPage.js";
 
@@ -24,7 +24,7 @@ export default function TermsAndConditions(props) {
   const classes = useStyles();
   return (
     <div>
-      <Header
+      <UnauthenticatedHeader
         color="white"
         routes={[]}
         brand="Atlas One"
@@ -39,7 +39,7 @@ export default function TermsAndConditions(props) {
       <div  className={classes.container}>
         <CommonTermsAndConditions />
       </div>
-      <Footer />
+      <Footer authenticated={false} />
     </div>
   );
 }

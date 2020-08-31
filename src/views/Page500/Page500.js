@@ -35,10 +35,10 @@ export default function Page500() {
               <h1>Page is currently unavailable!</h1>
               <div>
                   <span>5</span>
-                  <span class="circle">0</span>
+                  <span class="circle-404">0</span>
                   <span>0</span>
               </div>
-              <p>An internal server error occured. We'll be looking into it.</p>
+              <p className="p-404">An internal server error occured. We'll be looking into it.</p>
               <LowerCaseButton 
                 size="small" 
                 variant="outlined" 
