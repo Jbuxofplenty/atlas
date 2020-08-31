@@ -18,7 +18,7 @@ ReactDOM.render(
   <MuiThemeProvider theme={theme}>
     <Provider store={store} >
       <PersistGate loading={null} persistor={persistor}>
-        <Suspense fallback={<Loader className="center-screen" size={40} />}>
+        <Suspense fallback={<Loader className="center-screen" />}>
           <App />
         </Suspense>
       </PersistGate>

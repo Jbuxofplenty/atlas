@@ -4,10 +4,10 @@ const initialState = {
   isLoginSuccess: false,
   isLoginPending: false,
   loginError: false,
-  user: null,
-  userData: null,
   human: true,
   signUp: false,
+  user: {},
+  userData: {},
 }
 
 export function authentication(state = initialState, action) {
@@ -15,7 +15,8 @@ export function authentication(state = initialState, action) {
     case userConstants.LOGIN_RESET:
       return {
         isLoginPending: false,
-        user: null,
+        user: {},
+        userData: {},
         isLoginSuccess: false,
         loginError: false,
       };

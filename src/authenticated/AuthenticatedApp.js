@@ -17,7 +17,7 @@ const CloseButton = ({closeToast}) => <i onClick={closeToast} className="la la-c
 export default class AuthenticatedApp extends React.PureComponent {
   render() {
     return (
-        <Suspense fallback={<Loader className="center-screen" size={40} />}>
+        <Suspense fallback={<Loader className="center-screen" />}>
             <ToastContainer
                 autoClose={5000}
                 hideProgressBar

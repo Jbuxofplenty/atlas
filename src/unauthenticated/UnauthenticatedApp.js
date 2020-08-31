@@ -6,8 +6,7 @@ import {
   Redirect
 } from 'react-router-dom';
 
-// Material UI
-import CircularProgress from '@material-ui/core/CircularProgress';
+import Loader from 'components/Loader';
 
 // Creative Tim
 import "assets/scss/material-kit-react.scss?v=1.9.0";
@@ -19,7 +18,7 @@ import { CommonRoutes } from '../views';
 class UnauthenticatedApp extends Component {
   render() {
     return (
-      <Suspense fallback={<CircularProgress className="center-screen"/>}>
+      <Suspense fallback={<Loader className="center-screen" />}>
         <Router>
             <Switch>
               {CommonRoutes.map((route, idx) => {

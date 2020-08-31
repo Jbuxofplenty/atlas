@@ -5,15 +5,21 @@
  */
 
 import { createMuiTheme } from '@material-ui/core/styles';
-import blueGrey from '@material-ui/core/colors/blueGrey';
-import deepPurple from '@material-ui/core/colors/deepPurple';
 
 // https://material-ui.com/customization/themes/
 // https://material-ui.com/style/color/
 export default createMuiTheme({
   palette: {
-    primary: blueGrey,
-    secondary: deepPurple,
+    primary: {
+      light: '#1a237e',
+      main: '#121858',
+      dark: '#221266'
+    },
+    secondary: {
+      light: '#1a237e',
+      main: '#121858',
+      dark: '#221266'
+    }
   },
 
   typography: {

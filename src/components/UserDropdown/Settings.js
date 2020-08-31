@@ -3,7 +3,9 @@ import {
   ListGroup,
   ListGroupItem,
 } from 'reactstrap';
+import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
+import { userActions } from 'actions';
 
 import s from './ListGroup.module.scss'; // eslint-disable-line
 
@@ -23,7 +25,7 @@ class MessagesDemo extends React.Component {
           </span>
           <h5 className="m-0 mt-2">Profile</h5>
         </ListGroupItem>
-        <ListGroupItem className={s.listGroupItem} onClick={() => this.props.history.push('/app/profile')}>
+        <ListGroupItem className={s.listGroupItem} onClick={() => this.props.logout()}>
           <span className={[s.notificationIcon, 'thumb-sm'].join(' ')}>
             <i className="fa fa-sign-out" />
           </span>
@@ -34,4 +36,10 @@ class MessagesDemo extends React.Component {
   }
 }
 
-export default withRouter(MessagesDemo);
+const mapDispatchToProps = (dispatch, history) => {
+  return {
+    logout: () => dispatch(userActions.logout()),
+  };
+}
+
+export default withRouter(connect(null, mapDispatchToProps)(MessagesDemo));

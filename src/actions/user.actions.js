@@ -34,7 +34,7 @@ function loginReset() {
 
 function login(email, password, history) {
   return dispatch => {
-    dispatch(request, true, null);
+    dispatch(request, true, {});
     auth
       .signInWithEmailAndPassword(email, password)
       .then(user => {
@@ -54,7 +54,7 @@ function login(email, password, history) {
           },
             error => {
               dispatch(request(false, email));
-              dispatch(loginFailure(true, error.toString(), null, null));
+              dispatch(loginFailure(true, error.toString(), {}, {}));
               dispatch(alertActions.error(error.toString()));
               dispatch(alertActions.visible(true));
             });
@@ -62,7 +62,7 @@ function login(email, password, history) {
       },
       error => {
           dispatch(request(false, email));
-          dispatch(loginFailure(true, error.toString(), null, null));
+          dispatch(loginFailure(true, error.toString(), {}, {}));
           dispatch(alertActions.error(error.toString()));
           dispatch(alertActions.visible(true));
         });
@@ -102,21 +102,20 @@ function facebookLogin(history) {
               headshot: user.photoURL,
             });
           }
-          dispatch(request(false, result.email));
+          dispatch(request(false, user));
           dispatch(success(true, user, tempUser));
           history.push('/');
         },
           error => {
-            dispatch(request(false, result.email));
-            dispatch(loginFailure(true, error.toString(), null, null));
+            dispatch(request(false, {}));
+            dispatch(loginFailure(true, error.toString(), {}, {}));
             dispatch(alertActions.error(error.toString()));
             dispatch(alertActions.visible(true));
           });
       }
     }).catch(function(error) {
-      var email = error.email;
-      dispatch(request(false, email));
-      dispatch(loginFailure(true, error.toString(), null, null));
+      dispatch(request(false, {}));
+      dispatch(loginFailure(true, error.toString(), {}, {}));
       dispatch(alertActions.error(error.toString()));
       dispatch(alertActions.visible(true));
     });
@@ -156,21 +155,20 @@ function googleLogin(history) {
               headshot: user.photoURL,
             });
           }
-          dispatch(request(false, result.email));
+          dispatch(request(false, user));
           dispatch(success(true, user, tempUser));
           history.push('/');
         },
           error => {
-            dispatch(request(false, result.email));
-            dispatch(loginFailure(true, error.toString(), null, null));
+            dispatch(request(false, {}));
+            dispatch(loginFailure(true, error.toString(), {}, {}));
             dispatch(alertActions.error(error.toString()));
             dispatch(alertActions.visible(true));
           });
       }
     }).catch(function(error) {
-      var email = error.email;
-      dispatch(request(false, email));
-      dispatch(loginFailure(true, error.toString(), null, null));
+      dispatch(request(false, {}));
+      dispatch(loginFailure(true, error.toString(), {}, {}));
       dispatch(alertActions.error(error.toString()));
       dispatch(alertActions.visible(true));
     });
@@ -233,7 +231,7 @@ function logout() {
 
 function register(email, firstName, password, history) {
    return dispatch => {
-      dispatch(request, true, null);
+      dispatch(request, true, {});
       auth.createUserWithEmailAndPassword(email, password).then((authData) => {
         db.collection("users").doc(authData.user.uid).set({
           email: email,
@@ -247,7 +245,7 @@ function register(email, firstName, password, history) {
         dispatch(alertActions.visible(false));
         dispatch(alertActions.clear());
       }).catch(function(error) {
-      dispatch(loginFailure(true, error.toString(), null, null));
+      dispatch(loginFailure(true, error.toString(), {}, {}));
       dispatch(alertActions.error(error.toString()));
       dispatch(alertActions.visible(true));
     });

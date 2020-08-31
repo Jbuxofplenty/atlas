@@ -9,13 +9,13 @@ class Loader extends React.Component {
     };
 
     static defaultProps = {
-        size: 21
+        size: 50
     };
 
     render() {
         return (
             <div className={cx(s.root, this.props.className)}>
-                <i className="la la-spinner la-spin" style={{fontSize: this.props.size}}/>
+                <i className="fas fa-spinner fa-spin" style={{fontSize: this.props.size}}/>
             </div>
         );
     }

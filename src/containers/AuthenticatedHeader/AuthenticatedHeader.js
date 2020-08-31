@@ -17,7 +17,7 @@ import UserDropdown from 'components/UserDropdown/UserDropdown';
 import { openSidebar, closeSidebar, changeSidebarPosition, changeSidebarVisibility } from 'actions/navigation.actions';
 
 import s from './AuthenticatedHeader.module.scss';
-import 'animate.css'
+import 'assets/scss/vendors/animate.css/animate.css';
 
 class AuthenticatedHeader extends React.Component {
   static propTypes = {
