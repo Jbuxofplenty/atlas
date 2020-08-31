@@ -29,7 +29,6 @@ const RegularButton = React.forwardRef((props, ref) => {
     link,
     justIcon,
     className,
-    variant,
     ...rest
   } = props;
 
@@ -46,7 +45,6 @@ const RegularButton = React.forwardRef((props, ref) => {
     [classes.block]: block,
     [classes.link]: link,
     [classes.justIcon]: justIcon,
-    [classes.variant]: variant,
     [className]: className
   });
   return (
@@ -72,7 +70,6 @@ RegularButton.propTypes = {
     "transparent"
   ]),
   size: PropTypes.oneOf(["sm", "lg"]),
-  variant: PropTypes.oneOf(["outlined", "lg"]),
   simple: PropTypes.bool,
   round: PropTypes.bool,
   fullWidth: PropTypes.bool,

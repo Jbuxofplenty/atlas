@@ -141,7 +141,7 @@ function SignupPage(props) {
     props.errorVisible(false);
     props.error("");
     props.loginReset();
-    props.facebookLogin(history);
+    props.googleLogin(history);
   }
 
   return (

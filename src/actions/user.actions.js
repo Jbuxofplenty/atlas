@@ -193,7 +193,6 @@ function reCaptchaUpdate(human, signUp) {
 
 function testReCaptcha(value, signUp) {
   return dispatch => {
-    console.log(value)
     fetch(apiBaseUrl + 'checkRecaptcha/', {
       method: 'POST',
       headers: {

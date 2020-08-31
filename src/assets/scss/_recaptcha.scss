@@ -1,0 +1,13 @@
+.recaptcha {
+    -moz-transition: 0.75s;
+    -o-transition: 0.75s;
+    transition: 0.75s;
+    opacity: 0;
+    visibility: hidden; 
+    height: 0;
+}
+.recaptcha.show {
+    opacity: 1;
+    visibility: visible; 
+    height: 100%;
+}

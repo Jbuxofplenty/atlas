@@ -1,43 +1,53 @@
-import React, { Component } from "react";
+import React, { useEffect, useState } from "react";
 import { connect } from 'react-redux';
 import { userActions } from 'actions';
 import ReCAPTCHA from "react-google-recaptcha";
+// nodejs library to set properties for components
+import PropTypes from "prop-types";
 
-class ReCaptchaPage extends Component {
-  onChange = value => {
-    console.log(value)
-    this.props.testReCaptcha(value, this.props.signUp);
+const ReCaptchaPage = (props) => {
+  const [show, setShow] = useState(props.show);
+
+  const onChange = value => {
+    props.testReCaptcha(value, props.signUp);
   }
 
-  onExpired = () => {
-    this.props.reCaptchaUpdate(false, this.props.signUp);
+  const onExpired = () => {
+    props.reCaptchaUpdate(false, props.signUp);
   }
 
-  render() {
-    if (!this.props.show) return false;
-    return (
-      <div>
-        <div className={"reCaptchaHolder"}>
-          <div className="mt-3 mb-3 d-flex justify-content-center">
-            <ReCAPTCHA
-              sitekey="6LebX8UZAAAAALvXtDQ5obj2A8AXvS2AzB1S_iRe"
-              onChange={this.onChange}
-              onExpired={this.onExpired}
-            />
-          </div>
-        </div>
+  const componentClasses = ['recaptcha'];
+  if (show) { componentClasses.push('show'); }
+
+
+  useEffect(() => {
+    setShow(props.show);
+  }, [props.show]);
+
+  return (
+    <div className={componentClasses.join(' ')}>
+      <div className="mt-3 mb-3 d-flex justify-content-center">
+        <ReCAPTCHA
+          sitekey="6LebX8UZAAAAALvXtDQ5obj2A8AXvS2AzB1S_iRe"
+          onChange={onChange}
+          onExpired={onExpired}
+        />
       </div>
-    );
-  }
+    </div>
+  );
+}
+
+ReCaptchaPage.propTypes = {
+  show: PropTypes.bool.isRequired,
+  signUp: PropTypes.bool.isRequired
 }
 
 const mapStateToProps = (state) => {
   return {
-    signUp: state.authentication.signUp,
   };
 }
 
-const mapDispatchToProps = (dispatch, history) => {
+const mapDispatchToProps = (dispatch) => {
   return {
     testReCaptcha: (value, signUp) => dispatch(userActions.testReCaptcha(value, signUp)),
     reCaptchaUpdate: (value, signUp) => dispatch(userActions.reCaptchaUpdate(value, signUp)),
