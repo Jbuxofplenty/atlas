@@ -10,8 +10,6 @@ import {
 
 import Widget from 'components/Widget';
 
-import Rickshaw from './components/rickshaw/Rickshaw';
-
 import s from './Dashboard.module.scss';
 
 class Dashboard extends React.Component {
@@ -234,10 +232,6 @@ class Dashboard extends React.Component {
                     </tr>
                   </tbody>
                 </Table>
-              </div>
-
-              <div className="widget-body mt-xlg chart-overflow-bottom" style={{ height: '100px' }}>
-                <Rickshaw height={100} />
               </div>
 
             </Widget>

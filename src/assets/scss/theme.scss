@@ -7,16 +7,13 @@
 @import '../../../node_modules/bootstrap/scss/functions';
 @import 'variables';
 @import '../../../node_modules/bootstrap/scss/bootstrap';
-@import '../../../node_modules/rickshaw/rickshaw.css';
 @import '../../../node_modules/line-awesome/dist/line-awesome/css/line-awesome.css';
 
 @import './vendors/font-awesome/scss/font-awesome';
 @import './vendors/animate.css/animate';
 @import './vendors/react-toastify/ReactToastify.css';
-
 @import './vendors/font-awesome/scss/font-awesome';
-
-@import '../fonts/flaticon/flaticon';
+@import './vendors/flaticon/scss/flaticon';
 
 @import 'mixins';
 @import 'base';

@@ -7,9 +7,11 @@ import { ToastContainer } from 'react-toastify';
 // Routes
 import { CommonRoutes } from '../views';
 
+import { MuiThemeProvider } from '@material-ui/core/styles';
 import Loader from 'components/Loader';
 
 import 'assets/scss/theme.scss';
+import theme from 'theme';
 import LayoutComponent from 'containers/Layout';
 
 const CloseButton = ({closeToast}) => <i onClick={closeToast} className="la la-close notifications-close"/>
@@ -17,6 +19,7 @@ const CloseButton = ({closeToast}) => <i onClick={closeToast} className="la la-c
 export default class AuthenticatedApp extends React.PureComponent {
   render() {
     return (
+      <MuiThemeProvider theme={theme}>
         <Suspense fallback={<Loader className="center-screen" />}>
             <ToastContainer
                 autoClose={5000}
@@ -40,6 +43,7 @@ export default class AuthenticatedApp extends React.PureComponent {
                 </Switch>
             </HashRouter>
         </Suspense>
+      </MuiThemeProvider>
     );
   }
 }
