@@ -101,9 +101,9 @@ class Layout extends React.Component {
 
 function mapStateToProps(store) {
   return {
-    sidebarOpened: store.navigation,
-    sidebarPosition: store.navigation,
-    sidebarVisibility: store.navigation,
+    sidebarOpened: store.navigation.sidebarOpened,
+    sidebarPosition: store.navigation.sidebarPosition,
+    sidebarVisibility: store.navigation.sidebarVisibility,
   };
 }
 

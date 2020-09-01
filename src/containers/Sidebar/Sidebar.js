@@ -6,7 +6,7 @@ import {withRouter} from 'react-router-dom';
 import s from './Sidebar.module.scss';
 import LinksGroup from './LinksGroup';
 
-import {changeActiveSidebarItem} from 'actions/navigation.actions';
+import { changeActiveSidebarItem } from 'actions/navigation.actions';
 
 class Sidebar extends React.Component {
     static propTypes = {
@@ -36,6 +36,19 @@ class Sidebar extends React.Component {
                 this.element.classList.add(s.sidebarOpen);
             }
         }, false);
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.sidebarOpened !== this.props.sidebarOpened) {
+            if (nextProps.sidebarOpened) {
+                this.element.style.height = `${this.element.scrollHeight}px`;
+            } else {
+                this.element.classList.remove(s.sidebarOpen);
+                setTimeout(() => {
+                    this.element.style.height = '';
+                }, 0);
+            }
+        }
     }
 
     dismissAlert(id) {
@@ -109,12 +122,12 @@ class Sidebar extends React.Component {
     }
 }
 
+
 function mapStateToProps(store) {
     return {
-        sidebarOpened: store.navigation,
-        sidebarStatic: store.navigation,
-        alertsList: store.alerts,
-        activeItem: store.navigation,
+        sidebarOpened: store.navigation.sidebarOpened,
+        sidebarStatic: store.navigation.sidebarStatic,
+        activeItem: store.navigation.activeItem,
     };
 }
 

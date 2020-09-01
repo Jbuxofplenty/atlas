@@ -1,4 +1,4 @@
-import { CHANGE_SIDEBAR_VISIBILITY, CHANGE_SIDEBAR_POSITION, OPEN_SIDEBAR, CLOSE_SIDEBAR, CHANGE_ACTIVE_SIDEBAR_ITEM } from '../actions/navigation.actions';
+import { navigationConstants } from '../constants/navigation.constants';
 
 const initialState = {
   sidebarOpened: false,
@@ -7,25 +7,25 @@ const initialState = {
   sidebarVisibility: 'show',
 };
 
-export default function runtime(state = initialState, action) {
+export function navigation(state = initialState, action) {
   switch (action.type) {
-    case OPEN_SIDEBAR:
+    case navigationConstants.OPEN_SIDEBAR:
       return Object.assign({}, state, {
         sidebarOpened: true,
       });
-    case CLOSE_SIDEBAR:
+    case navigationConstants.CLOSE_SIDEBAR:
       return Object.assign({}, state, {
         sidebarOpened: false,
       });
-    case CHANGE_SIDEBAR_POSITION:
+    case navigationConstants.CHANGE_SIDEBAR_POSITION:
       return Object.assign({}, state, {
         sidebarPosition: action.payload,
       });
-    case CHANGE_SIDEBAR_VISIBILITY:
+    case navigationConstants.CHANGE_SIDEBAR_VISIBILITY:
       return Object.assign({}, state, {
         sidebarVisibility: action.payload,
       });
-    case CHANGE_ACTIVE_SIDEBAR_ITEM:
+    case navigationConstants.CHANGE_ACTIVE_SIDEBAR_ITEM:
       return {
         ...state,
         activeItem: action.activeItem,

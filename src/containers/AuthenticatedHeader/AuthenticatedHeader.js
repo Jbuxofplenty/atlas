@@ -153,11 +153,6 @@ class AuthenticatedHeader extends React.Component {
               </DropdownItem>
             </DropdownMenu>
           </Dropdown>
-          <NavItem className="d-md-none">
-            <NavLink onClick={this.toggleSidebar} className={`${s.navItem} text-white`} href="#">
-              <i className="fa fa-bars" />
-            </NavLink>
-          </NavItem>
           <NavItem className={`${s.divider} text-white`} />
           <Dropdown nav isOpen={this.state.notificationsOpen} toggle={this.toggleUserDropdown} id="basic-nav-dropdown" className={`${s.notificationsMenu}`} style={{marginRight: 'auto'}}>
             <DropdownToggle nav caret style={{color: "#f4f4f5", padding: 0}}>
@@ -170,6 +165,11 @@ class AuthenticatedHeader extends React.Component {
               <UserDropdown />
             </DropdownMenu>
           </Dropdown>
+          <NavItem className="d-md-none">
+            <NavLink onClick={this.toggleSidebar} className={`${s.navItem} text-white`} href="#">
+              <i className="fa fa-bars" />
+            </NavLink>
+          </NavItem>
         </Nav>
       </Navbar>
     );
@@ -178,9 +178,9 @@ class AuthenticatedHeader extends React.Component {
 
 function mapStateToProps(store) {
   return {
-    isSidebarOpened: store.navigation,
-    sidebarVisibility: store.navigation,
-    sidebarPosition: store.navigation,
+    isSidebarOpened: store.navigation.sidebarOpened,
+    sidebarVisibility: store.navigation.sidebarVisibility,
+    sidebarPosition: store.navigation.sidebarPosition,
     photoURL: store.authentication.user.photoURL,
     displayName: store.authentication.user.displayName,
   };
