@@ -18,27 +18,15 @@ const functions = require('firebase-functions');
 
 // Express Servers
 const {
-  checkRecaptcha,
-  sendGoodbyeEmail,
-  sendWelcomeEmail,
+  v1
 } = require('./server');
 
-///////////////////////////////////////////////////////////////////
-//////////////////////        AUTH          ///////////////////////
-///////////////////////////////////////////////////////////////////
+exports.v1 = functions.https.onRequest(v1);
 
-exports.checkRecaptcha = functions.https.onRequest(checkRecaptcha);
-
-// Welcome/Goodbye emails
-exports.sendWelcomeEmail = functions.auth.user().onCreate((user) => {
- const email = user.email; // The email of the user.
- const displayName = user.displayName; // The display name of the user.
-
- return sendWelcomeEmail(email, displayName);
-});
-exports.sendByeEmail = functions.auth.user().onDelete((user) => {
- const email = user.email;
- const displayName = user.displayName;
-
- return sendGoodbyeEmail(email, displayName);
-});
+// Firebase triggers
+const {
+  sendGoodbyeEmail,
+  sendWelcomeEmail,
+} = require('./triggers');
+exports.sendWelcomeEmail = sendWelcomeEmail;
+exports.sendGoodbyeEmail = sendGoodbyeEmail;

@@ -191,7 +191,7 @@ function reCaptchaUpdate(human, signUp) {
 
 function testReCaptcha(value, signUp) {
   return dispatch => {
-    fetch(apiBaseUrl + 'checkRecaptcha/', {
+    fetch(apiBaseUrl + 'auth/checkRecaptcha/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

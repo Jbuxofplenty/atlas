@@ -7,9 +7,9 @@
     }
 
     .icon-list-item {
-      height: 32px;
-      font-size: 14px;
-      line-height: 32px;
+      height: unquote("min(3vw, 30px)");
+      font-size: unquote("min(3vw, 30px)");
+      line-height: unquote("min(3vw, 30px)");
 
       > a {
         color: $white;
@@ -19,7 +19,7 @@
       .glyphicon,
       .fa,
       .fi {
-        width: 32px;
+        width: unquote("min(3vw, 30px)");
         margin-right: 10px;
       }
 
@@ -27,7 +27,7 @@
         .glyphicon,
         .fa,
         .fi {
-          font-size: 28px;
+          font-size: unquote("min(3vw, 30px)");
           top: 2px;
         }
 
@@ -40,6 +40,29 @@
           vertical-align: -6px;
         }
       }
+    }
+  }
+}
+
+
+.navbarForm {
+
+  .inputAddon {
+    border: none;
+    background-color: transparentize($text-transparent, 0.1);
+    transition: background-color ease-in-out 0.15s;
+  }
+
+  input {
+    font-size: unquote("min(2.5vw, 15px)");
+    color: $white;
+    background-color: transparentize($text-transparent, 0.1);
+    border: none;
+    padding: 0.6rem 0.85rem 0.6rem 1rem;
+    min-height: 30px !important;
+
+    &:focus {
+      box-shadow: $input-box-shadow !important;
     }
   }
 }

@@ -30,10 +30,6 @@ export default function TermsAndConditions(props) {
         brand="Atlas One"
         rightLinks={<HeaderLinks />}
         fixed
-        changeColorOnScroll={{
-          height: 400,
-          color: "white"
-        }}
         {...rest}
       />
       <div  className={classes.container}>

@@ -1,11 +1,48 @@
+// Common packages
+const express = require('express');
+
+// Common functions
+const { 
+  getDefault,
+} = require('./util');
+
+///////////////////////////////////////////////////////////////////
+//////////////////////        AUTH          ///////////////////////
+///////////////////////////////////////////////////////////////////
+
 const { 
     checkRecaptcha,
-    sendGoodbyeEmail,
-    sendWelcomeEmail,
 } = require('./auth');
 
+// Create an Express object and routes (in order)
+const auth = express();
+auth.use('/checkRecaptcha', checkRecaptcha);
+auth.use(getDefault);
+
+
+///////////////////////////////////////////////////////////////////
+//////////////////////        GITHUB          /////////////////////
+///////////////////////////////////////////////////////////////////
+
+const { 
+  submitIssue,
+} = require('./github');
+
+// Create an Express object and routes (in order)
+const github = express();
+github.use('/submitIssue', submitIssue);
+github.use(getDefault);
+
+
+///////////////////////////////////////////////////////////////////
+//////////////////////        VERSION          ////////////////////
+///////////////////////////////////////////////////////////////////
+const v1 = express();
+v1.use('/auth', auth);
+v1.use('/github', github);
+v1.use(getDefault);
+
+
 module.exports = {
-  checkRecaptcha,
-  sendGoodbyeEmail,
-  sendWelcomeEmail,
+  v1
 };

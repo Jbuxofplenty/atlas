@@ -1,13 +1,22 @@
-// Your company name to include in the emails
-const APP_NAME = 'Atlas One';
-
+// Common packages
 const functions = require('firebase-functions');
 const rp = require('request-promise');
 const cors = require('cors');
+const bodyParser = require('body-parser');
+const express = require('express');
 
-// Express for parsing body
-var checkRecaptcha = require('express')()
-var bodyParser = require('body-parser')
+// Common variables
+// Company name to include in the emails
+const APP_NAME = 'Atlas One';
+
+/**
+ * Check a recaptcha value with Google's API
+ *
+ * All params are referenced from req.body
+ * @param {string} response - score when a user completes a recaptcha challenge 
+ * @return {Object} {type, [error]}
+ */
+var checkRecaptcha = express();
 
 checkRecaptcha.use(bodyParser.json()) // for parsing application/json
 checkRecaptcha.use(bodyParser.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
@@ -58,7 +67,13 @@ const mailTransport = nodemailer.createTransport({
   },
 });
 
-// Sends a welcome email to the given user.
+/**
+ * Sends a welcome email to the given user
+ *
+ * All params are referenced from req.body
+ * @param {Object} email
+ * @param {Object} displayName
+ */
 async function sendWelcomeEmail(email, displayName) {
     const mailOptions = {
         from: `${APP_NAME} <noreply@atlasone.com>`,
@@ -72,7 +87,13 @@ async function sendWelcomeEmail(email, displayName) {
     return null;
 }
 
-// Sends a goodbye email to the given user.
+/**
+ * Sends a goodbye email to the given user
+ *
+ * All params are referenced from req.body
+ * @param {Object} email
+ * @param {Object} displayName
+ */
 async function sendGoodbyeEmail(email, displayName) {
     const mailOptions = {
         from: `${APP_NAME} <noreply@atlasone.com>`,

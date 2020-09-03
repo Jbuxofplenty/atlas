@@ -23,7 +23,7 @@ if (window.location.hostname === "localhost" ||
         host: "localhost:5002",
         ssl: false
     });
-    apiBaseUrl = "http://localhost:5001/atlasone-45064/us-central1/";
+    apiBaseUrl = "http://localhost:5001/atlasone-45064/us-central1/v1/";
 }
 export { 
     auth, 

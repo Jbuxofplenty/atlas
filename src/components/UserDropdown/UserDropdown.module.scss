@@ -2,7 +2,7 @@
 
 .notifications {
   @include media-breakpoint-up(md) {
-    width: 333px;
+    width: 300px;
   }
   background: $main-gradient;
   box-shadow: 0 0px 40px 2px rgba(#020202,.5);
