@@ -11,7 +11,7 @@ const {
 ///////////////////////////////////////////////////////////////////
 
 const { 
-    checkRecaptcha,
+  checkRecaptcha,
 } = require('./auth');
 
 // Create an Express object and routes (in order)

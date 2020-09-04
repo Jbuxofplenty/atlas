@@ -75,16 +75,16 @@ const mailTransport = nodemailer.createTransport({
  * @param {Object} displayName
  */
 async function sendWelcomeEmail(email, displayName) {
-    const mailOptions = {
-        from: `${APP_NAME} <noreply@atlasone.com>`,
-        to: email,
-    };
+  const mailOptions = {
+    from: `${APP_NAME} <noreply@atlasone.com>`,
+    to: email,
+  };
 
-    mailOptions.subject = `Welcome to ${APP_NAME}!`;
-    mailOptions.text = `Hey ${displayName || ''}! Welcome to ${APP_NAME}. I hope you will enjoy our service.`;
-    await mailTransport.sendMail(mailOptions);
-    console.log('New welcome email sent to:', email);
-    return null;
+  mailOptions.subject = `Welcome to ${APP_NAME}!`;
+  mailOptions.text = `Hey ${displayName || ''}! Welcome to ${APP_NAME}. I hope you will enjoy our service.`;
+  await mailTransport.sendMail(mailOptions);
+  console.log('New welcome email sent to:', email);
+  return null;
 }
 
 /**
@@ -95,21 +95,21 @@ async function sendWelcomeEmail(email, displayName) {
  * @param {Object} displayName
  */
 async function sendGoodbyeEmail(email, displayName) {
-    const mailOptions = {
-        from: `${APP_NAME} <noreply@atlasone.com>`,
-        to: email,
-    };
+  const mailOptions = {
+    from: `${APP_NAME} <noreply@atlasone.com>`,
+    to: email,
+  };
 
-    mailOptions.subject = `Bye!`;
-    mailOptions.text = `Hey ${displayName || ''}! We confirm that we have deleted your ${APP_NAME} account.`;
-    await mailTransport.sendMail(mailOptions);
-    console.log('Account deletion confirmation email sent to:', email);
-    return null;
+  mailOptions.subject = `Bye!`;
+  mailOptions.text = `Hey ${displayName || ''}! We confirm that we have deleted your ${APP_NAME} account.`;
+  await mailTransport.sendMail(mailOptions);
+  console.log('Account deletion confirmation email sent to:', email);
+  return null;
 }
 
 module.exports = {
-    checkRecaptcha,
-    sendWelcomeEmail,
-    sendGoodbyeEmail,
+  checkRecaptcha,
+  sendWelcomeEmail,
+  sendGoodbyeEmail,
 };
   
