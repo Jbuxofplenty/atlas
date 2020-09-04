@@ -1,6 +1,7 @@
 import { userConstants } from '../constants';
 import { alertActions, dataActions } from './';
-import { auth, db, firebase, apiBaseUrl } from "../firebase";
+import { auth, db, firebase } from "../firebase";
+import { apiBaseUrl } from 'helpers';
 
 export const userActions = {
     login,

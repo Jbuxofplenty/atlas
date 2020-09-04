@@ -47,7 +47,16 @@ const footerStyle = {
   inlineBlock: {
     display: "inline-block",
     padding: "0px",
-    width: "auto"
+    width: "auto",
+    marginRight: "2em",
+    marginLeft: "2em"
+  },
+  center: {
+    display: "block",
+    textAlign: "center",
+    margin: "auto",
+    marginTop: "1em",
+    marginBottom: "1em"
   },
   icon: {
     width: "18px",

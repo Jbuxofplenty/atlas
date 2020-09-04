@@ -7,7 +7,8 @@ const privacyPageStyle = {
     position: "relative",
     paddingTop: "20vh",
     color: "#000000",
-    paddingBottom: "200px"
+    paddingBottom: "200px",
+    backgroundColor: "white",
   }
 };
 

@@ -29,7 +29,10 @@ const headerLinksStyle = theme => ({
         display: "block",
         height: "1px",
         marginLeft: "15px",
-        backgroundColor: "#e5e5e5"
+        backgroundColor: "#e5e5e5",
+        "& > span:first-child": {
+          justifyContent: "flex-center"
+        }
       }
     }
   },
@@ -59,7 +62,7 @@ const headerLinksStyle = theme => ({
       marginTop: "8px",
       textAlign: "left",
       "& > span:first-child": {
-        justifyContent: "flex-start"
+        justifyContent: "flex-center"
       }
     }
   },
@@ -96,9 +99,18 @@ const headerLinksStyle = theme => ({
     marginRight: "3px"
   },
   socialIcons: {
-    position: "relative",
     fontSize: "20px !important",
-    marginRight: "4px"
+    marginRight: "4px",
+    [theme.breakpoints.down("sm")]: {
+      width: "calc(100% - 30px)",
+      marginLeft: "15px",
+      marginBottom: "8px",
+      marginTop: "8px",
+      textAlign: "left",
+      "& > span:first-child": {
+        justifyContent: "flex-center"
+      }
+    }
   },
   dropdownLink: {
     "&,&:hover,&:focus": {

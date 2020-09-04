@@ -2,7 +2,6 @@ import React from "react";
 import Button from '@material-ui/core/Button';
 import { withRouter } from "react-router";
 import { withStyles } from '@material-ui/core/styles';
-import { apiBaseUrl } from "firebase";
 
 const LowerCaseButton = withStyles({
     root: {
@@ -12,40 +11,17 @@ const LowerCaseButton = withStyles({
 
 class ErrorBoundary extends React.Component {
     constructor(props) {
-        super(props);
-        this.state = { hasError: false };
+      super(props);
+      this.state = { hasError: false };
     }
   
     componentDidCatch(error, info) {
-        this.setState({ hasError: true });
-        console.log(error, info)
-        // Log error to github api
-        // fetch(apiBaseUrl + 'auth/checkRecaptcha/', {
-        //         method: 'POST',
-        //         headers: {
-        //             'Content-Type': 'application/json',
-        //     },
-        //         body: JSON.stringify({
-        //             "response": value
-        //         })
-        // })
-        // .then((response) => response.json())
-        // .then((responseJson) => {
-        //     if(responseJson.type === "success") {
-
-        //     }
-        //     else {
-                
-        //     }
-        // })
-        // .catch((error) => {
-
-        // });
+      this.setState({ hasError: true });
     }
 
     home() {
-        this.setState({ hasError: false });
-        this.props.history.push('/');
+      this.setState({ hasError: false });
+      this.props.history.push('/');
     }
   
     render() {

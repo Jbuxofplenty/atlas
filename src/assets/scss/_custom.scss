@@ -138,3 +138,20 @@ input:focus ~ label, input.used ~ label {
   position: absolute;
   top: 0; left: 0; bottom: 0; right: 0;
 }
+
+.submit-issue-modal {
+  margin: auto;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  width: 50%;
+  max-width: 400px;
+  min-width: 300px;
+  height: 75%;
+  overflow: scroll;
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.submit-issue-modal::-webkit-scrollbar {
+  display: none;
+}

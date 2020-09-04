@@ -1,6 +1,7 @@
 import firebase from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
+import { isDev } from 'helpers';
 
 const config = {
     apiKey: process.env.REACT_APP_API_KEY,
@@ -15,20 +16,15 @@ const config = {
 var fire = firebase.initializeApp(config);
 var db = fire.firestore();
 var auth = fire.auth();
-var apiBaseUrl = process.env.REACT_APP_BASE_API_URL;
-if (window.location.hostname === "localhost" || 
-    window.location.hostname === process.env.REACT_APP_COMPUTER_NAME || 
-    window.location.hostname === "127.0.0.1") {
-    db.settings({
-        host: "localhost:5002",
-        ssl: false
-    });
-    apiBaseUrl = "http://localhost:5001/atlasone-45064/us-central1/v1/";
+if (isDev()) {
+  db.settings({
+    host: "localhost:5002",
+    ssl: false
+  });
 }
 export { 
-    auth, 
-    db,
-    fire,
-    firebase,
-    apiBaseUrl,
+  auth, 
+  db,
+  fire,
+  firebase,
 };

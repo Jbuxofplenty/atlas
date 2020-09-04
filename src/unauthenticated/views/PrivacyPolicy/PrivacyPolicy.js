@@ -36,7 +36,7 @@ export default function PrivacyPolicy(props) {
         }}
         {...rest}
       />
-      <div  className={classes.container}>
+      <div className={classes.container}>
         <CommonPrivacyPolicy />
       </div>
       <Footer authenticated={false} />
