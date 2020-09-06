@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { connect } from 'react-redux';
+
 // @material-ui
 import { makeStyles } from "@material-ui/core/styles";
 import Radio from "@material-ui/core/Radio";
@@ -39,7 +41,10 @@ function SubmitIssue(props) {
 
   const submitIssueHandle = async () => {
     setShowMessage(true);
-    var success = await submitIssue(title, body, bug, false);
+    var label = "bug";
+    if(!bug) label = "feature";
+    var message = "Email: " + props.email + "\n" + body;
+    var success = await submitIssue(title, message, label, false);
     if(success) {
       props.handleClose();
       setShowMessage(false);
@@ -127,4 +132,10 @@ function SubmitIssue(props) {
   );
 }
 
-export default SubmitIssue;
+function mapStateToProps(store) {
+  return {
+    email: store.authentication.user.email,
+  };
+}
+
+export default connect(mapStateToProps)(SubmitIssue);

@@ -17,10 +17,10 @@ var fire = firebase.initializeApp(config);
 var db = fire.firestore();
 var auth = fire.auth();
 if (isDev()) {
-  db.settings({
-    host: "localhost:5002",
-    ssl: false
-  });
+  // db.settings({
+  //   host: "localhost:5002",
+  //   ssl: false
+  // });
 }
 export { 
   auth, 

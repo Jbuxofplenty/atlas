@@ -15,7 +15,7 @@ export default function Page500() {
 
   return (
     <div className="body-404">
-      <div id="particles" class="particles">
+      <div id="particles" className="particles">
         <span></span>
         <span></span>
         <span></span>
@@ -35,7 +35,7 @@ export default function Page500() {
               <h1>Page is currently unavailable!</h1>
               <div>
                   <span>5</span>
-                  <span class="circle-404">0</span>
+                  <span className="circle-404">0</span>
                   <span>0</span>
               </div>
               <p className="p-404">An internal server error occured. We'll be looking into it.</p>

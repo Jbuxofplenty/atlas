@@ -28,7 +28,7 @@ class ErrorBoundary extends React.Component {
       if (this.state.hasError) {
         return (
             <div className="body-404">
-              <div id="particles" class="particles">
+              <div id="particles" className="particles">
                 <span></span>
                 <span></span>
                 <span></span>
@@ -47,7 +47,7 @@ class ErrorBoundary extends React.Component {
                   <section className="button-404">
                       <h1>An error occurred!</h1>
                       <div>
-                          <span class="circle-404">0</span>
+                          <span className="circle-404">0</span>
                       </div>
                       <p className="p-404">We automatically sent this issue to the development team.</p>
                       <LowerCaseButton 
