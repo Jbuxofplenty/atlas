@@ -19,7 +19,6 @@ const ReCaptchaPage = (props) => {
   const componentClasses = ['recaptcha'];
   if (show) { componentClasses.push('show'); }
 
-
   useEffect(() => {
     setShow(props.show);
   }, [props.show]);

@@ -3,6 +3,9 @@ import React from "react";
 import { useHistory } from "react-router";
 // nodejs library to set properties for components
 import PropTypes from "prop-types";
+// nodejs library that concatenates classes
+import classNames from "classnames";
+
 // material-ui core components
 import { makeStyles } from "@material-ui/core/styles";
 import Modal from '@material-ui/core/Modal';
@@ -20,6 +23,11 @@ const useStyles = makeStyles(styles);
 
 export default function Footer(props) {
   const classes = useStyles();
+  const { whiteFont } = props;
+  const footerClasses = classNames({
+    [classes.footer]: true,
+    [classes.footerWhiteFont]: whiteFont
+  });
 
   // Modal
   const [open, setOpen] = React.useState(false);
@@ -52,7 +60,7 @@ export default function Footer(props) {
   };
 
   return (
-    <footer>
+    <footer className={footerClasses}>
       <Modal
         open={open}
         onClose={handleClose}

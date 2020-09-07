@@ -37,7 +37,6 @@ class App extends Component {
   componentDidMount() {
     auth.onAuthStateChanged(function(user) {
       this.setState({user});
-      console.log(user, this.props.user);
       if(user && isEmpty(this.props.user)) this.props.history.push('/app/dashboard')
       else if(!user && !isEmpty(this.props.user)) this.props.history.push('/login')
     }.bind(this));

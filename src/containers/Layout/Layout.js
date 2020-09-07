@@ -38,11 +38,26 @@ class Layout extends React.Component {
     sidebarStatic: false,
     sidebarOpened: false,
   };
+
   constructor(props) {
     super(props);
     this.handleSwipe = this.handleSwipe.bind(this);
+    this.home = this.home.bind(this);
   }
 
+  componentDidMount() {
+    this.timeout = setTimeout(this.home, 1000);
+  }
+  
+  componentWillUnmount() {
+    clearTimeout(this.home);
+  }
+
+  home() {
+    if(isEmpty(this.props.user)) {
+      this.props.history.replace('/');
+    }
+  }
 
   handleSwipe(e) {
     if ('ontouchstart' in window) {
@@ -63,7 +78,7 @@ class Layout extends React.Component {
   render() {
     return (
       <div>
-        {isEmpty(this.props.user) ? <Loader className="center-screen" /> :
+        {isEmpty(this.props.user) ? <Loader timeout={true} className="center-screen" /> :
           <div
             className={[
               s.root,
