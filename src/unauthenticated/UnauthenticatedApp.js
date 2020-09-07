@@ -22,32 +22,32 @@ class UnauthenticatedApp extends Component {
     return (
       <Suspense fallback={<Loader className="center-screen" />}>
         <Router>
-            <ErrorBoundary>
-              <Switch>
-                {CommonRoutes.map((route, idx) => {
-                  return route.component ? (
-                    <Route
-                      key={idx}
-                      path={route.path}
-                      exact={route.exact}
-                      name={route.name}
-                      component={route.component} />
-                  ) : (null);
-                })}
-                {UnauthenticatedRoutes.map((route, idx) => {
-                  return route.component ? (
-                    <Route
-                      key={idx}
-                      path={route.path}
-                      exact={route.exact}
-                      name={route.name}
-                      component={route.component} />
-                  ) : (null);
-                })}
-                <Redirect from="/home" to="/" />
-                <Redirect to="/404" />
-              </Switch>
-            </ErrorBoundary>
+          <ErrorBoundary>
+            <Switch>
+              {CommonRoutes.map((route, idx) => {
+                return route.component ? (
+                  <Route
+                    key={idx}
+                    path={route.path}
+                    exact={route.exact}
+                    name={route.name}
+                    component={route.component} />
+                ) : (null);
+              })}
+              {UnauthenticatedRoutes.map((route, idx) => {
+                return route.component ? (
+                  <Route
+                    key={idx}
+                    path={route.path}
+                    exact={route.exact}
+                    name={route.name}
+                    component={route.component} />
+                ) : (null);
+              })}
+              <Redirect from="/home" to="/" />
+              <Redirect to="/404" />
+            </Switch>
+          </ErrorBoundary>
         </Router>
       </Suspense>
     );
