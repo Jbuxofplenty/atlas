@@ -48,6 +48,7 @@ function Connect(props) {
 
   let windowObjectReference = null;
   let previousUrl = null;
+  const popupTick = useRef(null)
 
   const openSignInWindow = (url, name) => {
     // remove any existing event listeners
@@ -74,10 +75,10 @@ function Connect(props) {
         the window or to reload the referenced resource. */
       windowObjectReference.focus();
     }
-    var popupTick = setInterval(function() {
+    popupTick.current = setInterval(function() {
       if (windowObjectReference.closed) {
         clearInterval(popupTick);
-        if(mounted.current && authCode !== '') {
+        if(mounted.current && authCode === '') {
           setIsPending(false);
           setIsError(true);
           setMessage("Looks the connect popup was closed before authentication could be granted!");
@@ -91,37 +92,37 @@ function Connect(props) {
     previousUrl = url;
   };
 
-  const receiveMessage = event => {
-    // Check to make sure modal wasn't closed
-    if(mounted.current) {
-      // Do we trust the sender of this message? (might be
-      // different from what we originally opened, for example).
-      if (event.origin !== postMessageLocation()) {
-        return;
-      }
-      const { data } = event;
-      // if we trust the sender and the source is our popup
-      if (data.source === 'oauth-login-redirect') {
-        const { code, state } = data;
-        if(state === oAuth.state) {
-          setAuthCode(code);
-          fetch(oAuth.buildTokenRequest(code), {
-            method: 'POST',
-          }).then(response => response.json()).then(data => { 
-            setIsPending(false);
-            setIsSuccess(true);
-            setMessage(`You successfully connected your ${props.institution.displayName} account!  We're pulling in all of your data now.`);
-          }).catch(error => {
-            setIsPending(false);
-            setIsError(true);
-            setMessage(error);
-          });
-        }
-        else {
+  useEffect(() => { return () => { clearTimeout(popupTick.current) } 
+    }, [authCode])
+
+  const receiveMessage = async event => {
+    // Do we trust the sender of this message? (might be
+    // different from what we originally opened, for example).
+    if (event.origin !== postMessageLocation()) {
+      return;
+    }
+    const { data } = event;
+    // if we trust the sender and the source is our popup
+    if (data.source === 'oauth-login-redirect') {
+      const { code, state } = data;
+      if(state === oAuth.state) {
+        setAuthCode(code);
+        fetch(oAuth.buildTokenRequest(code), {
+          method: 'POST',
+        }).then(response => response.json()).then(data => { 
+          setIsPending(false);
+          setIsSuccess(true);
+          setMessage(`You successfully connected your ${props.institution.displayName} account!  We're pulling in all of your data now.`);
+        }).catch(error => {
           setIsPending(false);
           setIsError(true);
-          setMessage("State query parameter in request is not the same as the state returned in the response!");
-        }
+          setMessage(error);
+        });
+      }
+      else {
+        setIsPending(false);
+        setIsError(true);
+        setMessage("State query parameter in request is not the same as the state returned in the response!");
       }
     }
   };
