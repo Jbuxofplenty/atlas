@@ -45,16 +45,24 @@
   }
 }
 
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  height: 33px;
+  width: 33px;
+  font-weight: 600;
+  font-size: 18px;
+}
+
 .institutionListItem {
-  &:hover {
-    background-color: rgba(0,0,0,0.8);
-  }
   cursor: pointer;
 }
 
 .iconListItem {
   &:hover {
-    cursor: pointer;
+    color: grey;
   }
 }
 

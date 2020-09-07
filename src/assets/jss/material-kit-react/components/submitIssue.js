@@ -1,4 +1,4 @@
-const privacyPageStyle = {
+const submitIssueStyle = {
   headerText: {
     textAlign: "center"
   },
@@ -32,4 +32,4 @@ const privacyPageStyle = {
   }
 };
 
-export default privacyPageStyle;
+export default submitIssueStyle;

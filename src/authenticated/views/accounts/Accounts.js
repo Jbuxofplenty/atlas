@@ -17,6 +17,9 @@ import {
 } from 'reactstrap';
 import classnames from 'classnames';
 
+import Modal from '@material-ui/core/Modal';
+import Connect from "components/Connect/Connect.js";
+
 import s from './Accounts.module.scss';
 
 class Accounts extends React.Component {
@@ -30,7 +33,12 @@ class Accounts extends React.Component {
       allInstitutions: [],
       searchFocused: false,
       searchFilter: '',
+      open: false,
+      activeInstitution: {},
     };
+
+    this.handleOpen = this.handleOpen.bind(this);
+    this.handleClose = this.handleClose.bind(this);
   }
 
   componentDidMount() {
@@ -51,7 +59,6 @@ class Accounts extends React.Component {
       }
     }
     this.setState({filteredInstitutions, popularInstitutions, allInstitutions});
-    console.log(this.state.popularInstitutions)
   }
 
   filterInstitutions(e) {
@@ -74,9 +81,26 @@ class Accounts extends React.Component {
     }
   }
 
+    // Modal
+    handleOpen(activeInstitution) {
+      this.setState({ activeInstitution, open: true });
+    };
+  
+    handleClose() {
+      this.setState({ activeInstitution: {}, open: false });
+    };
+
   render() {
     return (
       <section className={`${s.root} mb-4`}>
+        <Modal
+          open={this.state.open}
+          onClose={this.handleClose}
+        >
+          <div>
+            <Connect institution={this.state.activeInstitution} handleClose={this.handleClose} />
+          </div>
+        </Modal>
         <h1 className="page-title">Accounts</h1>
         {/* tabs */}
         <Nav className="bg-transparent" tabs>
@@ -111,8 +135,9 @@ class Accounts extends React.Component {
                 {this.state.searchFilter === '' ?
                   <Row className="icon-list d-flex justify-content-center my-5">
                     {this.state.popularInstitutions.map((institution, index) => (
-                      <Col lg={4} md={6} xs={12} className={`icon-list-item d-flex justify-content-center my-3 my-md-0 ${s.iconListItem}`} key={index}>
-                        <img className="align-self-center icon-list-item mr-2 mb-1" alt="bs" src={institution.icon}/>
+                      <Col lg={4} md={6} xs={12}  onClick={() => this.handleOpen(institution)} 
+                          className={`icon-list-item d-flex justify-content-center my-3 my-md-0 ${s.iconListItem}`} key={index}>
+                        <img className={`${s.avatar} rounded-circle thumb-sm float-left ml-2 mr-2`} alt="bs" src={institution.icon}/>
                         {institution.displayName}
                       </Col>
                       ))
@@ -122,14 +147,13 @@ class Accounts extends React.Component {
                     <Table className="table-dark-hover">
                       <tbody>
                       {this.state.filteredInstitutions.map((institution, index) => (
-                          <tr className={`${s.institutionListItem}`} key={index}>
+                          <tr className={`${s.institutionListItem}`} key={index} onClick={() => this.handleOpen(institution)}>
                             <td><img className="align-self-center icon-list-item mr-2 mb-1" alt="bs" src={institution.icon}/></td>
                             <td>{institution.displayName}</td>
                             <td>{institution.url}</td>
                           </tr>
                         ))
                       }
-
                       </tbody>
                       {/* eslint-enable */}
                     </Table>

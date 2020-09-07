@@ -12,7 +12,9 @@
     "multer": "^1.4.2",
     "nodemailer": "^4.0.1",
     "request": "^2.88.0",
-    "request-promise": "^4.2.4"
+    "request-promise": "^4.2.4",
+    "virgil-crypto": "^4.2.2",
+    "virgil-sdk": "^6.1.2"
   },
   "devDependencies": {
     "eslint": "^4.13.1",
