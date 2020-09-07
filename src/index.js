@@ -13,13 +13,16 @@ import theme from './theme';
 
 import { Provider } from 'react-redux';
 import { store, persistor } from './helpers';
+import { BrowserRouter as Router } from 'react-router-dom';
 
 ReactDOM.render(
   <MuiThemeProvider theme={theme}>
     <Provider store={store} >
       <PersistGate loading={null} persistor={persistor}>
         <Suspense fallback={<Loader className="center-screen" />}>
-          <App />
+          <Router>
+            <App />
+          </Router>
         </Suspense>
       </PersistGate>
     </Provider>

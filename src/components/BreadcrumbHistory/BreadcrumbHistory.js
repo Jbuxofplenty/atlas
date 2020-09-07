@@ -8,7 +8,7 @@ class BreadcrumbHistory extends Component {
     .slice(1)
     .map(route => route
       .split('-')
-      .map(word => word[0].toUpperCase() + word.slice(1))
+      .map(word => {if(word[0]) {return word[0].toUpperCase() + word.slice(1)} return ''})
       .join(' ')
     )
     const length = route.length;
@@ -22,7 +22,6 @@ class BreadcrumbHistory extends Component {
   render() {
     return (
       <>
-      
         { this.props.url !== '/app/chat' ?
           <div>
             <Breadcrumb tag="nav" listTag="div">

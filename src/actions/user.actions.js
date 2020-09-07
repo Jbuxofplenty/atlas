@@ -51,7 +51,7 @@ function login(email, password, history) {
             tempUser["headshot"] = snapshot.data().headshot;
             dispatch(request(false, email));
             dispatch(success(true, user, tempUser));
-            history.push('/');
+            history.push('/app/dashboard');
           },
             error => {
               dispatch(request(false, email));
@@ -105,7 +105,7 @@ function facebookLogin(history) {
           }
           dispatch(request(false, user));
           dispatch(success(true, user, tempUser));
-          history.push('/');
+          history.push('/app/dashboard');
         },
           error => {
             dispatch(request(false, {}));
@@ -158,7 +158,7 @@ function googleLogin(history) {
           }
           dispatch(request(false, user));
           dispatch(success(true, user, tempUser));
-          history.push('/');
+          history.push('/app/dashboard');
         },
           error => {
             dispatch(request(false, {}));

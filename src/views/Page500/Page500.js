@@ -3,6 +3,8 @@ import { useHistory } from "react-router";
 import Button from '@material-ui/core/Button';
 import { withStyles } from '@material-ui/core/styles';
 
+import 'assets/scss/_404.scss';
+
 const LowerCaseButton = withStyles({
   root: {
     textTransform: 'none',
