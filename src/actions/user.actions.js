@@ -1,7 +1,8 @@
 import { userConstants } from '../constants';
 import { alertActions, dataActions } from './';
-import { auth, db, firebase } from "../firebase";
+import { auth, db, firebase, functions } from "../firebase";
 import { apiBaseUrl } from 'helpers';
+import { EThree, KeyPairType } from '@virgilsecurity/e3kit-browser';
 
 export const userActions = {
     login,
@@ -33,6 +34,35 @@ function loginReset() {
   }
 }
 
+function getVirgilJWT(registerUser) {
+  return async dispatch => {
+    const getToken = functions.httpsCallable('getVirgilJwt');
+    const initializeFunction = () => getToken().then(result => result.data.token);
+    // initialize E3Kit with tokenCallback and keyPairType 
+    // with specified post-quantum algorithm type (E3Kit uses Round5 
+    // for encryption and Falcon for signature)
+    await EThree.initialize(initializeFunction, {
+      keyPairType: KeyPairType.CURVE25519_ROUND5_ED25519_FALCON,
+    }).then(async eThree => {
+      if(registerUser) {
+        await eThree.register()
+          .then(() => console.log('success'))
+          .catch(e => console.error('error: ', e));
+      }
+      console.log('Initialized EThree instance succesfully!')
+      dispatch(success(eThree));
+    }).catch(error => {
+        // Error handling
+        const code = error.code;
+        // code === 'unauthenticated' if user not authenticated
+        console.log(code, error)
+        dispatch(success({}));
+    });
+  }
+
+  function success(eThree) { return { type: userConstants.UPDATE_ETHREE, eThree } }
+}
+
 function login(email, password, history) {
   return dispatch => {
     dispatch(request, true, {});
@@ -41,6 +71,7 @@ function login(email, password, history) {
       .then(user => {
         var tempUser = {};
         if (user) {
+          dispatch(getVirgilJWT(false));
           dispatch(request(true, email));
           db.collection("users").doc(user.user.uid).get().then(function (snapshot) {
             tempUser["email"] = snapshot.data().email;
@@ -81,8 +112,15 @@ function facebookLogin(history) {
       var token = result.credential.accessToken;
       var user = result.user;
       var tempUser = {};
-      console.log(user)
       if (user) {
+        let createdAt = new Date(user.metadata.creationTime);
+        let lastSignInTime = new Date(user.metadata.lastSignInTime);
+        if(createdAt.getTime() === lastSignInTime.getTime()) {
+          dispatch(getVirgilJWT(true));
+        }
+        else {
+          dispatch(getVirgilJWT(false));
+        }
         db.collection("users").doc(user.uid).get().then(function (snapshot) {
           if(snapshot.data()) {
             tempUser["email"] = snapshot.data().email;
@@ -136,6 +174,14 @@ function googleLogin(history) {
       var user = result.user;
       var tempUser = {};
       if (user) {
+        let createdAt = new Date(user.metadata.creationTime);
+        let lastSignInTime = new Date(user.metadata.lastSignInTime);
+        if(createdAt.getTime() === lastSignInTime.getTime()) {
+          dispatch(getVirgilJWT(true));
+        }
+        else {
+          dispatch(getVirgilJWT(false));
+        }
         db.collection("users").doc(user.uid).get().then(function (snapshot) {
           if(snapshot.data()) {
             tempUser["email"] = snapshot.data().email;
@@ -234,6 +280,7 @@ function register(email, firstName, password, history) {
    return dispatch => {
       dispatch(request, true, {});
       auth.createUserWithEmailAndPassword(email, password).then((authData) => {
+        dispatch(getVirgilJWT(true));
         db.collection("users").doc(authData.user.uid).set({
           email: email,
           firstName: firstName,

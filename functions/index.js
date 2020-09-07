@@ -18,10 +18,12 @@ const functions = require('firebase-functions');
 
 // Express Servers
 const {
-  v1
+  v1,
+  getVirgilJwt,
 } = require('./server');
 
 exports.v1 = functions.https.onRequest(v1);
+exports.getVirgilJwt = getVirgilJwt;
 
 // Firebase triggers
 const {

@@ -8,6 +8,7 @@ const initialState = {
   signUp: false,
   user: {},
   userData: {},
+  eThree: {},
 }
 
 export function authentication(state = initialState, action) {
@@ -17,6 +18,7 @@ export function authentication(state = initialState, action) {
         isLoginPending: false,
         user: {},
         userData: {},
+        eThree: {},
         isLoginSuccess: false,
         loginError: false,
       };
@@ -41,7 +43,8 @@ export function authentication(state = initialState, action) {
         loginError: action.loginError,
         isLoginSuccess: false,
         user: action.user,
-        userData: action.userData
+        userData: action.userData,
+        eThree: {},
       };
     case userConstants.UPDATE_REQUEST:
       return {
@@ -55,6 +58,11 @@ export function authentication(state = initialState, action) {
         ...state,
         loggedIn: true,
         user: action.user
+      };
+    case userConstants.UPDATE_ETHREE:
+      return {
+        ...state,
+        eThree: action.eThree,
       };
     case userConstants.UPDATE_FAILURE:
       return initialState;

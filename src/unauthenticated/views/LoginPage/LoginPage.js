@@ -167,7 +167,7 @@ function SignupPage(props) {
               <Card className={classes[cardAnimaton]}>
                 <form className={classes.form}>
                   <CardHeader color="primary" className={classes.cardHeader}>
-                    <h4>Signup with Provider</h4>
+                    <h4>Login with Provider</h4>
                     <div className={classes.socialLine}>
                       <Button
                         justIcon
