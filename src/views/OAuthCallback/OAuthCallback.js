@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import Loader from 'components/Loader';
 import queryString from 'query-string';
+import { postMessageLocation } from 'helpers';
 
 export default function OAuthCallback(props) {
   
@@ -10,7 +11,7 @@ export default function OAuthCallback(props) {
      parsedData.source = "oauth-login-redirect";
      if (window.opener) {
        // send them to the opening window
-       window.opener.postMessage(parsedData, "*");
+       window.opener.postMessage(parsedData, postMessageLocation());
        // close the popup
        window.close();
      }
