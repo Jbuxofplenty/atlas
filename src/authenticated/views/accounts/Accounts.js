@@ -81,14 +81,14 @@ class Accounts extends React.Component {
     }
   }
 
-    // Modal
-    handleOpen(activeInstitution) {
-      this.setState({ activeInstitution, open: true });
-    };
-  
-    handleClose() {
-      this.setState({ activeInstitution: {}, open: false });
-    };
+  // Modal
+  handleOpen(activeInstitution) {
+    this.setState({ activeInstitution, open: true });
+  };
+
+  handleClose() {
+    this.setState({ activeInstitution: {}, open: false });
+  };
 
   render() {
     return (

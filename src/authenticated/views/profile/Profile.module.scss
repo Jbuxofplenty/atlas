@@ -43,3 +43,32 @@
     }
   }
 }
+
+.header {
+  margin-left: 1em;
+}
+
+.gridContainer {
+  width: 95% !important;
+  align-self: center;
+}
+
+.instructionText {
+  vertical-align: middle;
+  width: 95% !important;
+  align-self: center;
+}
+
+.instructionContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.rounded {
+  border-top: 3px solid #bbb;
+  border-radius: 5px;
+  width: 95%;
+  align-self: center;
+  margin-bottom: 2em;
+}

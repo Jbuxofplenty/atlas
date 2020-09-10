@@ -75,29 +75,29 @@ function SubmitIssue(props) {
               </CardHeader>
               <CardBody>
                 <GridContainer justify="center">
-                <GridItem xs={12} sm={12} md={6}>
-                  <CustomInput
-                    labelText="Title"
-                    id="title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    formControlProps={{
-                      fullWidth: true
-                    }}
-                  />
-                </GridItem>
-                <GridItem xs={12} sm={12} md={6}>
-                  <div className={classes.radioContainer}>
+                  <GridItem xs={12} sm={12} md={6}>
+                    <CustomInput
+                      labelText="Title"
+                      id="title"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      formControlProps={{
+                        fullWidth: true
+                      }}
+                    />
+                  </GridItem>
+                  <GridItem xs={12} sm={12} md={6}>
                     <div className={classes.radioContainer}>
-                      <div className={classes.radioLabel}><Radio checked={bug} name={"bug"} onChange={bugFeature} color="primary"/></div>
-                      <div className={classes.radioLabel}>Bug</div>
+                      <div className={classes.radioContainer}>
+                        <div className={classes.radioLabel}><Radio checked={bug} name={"bug"} onChange={bugFeature} color="primary"/></div>
+                        <div className={classes.radioLabel}>Bug</div>
+                      </div>
+                      <div className={classes.radioContainer}>
+                        <div className={classes.radioLabel}><Radio checked={!bug} name={"feature"} onChange={bugFeature} color="primary"/></div>
+                        <div className={classes.radioLabel}>Feature</div>
+                      </div>
                     </div>
-                    <div className={classes.radioContainer}>
-                      <div className={classes.radioLabel}><Radio checked={!bug} name={"feature"} onChange={bugFeature} color="primary"/></div>
-                      <div className={classes.radioLabel}>Feature</div>
-                    </div>
-                  </div>
-                </GridItem>
+                  </GridItem>
                 </GridContainer>
                 <CustomInput
                     labelText="Description"

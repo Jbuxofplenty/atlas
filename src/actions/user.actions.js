@@ -1,4 +1,4 @@
-import { userConstants } from '../constants';
+import { userConstants, eThreeConstants } from '../constants';
 import { alertActions, dataActions } from './';
 import { auth, db, firebase, functions } from "../firebase";
 import { apiBaseUrl } from 'helpers';
@@ -60,7 +60,7 @@ function getVirgilJWT(registerUser) {
     });
   }
 
-  function success(eThree) { return { type: userConstants.UPDATE_ETHREE, eThree } }
+  function success(eThree) { return { type: eThreeConstants.UPDATE_ETHREE, eThree } }
 }
 
 function login(email, password, history) {
@@ -271,9 +271,11 @@ function logout() {
   auth.signOut();
   return dispatch => {
     dispatch(userLogout());
+    dispatch(ethreeReset());
   }
 
   function userLogout() { return { type: userConstants.LOGOUT } }
+  function ethreeReset() { return { type: eThreeConstants.ETHREE_RESET } }
 }
 
 function register(email, firstName, password, history) {

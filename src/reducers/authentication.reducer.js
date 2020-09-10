@@ -8,7 +8,6 @@ const initialState = {
   signUp: false,
   user: {},
   userData: {},
-  eThree: {},
 }
 
 export function authentication(state = initialState, action) {
@@ -58,11 +57,6 @@ export function authentication(state = initialState, action) {
         ...state,
         loggedIn: true,
         user: action.user
-      };
-    case userConstants.UPDATE_ETHREE:
-      return {
-        ...state,
-        eThree: action.eThree,
       };
     case userConstants.UPDATE_FAILURE:
       return initialState;
