@@ -133,11 +133,11 @@ class Accounts extends React.Component {
                   />
                 </InputGroup>
                 {this.state.searchFilter === '' ?
-                  <Row className="icon-list d-flex justify-content-center my-5">
+                  <Row className="icon-list d-flex justify-content-center align-items-center my-5">
                     {this.state.popularInstitutions.map((institution, index) => (
                       <Col lg={4} md={6} xs={12}  onClick={() => this.handleOpen(institution)} 
-                          className={`icon-list-item d-flex justify-content-center my-3 my-md-0 ${s.iconListItem}`} key={index}>
-                        <img className={`${s.avatar} rounded-circle thumb-sm float-left ml-2 mr-2`} alt="bs" src={institution.icon}/>
+                          className={`icon-list-item d-flex justify-content-center align-items-center my-3 ${s.iconListItem}`} key={index}>
+                        <img className={`${s.avatar} rounded-circle thumb-sm float-left mx-4`} alt="bs" src={institution.icon}/>
                         {institution.displayName}
                       </Col>
                       ))

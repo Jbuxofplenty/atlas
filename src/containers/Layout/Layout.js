@@ -97,6 +97,7 @@ class Layout extends React.Component {
                       key={this.props.location.key}
                       classNames="fade"
                       timeout={200}
+                      exit={false}
                     >
                       <Switch>
                         <Route path="/app" exact render={() => <Redirect to="/app/dashboard" />} />
