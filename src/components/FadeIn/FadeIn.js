@@ -12,14 +12,16 @@ const useStyles = makeStyles(styles);
 
 export default function FadeInSection(props) {
   const classes = useStyles();
-  const [isVisible, setVisible] = React.useState(true);
+  const [isVisible, setVisible] = React.useState(false);
+  const [top, setTop] = React.useState(false);
   const domRef = React.useRef();
   React.useEffect(() => {
+    var current = domRef.current;
     const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => setVisible(entry.isIntersecting));
+      entries.forEach(entry => {setVisible(entry.isIntersecting); setTop(entry.boundingClientRect.top > 0)});
     });
-    observer.observe(domRef.current);
-    return () => observer.unobserve(domRef.current);
+    observer.observe(current);
+    return () => observer.unobserve(current);
   }, []);
   var visibleClasses = '';
   if (isVisible) {
@@ -27,10 +29,15 @@ export default function FadeInSection(props) {
       classes.isVisible
     );
   }
+  var topClasses = '';
+  if (top) {
+    topClasses = classNames(
+      classes.top
+    );
+  }
   return (
     <div
-      className={`la la-refresh la-spin `}
-      className={`${classes.fadeInSection} ${visibleClasses}`}
+      className={`${classes.fadeInSection} ${visibleClasses} ${topClasses}`}
       ref={domRef}
     >
       {props.children}
