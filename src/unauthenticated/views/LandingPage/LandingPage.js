@@ -15,6 +15,7 @@ import GridItem from "components/Grid/GridItem.js";
 import Button from "components/CustomButtons/Button.js";
 import HeaderLinks from "containers/UnauthenticatedHeader/HeaderLinks.js";
 import Parallax from "components/Parallax/Parallax.js";
+import FadeIn from "components/FadeIn/FadeIn.js";
 
 import styles from "assets/jss/material-kit-react/views/landingPage.js";
 
@@ -78,9 +79,15 @@ export default function LandingPage(props) {
       </Parallax>
       <div className={classNames(classes.main, classes.mainRaised)}>
         <div className={classes.container}>
-          <ProductSection />
-          <TeamSection />
-          <WorkSection />
+          <FadeIn>
+            <ProductSection />
+          </FadeIn>
+          <FadeIn>
+            <TeamSection />
+          </FadeIn>
+          <FadeIn>
+            <WorkSection />
+          </FadeIn>
         </div>
       </div>
       <Footer authenticated={false} />

@@ -22,6 +22,7 @@ const footerStyle = {
     float: "right!important"
   },
   footer: {
+    ...container,
     textAlign: "center",
     zIndex: "100",
     position: "relative"

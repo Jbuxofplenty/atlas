@@ -33,7 +33,7 @@ const containerFluid = {
 };
 const container = {
   ...containerFluid,
-  "@media (min-width: 400px)": {
+  "@media (min-width: 576px)": {
     maxWidth: "540px"
   },
   "@media (min-width: 768px)": {
