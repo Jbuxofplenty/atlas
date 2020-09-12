@@ -14,12 +14,12 @@ html, body {
 }
 
 body {
-    color: #325050;
-    font-family: Edmondsans;
-    text-align: center;
-    display: inline-block;
-    width: 100%;
-    overflow-x:hidden;
+  color: #325050;
+  font-family: Edmondsans;
+  text-align: center;
+  display: inline-block;
+  width: 100%;
+  overflow-x:hidden;
 }
 
 .footer-button {
@@ -174,4 +174,14 @@ input:focus ~ label, input.used ~ label {
 
 .connect-modal::-webkit-scrollbar {
   display: none;
+}
+
+.successMessage {
+  color: green;
+  text-align: center;
+}
+
+.errorMessage {
+  color: red;
+  text-align: center;
 }

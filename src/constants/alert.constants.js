@@ -3,4 +3,6 @@ export const alertConstants = {
     ERROR: 'ALERT_ERROR',
     VISIBLE: 'ALERT_VISIBLE',
     CLEAR: 'ALERT_CLEAR',
+    PENDING: 'ALERT_PENDING',
+    COMPONENT: 'ALERT_COMPONENT',
 };

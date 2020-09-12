@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { connect } from 'react-redux';
 
 // @material-ui
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles, withStyles } from "@material-ui/core/styles";
 import VerifiedUserIcon from '@material-ui/icons/VerifiedUser';
 
 // core components
@@ -20,6 +20,12 @@ import OAuthObject from 'oauth2';
 import { randomState, postMessageLocation } from 'helpers';
 
 const useStyles = makeStyles(styles);
+
+const SimpleButton = withStyles({
+  label: {
+    color: '#121858',
+  },
+})(Button);
 
 function Connect(props) {
   const [cardAnimaton, setCardAnimation] = React.useState("cardHidden");
@@ -203,9 +209,9 @@ function Connect(props) {
               </CardBody>
               <CardFooter className={classes.cardFooter}>
                 <div className={classes.buttonContainer}>
-                  <Button simple color="primary" size="lg" onClick={props.handleClose}>
+                  <SimpleButton simple color="primary" size="lg" onClick={props.handleClose}>
                     Cancel
-                  </Button>
+                  </SimpleButton>
                   <Button disabled={isSuccess} color="primary" size="lg" onClick={oAuthFlow}>
                     Connect
                   </Button>

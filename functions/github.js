@@ -50,6 +50,7 @@ submitIssue.post('*', async (req, res) => {
     return true;
   })
   .catch(function(error) {
+    console.log("listing issues: ", error.message);
     res.send({ type: 'apiFailure', error: error.message });
     return false;
   });
@@ -66,6 +67,7 @@ submitIssue.post('*', async (req, res) => {
         res.send({ type: 'success', data })
       })
       .catch(function(error) {
+        console.log(error);
         res.send({ type: 'apiFailure', error: error.message })
       });
     }

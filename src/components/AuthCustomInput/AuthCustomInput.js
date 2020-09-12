@@ -26,7 +26,7 @@ export default function AuthCustomInput(props) {
     white,
     inputRootCustomClasses,
     success,
-    fullWidth
+    fullWidth,
   } = props;
 
   const labelClasses = classNames({
@@ -79,6 +79,7 @@ export default function AuthCustomInput(props) {
             root: marginTop,
             disabled: classes.disabled
           }}
+          onBlur={props.onBlur}
           disabled={disabled}
           value={props.value}
           inputProps={{ autoComplete: "on" }}

@@ -38,17 +38,17 @@ class Sidebar extends React.Component {
         }, false);
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.sidebarOpened !== this.props.sidebarOpened) {
-            if (nextProps.sidebarOpened) {
-                this.element.style.height = `${this.element.scrollHeight}px`;
-            } else {
-                this.element.classList.remove(s.sidebarOpen);
-                setTimeout(() => {
-                    this.element.style.height = '';
-                }, 0);
-            }
+    componentDidUpdate(nextProps) {
+      if (nextProps.sidebarOpened !== this.props.sidebarOpened) {
+        if (nextProps.sidebarOpened) {
+          this.element.style.height = `${this.element.scrollHeight}px`;
+        } else {
+          this.element.classList.remove(s.sidebarOpen);
+          setTimeout(() => {
+            this.element.style.height = '';
+          }, 0);
         }
+      }
     }
 
     dismissAlert(id) {

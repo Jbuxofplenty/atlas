@@ -1,10 +1,10 @@
 import React, { Component, Suspense } from 'react';
 import { connect } from 'react-redux';
 import { 
-  BrowserRouter as Router,
   Route, 
   Switch,
   Redirect,
+  withRouter,
 } from 'react-router-dom';
 
 // Utilities
@@ -41,43 +41,41 @@ class App extends Component {
       else if(!user && !isEmpty(this.props.user)) this.props.history.push('/login')
     }.bind(this));
     window.addEventListener("error", function (e) {
-      submitIssue(e.error.message, e.error.stack, true, true);
+      submitIssue(e.error.message, e.error.stack, "bug", true);
     })
   }
   
   render() {
     return (
       <Suspense fallback={<Loader className="center-screen" />}>
-        <Router>
-          <ErrorBoundary>
-              <Switch>
-                {CommonRoutes.map((route, idx) => {
-                  return route.component ? (
-                    <Route
-                      key={idx}
-                      path={route.path}
-                      exact={route.exact}
-                      name={route.name}
-                      component={route.component} />
-                  ) : (null);
-                })}
-                {UnauthenticatedRoutes.map((route, idx) => {
-                  return route.component ? (
-                    <Route
-                      key={idx}
-                      path={route.path}
-                      exact={route.exact}
-                      name={route.name}
-                      component={route.component} />
-                  ) : (null);
-                })}
-                <Route path="/" exact render={() => <Redirect to="/app"/>}/>
-                <PrivateRoute path="/app" dispatch={this.props.dispatch} user={this.state.user} component={LayoutComponent}/>
-                <Redirect from="/home" to="/" />
-                <Redirect to="/404" />
-              </Switch>
-          </ErrorBoundary>
-        </Router>
+        <ErrorBoundary>
+          <Switch>
+            {CommonRoutes.map((route, idx) => {
+              return route.component ? (
+                <Route
+                  key={idx}
+                  path={route.path}
+                  exact={route.exact}
+                  name={route.name}
+                  component={route.component} />
+              ) : (null);
+            })}
+            {UnauthenticatedRoutes.map((route, idx) => {
+              return route.component ? (
+                <Route
+                  key={idx}
+                  path={route.path}
+                  exact={route.exact}
+                  name={route.name}
+                  component={route.component} />
+              ) : (null);
+            })}
+            <Route path="/" exact render={() => <Redirect to="/app"/>}/>
+            <PrivateRoute path="/app" dispatch={this.props.dispatch} user={this.state.user} component={LayoutComponent}/>
+            <Redirect from="/home" to="/" />
+            <Redirect to="/404" />
+          </Switch>
+        </ErrorBoundary>
       </Suspense>
     );
   }
@@ -89,4 +87,4 @@ const mapStateToProps = (state) => {
   };
 }
 
-export default connect(mapStateToProps, null)(App);
+export default connect(mapStateToProps, null)(withRouter(App));

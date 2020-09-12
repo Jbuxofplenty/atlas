@@ -5,6 +5,7 @@ import { Switch, Route, withRouter, Redirect } from 'react-router';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import Hammer from 'rc-hammerjs';
 import { isEmpty } from 'lodash';
+import { toast, ToastContainer } from 'react-toastify';
 
 import Profile from 'authenticated/views/profile/Profile';
 import Settings from 'authenticated/views/settings/Settings';
@@ -22,11 +23,15 @@ import Sidebar from '../Sidebar';
 import BreadcrumbHistory from 'components/BreadcrumbHistory';
 import Loader from 'components/Loader';
 import { openSidebar, closeSidebar } from 'actions/navigation.actions';
+
 import s from './Layout.module.scss';
+import { eThreeActions } from "actions";
 
 // Style for app
 import 'App.scss';
 import 'assets/scss/theme.scss';
+
+const CloseButton = ({closeToast}) => <i onClick={closeToast} className="la la-close notifications-close"/>
 
 class Layout extends React.Component {
   static propTypes = {
@@ -54,9 +59,19 @@ class Layout extends React.Component {
     clearTimeout(this.home);
   }
 
-  home() {
+  async home() {
     if(isEmpty(this.props.user)) {
       this.props.history.replace('/');
+    }
+    else {
+      const hasLocalPrivateKey = await this.props.localKeyPresent();
+      if(!hasLocalPrivateKey) {
+        toast.error(`You do not have a private key stored locally 
+            on your device to decrypt you financial data! You will 
+            need to restore your local key with the backup you made.`, {
+          onClick: () => this.props.history.push('/app/profile')
+        });
+      }
     }
   }
 
@@ -87,6 +102,13 @@ class Layout extends React.Component {
               'sidebar-' + this.props.sidebarVisibility,
             ].join(' ')}
           >
+            <ToastContainer
+                autoClose={15000}
+                hideProgressBar
+                closeButton={<CloseButton/>}
+                pauseOnHover
+                closeOnClick
+            />
             <div className={s.wrap}>
               <AuthenticatedHeader />
               <Sidebar />
@@ -135,4 +157,10 @@ function mapStateToProps(store) {
   };
 }
 
-export default withRouter(connect(mapStateToProps)(Layout));
+const mapDispatchToProps = (dispatch, history) => {
+  return {
+    localKeyPresent: () => dispatch(eThreeActions.localKeyPresent()),
+  };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(withRouter(Layout));

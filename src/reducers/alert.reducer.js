@@ -1,6 +1,13 @@
 import { alertConstants } from '../constants';
 
-export function alert(state = {}, action) {
+const initialState = {
+  type: '',
+  message: '',
+  visible: false,
+  component: '',
+}
+
+export function alert(state = initialState, action) {
   switch (action.type) {
     case alertConstants.SUCCESS:
       return {
@@ -8,10 +15,16 @@ export function alert(state = {}, action) {
         type: 'alert-success',
         message: action.message
       };
+    case alertConstants.PENDING:
+      return {
+        ...state,
+        type: 'alert-pending',
+        visible: action.show,
+      };
     case alertConstants.ERROR:
       return {
         ...state,
-        type: 'alert-danger',
+        type: 'alert-error',
         message: action.message
       };
     case alertConstants.VISIBLE:
@@ -19,8 +32,13 @@ export function alert(state = {}, action) {
         ...state,
         visible: action.show
       };
+    case alertConstants.COMPONENT:
+      return {
+        ...state,
+        component: action.component
+      };
     case alertConstants.CLEAR:
-      return {};
+      return initialState;
     default:
       return state
   }

@@ -58,6 +58,11 @@ export function authentication(state = initialState, action) {
         loggedIn: true,
         user: action.user
       };
+    case userConstants.UPDATE_USER_DATA:
+      return {
+        ...state,
+        userData: action.userData,
+      };
     case userConstants.UPDATE_FAILURE:
       return initialState;
     case userConstants.UPDATE_CAPTCHA:

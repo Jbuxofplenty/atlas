@@ -28,14 +28,31 @@ import s from './Profile.module.scss';
 class Profile extends React.Component {
   constructor(props) {
     super(props);
-    this.toggle = this.toggle.bind(this);
     this.state = {
-      activeTab: '2',
-      password: "",
-      showPassword: false,
-      backedUp: false,
+      activeTab: '3',
+      backedUp: props.backedUp,
     };
 
+    this.toggle = this.toggle.bind(this);
+    this.updateBackedUp = this.updateBackedUp.bind(this);
+  }
+
+  componentDidUpdate(prevProps) {
+    if(this.props.backedUp !== prevProps.backedUp) {
+      this.timeout = setTimeout(
+        this.updateBackedUp, 
+        1000
+      );
+    }
+  }
+
+  updateBackedUp() {
+    var backedUp = this.props.backedUp;
+    this.setState({ backedUp });
+  }
+
+  componentWillUnmount() {
+    clearTimeout(this.updateBackedUp);
   }
 
   toggle(tab) {
@@ -44,18 +61,6 @@ class Profile extends React.Component {
         activeTab: tab,
       });
     }
-  }
-
-  handleChange = prop => event => {
-    this.setState({ [prop]: event.target.value });
-  };
-
-  handleClickShowPassword = () => {
-    this.setState(state => ({ showPassword: !state.showPassword }));
-  };
-
-  deleteBackup() {
-
   }
 
   render() {
@@ -113,7 +118,10 @@ class Profile extends React.Component {
           <TabPane tabId="3" className="py-5">
             <div>
               <PersonalInformation />
-              <ChangePassword />
+              {!this.props.userData.googleCredential && 
+               !this.props.userData.facebookCredential && 
+                <ChangePassword /> 
+              }
             </div>
           </TabPane>
           <TabPane tabId="4" className="py-5">
@@ -130,6 +138,7 @@ class Profile extends React.Component {
 const mapStateToProps = (state) => {
   return {
     backedUp: state.eThree.backedUp,
+    userData: state.authentication.userData,
   };
 }
 

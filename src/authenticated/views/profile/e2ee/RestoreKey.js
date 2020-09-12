@@ -14,10 +14,19 @@ import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import Button from "components/CustomButtons/Button.js";
 
 import s from '../Profile.module.scss';
+import { eThreeActions, alertActions } from "actions";
 
 function RestoreKey(props) {
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState("");
+
+  const isInvalid =
+      password === '';
+      
+  const restoreKey = () => {
+    props.setComponent("restore-key");
+    props.restoreKey(password);
+  }
 
   return (
     <div>
@@ -31,39 +40,50 @@ function RestoreKey(props) {
               password you used to backup your private key initially.
             </div>
           </GridItem>
-          <GridItem xs={12} sm={12}  md={6} lg={5}>
-            <AuthCustomInput
-              id="restore-password"
-              labelText="Backup Password"
-              value={password}
-              white
-              onChange={(e) => setPassword(e.target.value)}
-              fullWidth
-              inputProps={{
-                color: "secondary",
-                type: showPassword ? 'text' : 'password',
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="Toggle password visibility"
-                      onClick={() => setShowPassword(!showPassword)}
-                      color="secondary"
-                    >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </GridItem>
-          <GridItem xs={12} sm={12} lg={2} className={`${s.instructionContainer}`}>
-            <Button 
-              color="primary" 
-              size="lg" 
-              className="mb-lg-3"
-            >
-              Restore key
-            </Button>
+          <GridItem xs={12} sm={12}  md={6} lg={7}>
+            <GridContainer justify="center" className={`${s.gridContainer}`}>
+              <GridItem xs={12} sm={12}  md={6} lg={8}>
+                <AuthCustomInput
+                  id="restore-password"
+                  labelText="Backup Password"
+                  value={password}
+                  white
+                  onChange={(e) => setPassword(e.target.value)}
+                  fullWidth
+                  inputProps={{
+                    color: "secondary",
+                    type: showPassword ? 'text' : 'password',
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="Toggle password visibility"
+                          onClick={() => setShowPassword(!showPassword)}
+                          color="secondary"
+                        >
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </GridItem>
+              <GridItem xs={12} sm={12} lg={4} className={`${s.instructionContainer}`}>
+                <Button 
+                  color="primary" 
+                  size="lg" 
+                  className="mb-lg-3"
+                  onClick={()=> restoreKey()}
+                  disabled={isInvalid}
+                >
+                  Restore key
+                </Button>
+              </GridItem>
+              <GridItem xs={12} sm={12} lg={12} className={`${s.instructionContainer}`}>
+                { props.alertVisible && props.alertType === "alert-pending" && props.alertComponent === "restore-key" && <i className="fas fa-spinner fa-spin" style={{fontSize: 20}}/> }
+                { props.alertVisible && props.alertType === "alert-success" &&  props.alertComponent === "restore-key" && <div className="successMessage">{props.alertMessage}</div> }
+                { props.alertVisible && props.alertType === "alert-error" && props.alertComponent === "restore-key" && <div className="errorMessage">{props.alertMessage}</div> }
+              </GridItem>
+            </GridContainer>
           </GridItem>
         </GridContainer>
       </div>
@@ -73,8 +93,19 @@ function RestoreKey(props) {
 
 function mapStateToProps(store) {
   return {
-    email: store.authentication.user.email,
+    alertType: store.alert.type,
+    alertMessage: store.alert.message,
+    alertVisible: store.alert.visible,
+    alertComponent: store.alert.component,
   };
 }
 
-export default connect(mapStateToProps)(RestoreKey);
+const mapDispatchToProps = (dispatch, history) => {
+  return {
+    restoreKey: (keyPassword) => dispatch(eThreeActions.restoreKey(keyPassword)),
+    visible: (show) => dispatch(alertActions.visible(show)),
+    setComponent: (component) => dispatch(alertActions.component(component)),
+  };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(RestoreKey);

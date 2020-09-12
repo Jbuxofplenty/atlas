@@ -8,6 +8,7 @@ import * as serviceWorker from './serviceWorker';
 import { PersistGate } from 'redux-persist/integration/react';
 import { MuiThemeProvider } from '@material-ui/core/styles';
 import Loader from 'components/Loader';
+import { BrowserRouter as Router} from 'react-router-dom';
 
 import theme from './theme';
 
@@ -19,7 +20,9 @@ ReactDOM.render(
     <Provider store={store} >
       <PersistGate loading={null} persistor={persistor}>
         <Suspense fallback={<Loader className="center-screen" />}>
-          <App />
+          <Router>
+            <App />
+          </Router>
         </Suspense>
       </PersistGate>
     </Provider>

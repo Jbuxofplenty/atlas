@@ -10,10 +10,12 @@ import {
   Dropdown,
   DropdownToggle,
   DropdownMenu,
-  DropdownItem,
-  Badge,
 } from 'reactstrap';
+
+// components
 import UserDropdown from 'components/UserDropdown/UserDropdown';
+import Notifications from 'components/Notifications/Notifications';
+
 import { openSidebar, closeSidebar, changeSidebarPosition, changeSidebarVisibility } from 'actions/navigation.actions';
 
 import s from './AuthenticatedHeader.module.scss';
@@ -31,7 +33,6 @@ class AuthenticatedHeader extends React.Component {
     this.doLogout = this.doLogout.bind(this);
     this.onDismiss = this.onDismiss.bind(this);
     this.toggleMessagesDropdown = this.toggleMessagesDropdown.bind(this);
-    this.toggleSupportDropdown = this.toggleSupportDropdown.bind(this);
     this.toggleSettingsDropdown = this.toggleSettingsDropdown.bind(this);
     this.toggleAccountDropdown = this.toggleAccountDropdown.bind(this);
     this.toggleSidebar = this.toggleSidebar.bind(this);
@@ -40,7 +41,6 @@ class AuthenticatedHeader extends React.Component {
     this.state = {
       visible: true,
       messagesOpen: false,
-      supportOpen: false,
       settingsOpen: false,
       searchFocused: false,
       searchOpen: false,
@@ -64,12 +64,6 @@ class AuthenticatedHeader extends React.Component {
   toggleMessagesDropdown() {
     this.setState({
       messagesOpen: !this.state.messagesOpen,
-    });
-  }
-
-  toggleSupportDropdown() {
-    this.setState({
-      supportOpen: !this.state.supportOpen,
     });
   }
 
@@ -109,20 +103,7 @@ class AuthenticatedHeader extends React.Component {
     return (
       <Navbar className={`d-print-none ${s.root}`}>
         <Nav className="ml-md-0 d-flex nav-responsive">
-          <Dropdown nav isOpen={this.state.supportOpen} toggle={this.toggleSupportDropdown}>
-            <DropdownToggle nav className={`${s.navItem} text-white`}>
-              <i className="fa fa-bell" />
-              <span className={s.count}>1</span>
-            </DropdownToggle>
-            <DropdownMenu right className={`${s.dropdownMenu} ${s.support}`}>
-              <DropdownItem onClick={() => this.props.history.push('/app/profile')}>
-                <Badge color="danger"><i className="fa fa-bell-o" /></Badge>
-                <div className={s.details}>
-                  Backup your private key!
-                </div>
-              </DropdownItem>
-            </DropdownMenu>
-          </Dropdown>
+          <Notifications />
           <NavItem className={`${s.divider} text-white`} />
           <Dropdown nav isOpen={this.state.notificationsOpen} toggle={this.toggleUserDropdown} id="basic-nav-dropdown" className={`${s.notificationsMenu}`} style={{marginRight: 'auto'}}>
             <DropdownToggle nav caret style={{color: "#f4f4f5", padding: 0}}>

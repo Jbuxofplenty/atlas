@@ -26,12 +26,18 @@ class Accounts extends React.Component {
       isLoad: true,
     });
 
-    setTimeout(() => {
-      this.setState({
-        newNotifications: (<NewAccounts />),
-        isLoad: false,
-      });
-    }, 1500);
+    setTimeout(() => this.timerFunc, 1500);
+  }
+
+  timerFunc() {
+    this.setState({
+      newNotifications: (<NewAccounts />),
+      isLoad: false,
+    });
+  }
+
+  componentWillUnmount() {
+    clearTimeout(this.timerFunc);
   }
 
   render() {

@@ -1,24 +1,34 @@
 import { alertConstants } from '../constants';
 
 export const alertActions = {
-    success,
-    error,
-    visible,
-    clear,
+  success,
+  error,
+  visible,
+  clear,
+  pending,
+  component,
 };
 
 function success(message) {
-    return { type: alertConstants.SUCCESS, message };
+  return { type: alertConstants.SUCCESS, message };
+}
+
+function pending(show) {
+  return { type: alertConstants.PENDING, show };
+}
+
+function component(component) {
+  return { type: alertConstants.COMPONENT, component };
 }
 
 function error(message) {
-    return { type: alertConstants.ERROR, message };
+  return { type: alertConstants.ERROR, message };
 }
 
 function visible(show) {
-    return { type: alertConstants.VISIBLE, show };
+  return { type: alertConstants.VISIBLE, show };
 }
 
 function clear() {
-    return { type: alertConstants.CLEAR };
+  return { type: alertConstants.CLEAR };
 }

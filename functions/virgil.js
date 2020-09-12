@@ -40,7 +40,6 @@ const getVirgilJwt = functions.https.onCall(async (_data, context) => {
   // You can use context.auth.token.email, context.auth.token.phone_number or any unique value for identity
   const identity = context.auth.token.uid;
   const token = await generateVirgilJwt(identity);
-  console.log(token)
   return {
     token: token.toString()
   };
