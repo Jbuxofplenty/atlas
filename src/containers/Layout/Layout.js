@@ -52,7 +52,7 @@ class Layout extends React.Component {
   }
 
   componentDidMount() {
-    this.timeout = setTimeout(this.home, 1000);
+    this.timeout = setTimeout(this.home, 3000);
   }
   
   componentWillUnmount() {

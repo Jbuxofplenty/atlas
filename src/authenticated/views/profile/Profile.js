@@ -29,7 +29,7 @@ class Profile extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      activeTab: '3',
+      activeTab: '2',
       backedUp: props.backedUp,
     };
 

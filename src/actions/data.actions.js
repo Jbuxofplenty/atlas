@@ -17,12 +17,12 @@ function dataReset() {
 function getInstitutions() {
   return dispatch => {
     db.collection("institutions").get().then(function(querySnapshot) {
-      var institutions = {};
+      var institutions = [];
       querySnapshot.forEach(function(doc) {
         // doc.data() is never undefined for query doc snapshots
         institutions[doc.id] = doc.data();
-        dispatch(updateInstitutions(institutions));
       });
+      dispatch(updateInstitutions(institutions));
     })
     .catch(error => {
       console.log(error)

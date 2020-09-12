@@ -42,11 +42,16 @@ class Accounts extends React.Component {
   }
 
   componentDidMount() {
-    this.populateInstitutions();
+    this.props.getInstitutions();
   }
 
-  async populateInstitutions() {
-    await this.props.getInstitutions();
+  componentDidUpdate(prevProps) {
+    if(this.props.institutions !== prevProps.institutions) {
+      this.populateInstitutions();
+    }
+  }
+
+  populateInstitutions() {
     var popularInstitutions = [];
     var filteredInstitutions = [];
     var allInstitutions = [];
