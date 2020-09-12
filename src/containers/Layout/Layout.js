@@ -7,6 +7,7 @@ import Hammer from 'rc-hammerjs';
 import { isEmpty } from 'lodash';
 
 import Profile from 'authenticated/views/profile/Profile';
+import Settings from 'authenticated/views/settings/Settings';
 import Accounts from 'authenticated/views/accounts/Accounts';
 import UINotifications from 'authenticated/views/notifications';
 import Orders from 'authenticated/views/orders/Orders';
@@ -103,6 +104,7 @@ class Layout extends React.Component {
                         <Route path="/app" exact render={() => <Redirect to="/app/dashboard" />} />
                         <Route path="/app/dashboard" exact component={Dashboard} />
                         <Route path="/app/profile" exact component={Profile} />
+                        <Route path="/app/settings" exact component={Settings} />
                         <Route path="/app/accounts" exact component={Accounts} />
                         <Route path="/app/notifications" exact component={UINotifications} />
                         <Route path="/app/charts" exact component={Charts} />

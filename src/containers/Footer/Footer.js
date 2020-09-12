@@ -26,7 +26,8 @@ export default function Footer(props) {
   const { whiteFont } = props;
   const footerClasses = classNames({
     [classes.footer]: true,
-    [classes.footerWhiteFont]: whiteFont
+    [classes.footerWhiteFont]: whiteFont,
+    "footer-container": true
   });
 
   // Modal

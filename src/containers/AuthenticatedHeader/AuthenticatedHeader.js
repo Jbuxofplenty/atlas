@@ -132,7 +132,7 @@ class AuthenticatedHeader extends React.Component {
               </span>
             </DropdownToggle>
             <DropdownMenu right className={`${s.notificationsWrapper} py-0 animate__animated animate__faster animate__fadeInUp`}>
-              <UserDropdown />
+              <UserDropdown toggle={this.toggleUserDropdown} />
             </DropdownMenu>
           </Dropdown>
           <NavItem className="d-md-none">

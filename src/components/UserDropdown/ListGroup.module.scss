@@ -52,7 +52,22 @@
   }
 }
 
-.notificationIcon {
+.cardFooter {
+  padding-top: 14px;
+  padding-bottom: 14px;
+  border-top: none;
+}
+
+.btnNotificationsReload {
+  color: $navbar-link-color;
+  outline: none;
+
+  i::before {
+    top: 2px;
+  }
+}
+  
+  .notificationIcon {
   margin-right: 1rem;
   float: left;
 

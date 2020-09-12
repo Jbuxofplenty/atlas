@@ -14,6 +14,7 @@ import styles from "assets/jss/material-kit-react/components/authCustomInputStyl
 const useStyles = makeStyles(styles);
 
 export default function AuthCustomInput(props) {
+  const disabled = props.disabled ? true : false;
   const classes = useStyles();
   const {
     formControlProps,
@@ -78,6 +79,8 @@ export default function AuthCustomInput(props) {
             root: marginTop,
             disabled: classes.disabled
           }}
+          disabled={disabled}
+          value={props.value}
           inputProps={{ autoComplete: "on" }}
           onChange={props.onChange}
           id={id}

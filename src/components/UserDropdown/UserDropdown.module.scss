@@ -21,18 +21,3 @@
       flex: 1 1;
   }
 }
-
-.cardFooter {
-  padding-top: 14px;
-  padding-bottom: 14px;
-  border-top: none;
-}
-
-.btnNotificationsReload {
-  color: $navbar-link-color;
-  outline: none;
-
-  i::before {
-    top: 2px;
-  }
-}
