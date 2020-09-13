@@ -72,6 +72,7 @@ function TwoFactorAuth(props) {
       }
     }
     else {
+      console.log(props.uid)
       db.collection("users").doc(props.uid).update({ twoFactorAuth });
     }
     props.updateUserData(userData);

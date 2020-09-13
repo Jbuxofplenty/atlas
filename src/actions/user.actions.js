@@ -55,9 +55,10 @@ function login(user, history) {
   return async dispatch => {
     var tempUser = {};
     if (user) {
+      user = user.user;
       await eThreeActions.InitializeEThree(false);
       dispatch(request(true, user));
-      db.collection("users").doc(user.user.uid).get().then(function (snapshot) {
+      db.collection("users").doc(user.uid).get().then(function (snapshot) {
         tempUser = snapshot.data();
         let backedUp = snapshot.data().backedUp;
         dispatch(request(false, user));
@@ -270,7 +271,7 @@ function register(email, firstName, password, history) {
       dispatch(request, true, {});
       auth.createUserWithEmailAndPassword(email, password).then(async (user) => {
         await eThreeActions.InitializeEThree(true);
-        db.collection("users").doc(user.user.uid).set({
+        var tempUser = {
           email: email,
           firstName: firstName,
           lastName: "",
@@ -284,10 +285,15 @@ function register(email, firstName, password, history) {
             lastShownMilli: 0,
           },
           financialData: {},
-        });
-        dispatch(login(user, history));
+        }
+        db.collection("users").doc(user.user.uid).set(tempUser);
+        let backedUp = tempUser.backedUp;
+        dispatch(request(false, user.user));
+        dispatch(success(true, user.user, tempUser));
+        dispatch(updateBackedUp(backedUp));
         dispatch(alertActions.visible(false));
         dispatch(alertActions.clear());
+        history.push('/app/dashboard');
       }).catch(function(error) {
       dispatch(loginFailure(true, error.toString(), {}, {}));
       dispatch(alertActions.error(error.toString()));
@@ -295,6 +301,7 @@ function register(email, firstName, password, history) {
   };
 
   function request(isLoginPending, user) { return { type: userConstants.LOGIN_REQUEST, isLoginPending, user } }
+  function success(isLoginSuccess, user, userData) { return { type: userConstants.LOGIN_SUCCESS, isLoginSuccess, user, userData } }
 }
 
 function forgotPassword(emailAddress) {
