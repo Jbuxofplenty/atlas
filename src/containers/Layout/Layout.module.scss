@@ -58,3 +58,11 @@
   bottom: 15px;
   color: $text-muted;
 }
+
+.toastContainer {
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  align-items: center;
+  flex-direction: column;
+}

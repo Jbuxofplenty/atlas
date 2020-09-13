@@ -13,7 +13,8 @@ export function alert(state = initialState, action) {
       return {
         ...state,
         type: 'alert-success',
-        message: action.message
+        message: action.message,
+        visible: true,
       };
     case alertConstants.PENDING:
       return {
@@ -25,7 +26,8 @@ export function alert(state = initialState, action) {
       return {
         ...state,
         type: 'alert-error',
-        message: action.message
+        message: action.message,
+        visible: true,
       };
     case alertConstants.VISIBLE:
       return {

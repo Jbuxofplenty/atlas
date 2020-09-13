@@ -73,6 +73,7 @@ export default function WorkSection(props) {
                 <CustomInput
                   labelText="Your Name"
                   id="name"
+                  value={name}
                   onChange={(e) => setName(e.target.value)}
                   formControlProps={{
                     fullWidth: true
@@ -83,6 +84,7 @@ export default function WorkSection(props) {
                 <CustomInput
                   labelText="Your Email"
                   id="email"
+                  value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   error={!emailValid}
                   formControlProps={{
@@ -93,6 +95,7 @@ export default function WorkSection(props) {
               <CustomInput
                 labelText="Your Message"
                 id="message"
+                value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 formControlProps={{
                   fullWidth: true,

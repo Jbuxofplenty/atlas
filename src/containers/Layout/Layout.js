@@ -26,6 +26,7 @@ import { openSidebar, closeSidebar } from 'actions/navigation.actions';
 
 import s from './Layout.module.scss';
 import { eThreeActions } from "actions";
+import { apiBaseUrl } from 'helpers';
 
 // Style for app
 import 'App.scss';
@@ -48,18 +49,73 @@ class Layout extends React.Component {
   constructor(props) {
     super(props);
     this.handleSwipe = this.handleSwipe.bind(this);
-    this.home = this.home.bind(this);
+    this.userCheck = this.userCheck.bind(this);
+    this.whileYouWereAway = this.whileYouWereAway.bind(this);
   }
 
   componentDidMount() {
-    this.timeout = setTimeout(this.home, 3000);
+    this.userTimeout = setTimeout(this.userCheck, 5000);
+    this.whileYouWereAwayInterval = setInterval(this.whileYouWereAway, 5000);
   }
   
   componentWillUnmount() {
-    clearTimeout(this.home);
+    clearTimeout(this.userTimeout);
+    clearInterval(this.whileYouWereAwayInterval);
   }
 
-  async home() {
+  whileYouWereAway() {
+    let userData = this.props.userData;
+    if(userData) {
+      let whileYouWereAway = userData.whileYouWereAway;
+      if(whileYouWereAway !== undefined && !isEmpty(this.props.user)) {
+        clearInterval(this.whileYouWereAwayInterval);
+        const now = new Date();
+        const currentTime = now.getTime();
+        let lastLoggedInDifference = currentTime - this.props.user.lastLoginAt;
+        let oneDayMilli = 86400000;
+        if(whileYouWereAway.enabled && lastLoggedInDifference > oneDayMilli) {
+          let uid = this.props.user.uid;
+          fetch(apiBaseUrl() + 'github/whileYouWereAway/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              uid,
+              whileYouWereAway
+            })
+          })
+          .then((response) => response.json())
+          .then((responseJson) => {
+            if(responseJson.commitMessages > 0) {
+              toast.info(
+                <div className={s.toastContainer}>
+                  <strong>While You Were Away!</strong><br/>
+                  {this.renderCommits(responseJson.commitMessages)}
+                </div>, {
+                position: toast.POSITION.TOP_CENTER,
+                autoClose: 10000
+              });
+            }
+          })
+          .catch((e) => {
+            toast.error(`While You Were Away\n ${e.message}`, {
+              position: toast.POSITION.TOP_CENTER,
+              autoClose: 3000
+            });
+          });
+        }
+      }
+    }
+  }
+
+  renderCommits(commits) {
+    return commits.map((commitText) => 
+      <div key={commitText} className={s.commitItem}>{commitText}</div>
+    )
+  }
+
+  async userCheck() {
     if(isEmpty(this.props.user)) {
       this.props.history.replace('/');
     }
@@ -69,7 +125,8 @@ class Layout extends React.Component {
         toast.error(`You do not have a private key stored locally 
             on your device to decrypt you financial data! You will 
             need to restore your local key with the backup you made.`, {
-          onClick: () => this.props.history.push('/app/profile')
+          onClick: () => this.props.history.push('/app/profile',),
+          autoClose: 15000
         });
       }
     }
@@ -103,7 +160,6 @@ class Layout extends React.Component {
             ].join(' ')}
           >
             <ToastContainer
-                autoClose={15000}
                 hideProgressBar
                 closeButton={<CloseButton/>}
                 pauseOnHover
@@ -151,6 +207,7 @@ class Layout extends React.Component {
 function mapStateToProps(store) {
   return {
     user: store.authentication.user,
+    userData: store.authentication.userData,
     sidebarOpened: store.navigation.sidebarOpened,
     sidebarPosition: store.navigation.sidebarPosition,
     sidebarVisibility: store.navigation.sidebarVisibility,

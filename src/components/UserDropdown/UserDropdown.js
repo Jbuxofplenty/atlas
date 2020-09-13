@@ -31,7 +31,7 @@ class UserDropdown extends React.Component {
 
     switch (this.state.notificationsTabSelected) {
       case 1:
-        notificationsTab = (<Settings toggle={this.props.toggle} />);
+        notificationsTab = (<Settings toggle={this.props.toggle} openLogoutModal={this.props.openLogoutModal} />);
         break;
       case 2:
         notificationsTab = (<Accounts toggle={this.props.toggle} />);

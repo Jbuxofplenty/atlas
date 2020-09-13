@@ -26,11 +26,13 @@ auth.use(getDefault);
 
 const { 
   submitIssue,
+  whileYouWereAway,
 } = require('./github');
 
 // Create an Express object and routes (in order)
 const github = express();
 github.use('/submitIssue', submitIssue);
+github.use('/whileYouWereAway', whileYouWereAway);
 github.use(getDefault);
 
 ///////////////////////////////////////////////////////////////////

@@ -43,7 +43,8 @@ class Notifications extends React.Component {
   componentDidUpdate(prevProps) {
     if(this.props.backedUp !== prevProps.backedUp) {
       this.updateNumNotifications(this.props);
-      this.setState({ backedUp: this.props.backedUp });
+      let backedUp = this.props.backedUp;
+      this.setState({ backedUp });
     }
   }
 

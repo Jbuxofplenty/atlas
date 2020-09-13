@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { dataActions } from 'actions';
+import { dataActions, eThreeActions } from 'actions';
 import {
   TabContent, 
   TabPane, 
@@ -12,6 +12,7 @@ import classnames from 'classnames';
 
 // e2ee
 import BackupKey from "./e2ee/BackupKey";
+import RotateKey from "./e2ee/RotateKey";
 import RestoreKey from "./e2ee/RestoreKey";
 import UpdatePassword from "./e2ee/UpdatePassword";
 import DeleteBackup from "./e2ee/DeleteBackup";
@@ -29,21 +30,28 @@ class Profile extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      activeTab: '2',
+      activeTab: '4',
       backedUp: props.backedUp,
+      localKeyPresent: false,
     };
 
     this.toggle = this.toggle.bind(this);
     this.updateBackedUp = this.updateBackedUp.bind(this);
+    this.newKeyGenerated = this.newKeyGenerated.bind(this);
+    this.checkLocalKeyPresent = this.checkLocalKeyPresent.bind(this);
   }
 
   componentDidUpdate(prevProps) {
     if(this.props.backedUp !== prevProps.backedUp) {
       this.timeout = setTimeout(
         this.updateBackedUp, 
-        1000
+        3000
       );
     }
+  }
+
+  componentDidMount() {
+    this.checkLocalKeyPresent();
   }
 
   updateBackedUp() {
@@ -52,7 +60,20 @@ class Profile extends React.Component {
   }
 
   componentWillUnmount() {
-    clearTimeout(this.updateBackedUp);
+    clearTimeout(this.timeout);
+  }
+
+  async checkLocalKeyPresent() {
+    let localKeyPresent = await this.props.localKeyPresent();
+    this.setState({ localKeyPresent });
+  }
+
+  newKeyGenerated() {
+    clearTimeout(this.timeout);
+    this.timeout = setTimeout(
+      this.checkLocalKeyPresent, 
+      3000
+    );
   }
 
   toggle(tab) {
@@ -60,6 +81,28 @@ class Profile extends React.Component {
       this.setState({
         activeTab: tab,
       });
+    }
+  }
+
+  renderEncryption() {
+    if(!this.state.backedUp && !this.state.localKeyPresent) {
+      return (
+        <RotateKey newKeyGenerated={this.newKeyGenerated} /> 
+      )
+    }
+    else if(!this.state.backedUp && this.state.localKeyPresent) {
+      return (
+        <BackupKey />
+      )
+    }
+    else {
+      return (
+        <div>
+          <RestoreKey />
+          <UpdatePassword />
+          <DeleteBackup />
+        </div>
+      )
     }
   }
 
@@ -104,15 +147,7 @@ class Profile extends React.Component {
           {/* tab #2 */}
           <TabPane tabId="2" className="py-5">
             <div>
-              {!this.state.backedUp ?
-                <BackupKey />
-                :
-                <div>
-                  <RestoreKey />
-                  <UpdatePassword />
-                  <DeleteBackup />
-                </div>
-              }
+              {this.renderEncryption()}
             </div>
           </TabPane>
           <TabPane tabId="3" className="py-5">
@@ -145,6 +180,7 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch, history) => {
   return {
     getInstitutions: () => dispatch(dataActions.getInstitutions()),
+    localKeyPresent: () => dispatch(eThreeActions.localKeyPresent()),
   };
 }
 

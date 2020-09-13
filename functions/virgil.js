@@ -1,7 +1,6 @@
 const { JwtGenerator } = require('virgil-sdk');
 const { initCrypto, VirgilCrypto, VirgilAccessTokenSigner } = require('virgil-crypto');
 const functions = require('firebase-functions');
-const admin = require('firebase-admin');
 
 async function getJwtGenerator() {
   await initCrypto();
@@ -27,8 +26,6 @@ async function generateVirgilJwt(identity) {
   const generator = await getJwtGenerator();
   return generator.generateToken(identity);
 }
-
-admin.initializeApp();
 
 const getVirgilJwt = functions.https.onCall(async (_data, context) => {
   if (!context.auth) {

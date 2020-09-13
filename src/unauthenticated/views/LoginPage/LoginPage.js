@@ -2,15 +2,21 @@ import React, { useState, useEffect } from "react";
 import { useHistory } from "react-router";
 import { connect } from 'react-redux';
 import { alertActions, userActions } from 'actions';
+
 // @material-ui/core components
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles, withStyles } from "@material-ui/core/styles";
 import InputAdornment from "@material-ui/core/InputAdornment";
+
 // @material-ui/icons
 import Email from "@material-ui/icons/Email";
 import Lock from "@material-ui/icons/Lock";
+import Modal from '@material-ui/core/Modal';
+
+
 // @font-awesome/icons
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFacebook, faGooglePlusG } from '@fortawesome/free-brands-svg-icons';
+
 // core components
 import UnauthenticatedHeader from "containers/UnauthenticatedHeader/UnauthenticatedHeader.js";
 import HeaderLinks from "containers/UnauthenticatedHeader/HeaderLinks.js";
@@ -24,6 +30,9 @@ import CardHeader from "components/Card/CardHeader.js";
 import CardFooter from "components/Card/CardFooter.js";
 import CustomInput from "components/CustomInput/CustomInput.js";
 import ReCaptcha from "components/ReCaptcha/ReCaptcha.js";
+import TwoFactorAuthModal from 'components/TwoFactorAuthModal/TwoFactorAuthModal';
+
+import { auth, firebase } from "../../../firebase";
 
 import styles from "assets/jss/material-kit-react/views/loginPage.js";
 
@@ -44,7 +53,13 @@ import image from "assets/img/bg7.jpg";
 
 const useStyles = makeStyles(styles);
 
-function SignupPage(props) {
+const SimpleButton = withStyles({
+  label: {
+    color: '#121858',
+  },
+})(Button);
+
+function LoginPage(props) {
   const history = useHistory();
   const [cardAnimaton, setCardAnimation] = React.useState("cardHidden");
   setTimeout(function() {
@@ -54,7 +69,7 @@ function SignupPage(props) {
   // Component did mount
   useEffect(() => {
     props.loginReset();
-    props.errorVisible(false);
+    props.visible(false);
     props.error("");
   // eslint-disable-next-line
   }, []);
@@ -67,6 +82,8 @@ function SignupPage(props) {
 
   const [emailError, setEmailError] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [resolver, setResolver] = useState(null);
 
   useEffect(() => {
     setHuman(props.human);
@@ -88,12 +105,31 @@ function SignupPage(props) {
       email === '' ||
       password === '';
 
+  const validate = (email, password) => {
+    var errorMessage = "";
+    var re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@(([[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    if (!re.test(String(email).toLowerCase())) {
+      errorMessage = "Email formatted incorrectly!";
+      props.error(errorMessage);
+      props.loginFailure(true, errorMessage, null, null);
+      setEmailError(true);
+      return false;
+    }
+    if (password.length < 6) {
+      errorMessage = "Password not at least 6 characters long!";
+      props.error(errorMessage);
+      props.loginFailure(true, errorMessage, null, null);
+      setPasswordError(true);
+      return false;
+    }
+    return true;
+  }
+
   const submit = () => {
-    props.errorVisible(false);
     props.error("");
+    props.visible(false);
     if(!human) {
       var errorMessage = "Please complete the captcha to prove you're a human!";
-      props.errorVisible(true);
       props.error(errorMessage);
       props.loginFailure(true, errorMessage, null, null);
       return;
@@ -103,49 +139,96 @@ function SignupPage(props) {
     if(!validate(email, password)) {
       return;
     }
-    props.login(email, password, history);
-  }
-
-  const validate = (email, password) => {
-    var errorMessage = "";
-    var re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@(([[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    if (!re.test(String(email).toLowerCase())) {
-      errorMessage = "Email formatted incorrectly!";
-      props.errorVisible(true);
-      props.error(errorMessage);
-      props.loginFailure(true, errorMessage, null, null);
-      setEmailError(true);
-      return false;
-    }
-    if (password.length < 6) {
-      errorMessage = "Password not at least 6 characters long!";
-      props.errorVisible(true);
-      props.error(errorMessage);
-      props.loginFailure(true, errorMessage, null, null);
-      setPasswordError(true);
-      return false;
-    }
-    return true;
+    
+    auth.signInWithEmailAndPassword(email, password)
+      .then(user => {
+        props.login(user, history);
+      })
+      .catch(e => {
+        props.error(e.message);
+        props.loginFailure(true, e.message, {}, {});
+      });
   }
 
   const loginFacebook = (e) => {
     e.preventDefault(); 
-    props.errorVisible(false);
     props.error("");
+    props.visible(false);
     props.loginReset();
-    props.facebookLogin(history);
+    
+    var provider = new firebase.auth.FacebookAuthProvider();
+    auth.signInWithPopup(provider).then(async function(result) {
+      props.facebookLogin(result, history);
+    }).catch(function(error) {
+      if (error.code === 'auth/multi-factor-auth-required') {
+        // The user is a multi-factor user. Second factor challenge is required.
+        var resolver = error.resolver;
+        if(resolver.hints.length > 0) {
+          setResolver(resolver);
+          handleOpen();
+        }
+        else {
+          props.error(error.toString());
+          props.loginFailure(true, error.toString(), {}, {});
+        }
+      }
+      else {
+        props.error(error.toString());
+        props.loginFailure(true, error.toString(), {}, {});
+      }
+    });
   }
 
   const loginGoogle = (e) => {
     e.preventDefault(); 
-    props.errorVisible(false);
     props.error("");
+    props.visible(false);
     props.loginReset();
-    props.googleLogin(history);
+    
+    var provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider).then(async function(result) {
+      props.googleLogin(result, history);
+    }).catch(function(error) {
+      if (error.code === 'auth/multi-factor-auth-required') {
+        // The user is a multi-factor user. Second factor challenge is required.
+        var resolver = error.resolver;
+        if(resolver.hints.length > 0) {
+          setResolver(resolver);
+          handleOpen();
+        }
+        else {
+          props.error(error.toString());
+          props.loginFailure(true, error.toString(), {}, {});
+        }
+      }
+      else {
+        props.error(error.toString());
+        props.loginFailure(true, error.toString(), {}, {});
+      }
+    });
   }
+
+  // Modal
+  const handleOpen = () => {
+    if(open) return;
+    props.visible(false);
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
 
   return (
     <div>
+      <Modal
+        open={open}
+        onClose={handleClose}
+      >
+        <div>
+          <TwoFactorAuthModal resolver={resolver} handleClose={handleClose} enroll={false} />
+        </div>
+      </Modal>
       <UnauthenticatedHeader
         absolute
         color="transparent"
@@ -198,6 +281,7 @@ function SignupPage(props) {
                         fullWidth: true
                       }}
                       error={emailError}
+                      value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       inputProps={{
                         type: "email",
@@ -214,6 +298,7 @@ function SignupPage(props) {
                       formControlProps={{
                         fullWidth: true
                       }}
+                      value={password}
                       error={passwordError}
                       onChange={(e) => setPassword(e.target.value)}
                       inputProps={{
@@ -229,12 +314,12 @@ function SignupPage(props) {
                     <ReCaptcha show={!human} signUp={true} />
                   </CardBody>
                   <CardFooter className={classes.cardFooter}>
-                    <Button disabled={isInvalid} simple color="primary" size="lg" onClick={submit}>
+                    <SimpleButton disabled={isInvalid} simple color="primary" size="lg" onClick={submit}>
                       Login
-                    </Button>
-                    { props.isLoginPending  && <div className={classes.message}>Please wait...</div> }
-                    { props.isLoginSuccess  && <div className={classes.successMessage}>Success.</div> }
-                    { (props.loginError || props.errorVisible) && <div className={classes.errorMessage}>{props.errorMessage}</div> }
+                    </SimpleButton>
+                    { !open && props.isLoginPending  && <div className={classes.message}>Please wait...</div> }
+                    { !open && props.isLoginSuccess  && <div className={classes.successMessage}>Success.</div> }
+                    { !open && (props.loginError || props.visible) && <div className={classes.errorMessage}>{props.errorMessage}</div> }
                   </CardFooter>
                 </form>
               </Card>
@@ -262,16 +347,16 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch, history) => {
   return {
-    errorVisible: (show) => dispatch(alertActions.visible(show)),
+    visible: (show) => dispatch(alertActions.visible(show)),
     testReCaptcha: (value, signUp, latestAction) => dispatch(userActions.testReCaptcha(value, signUp, latestAction)),
     error: (errorMessage) => dispatch(alertActions.error(errorMessage)),
     loginFailure: (loginError, error, user, userData) => dispatch(userActions.loginFailure(loginError, error, user, userData)),
     loginReset: () => dispatch(userActions.loginReset()),
-    login: (email, password, history) => dispatch(userActions.login(email, password, history)),
-    googleLogin: (history) => dispatch(userActions.googleLogin(history)),
-    facebookLogin: (history) => dispatch(userActions.facebookLogin(history)),
+    login: (user, history) => dispatch(userActions.login(user, history)),
+    googleLogin: (result, history) => dispatch(userActions.googleLogin(result, history)),
+    facebookLogin: (result, history) => dispatch(userActions.facebookLogin(result, history)),
   };
 }
 
-const Signup = connect(mapStateToProps, mapDispatchToProps)(SignupPage);
-export default Signup;
+const Login = connect(mapStateToProps, mapDispatchToProps)(LoginPage);
+export default Login;

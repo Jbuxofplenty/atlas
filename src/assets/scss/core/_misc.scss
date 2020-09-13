@@ -134,3 +134,46 @@ form {
       overflow-x: hidden !important;
   }
 }
+
+.twofa-modal {
+  margin: auto;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  width: 400px;
+  height: 90%;
+  max-height: 500px;
+  overflow: scroll;
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.twofa-modal::-webkit-scrollbar {
+  display: none;
+}
+
+.h-50 {
+  height: 50%;
+}
+
+.align-self-center {
+  align-self: center;
+}
+
+.mt-5 {
+  margin-top: 2em !important;
+}
+
+.twofa-input {
+  margin-left: 2em !important;
+  margin-right: 2em !important;
+}
+
+.successMessage {
+  color: green;
+  text-align: center;
+}
+
+.errorMessage {
+  color: red;
+  text-align: center;
+}

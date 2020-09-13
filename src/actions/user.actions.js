@@ -1,6 +1,6 @@
 import { userConstants, eThreeConstants } from '../constants';
 import { alertActions, dataActions, eThreeActions } from './';
-import { auth, db, firebase } from "../firebase";
+import { auth, db } from "../firebase";
 import { apiBaseUrl } from 'helpers';
 
 export const userActions = {
@@ -51,44 +51,31 @@ function updateUserData(userData) {
 }
 
 // Login/Signup
-function login(email, password, history) {
-  return dispatch => {
-    dispatch(request, true, {});
-    auth
-      .signInWithEmailAndPassword(email, password)
-      .then(async user => {
-        var tempUser = {};
-        if (user) {
-          await eThreeActions.InitializeEThree(false);
-          dispatch(request(true, email));
-          db.collection("users").doc(user.user.uid).get().then(function (snapshot) {
-            tempUser["email"] = snapshot.data().email;
-            tempUser["username"] = snapshot.data().username;
-            tempUser["phone"] = snapshot.data().phone;
-            tempUser["firstName"] = snapshot.data().firstName;
-            tempUser["lastName"] = snapshot.data().lastName;
-            tempUser["headshot"] = snapshot.data().headshot;
-            tempUser["provider"] = snapshot.data().provider;
-            let backedUp = snapshot.data().backedUp;
-            dispatch(request(false, email));
-            dispatch(success(true, user, tempUser));
-            dispatch(updateBackedUp(backedUp));
-            history.push('/app/dashboard');
-          },
-            error => {
-              dispatch(request(false, email));
-              dispatch(loginFailure(true, error.toString(), {}, {}));
-              dispatch(alertActions.error(error.toString()));
-              dispatch(alertActions.visible(true));
-            });
-        }
+function login(user, history) {
+  return async dispatch => {
+    var tempUser = {};
+    if (user) {
+      await eThreeActions.InitializeEThree(false);
+      dispatch(request(true, user));
+      db.collection("users").doc(user.user.uid).get().then(function (snapshot) {
+        tempUser = snapshot.data();
+        let backedUp = snapshot.data().backedUp;
+        dispatch(request(false, user));
+        dispatch(success(true, user, tempUser));
+        dispatch(updateBackedUp(backedUp));
+        history.push('/app/dashboard');
       },
-      error => {
-          dispatch(request(false, email));
+        error => {
+          dispatch(request(false, user));
           dispatch(loginFailure(true, error.toString(), {}, {}));
           dispatch(alertActions.error(error.toString()));
-          dispatch(alertActions.visible(true));
         });
+      }
+      else{
+        dispatch(request(false, {}));
+        dispatch(loginFailure(true, "Passed user is null!", {}, {}));
+        dispatch(alertActions.error("Passed user is null!"));
+      };
 
   };
 
@@ -96,132 +83,124 @@ function login(email, password, history) {
   function success(isLoginSuccess, user, userData) { return { type: userConstants.LOGIN_SUCCESS, isLoginSuccess, user, userData } }
 }
 
-function facebookLogin(history) {
-  return dispatch => {
-    var provider = new firebase.auth.FacebookAuthProvider();
-    auth.signInWithPopup(provider).then(async function(result) {
-      var token = result.credential.accessToken;
-      var user = result.user;
-      var tempUser = {};
-      if (user) {
-        let createdAt = new Date(user.metadata.creationTime);
-        let lastSignInTime = new Date(user.metadata.lastSignInTime);
-        if(createdAt.getTime() === lastSignInTime.getTime()) {
-          await eThreeActions.InitializeEThree(true);
+function facebookLogin(result, history) {
+  return async dispatch => {
+    var token = result.credential.accessToken;
+    var user = result.user;
+    var tempUser = {};
+    if (user) {
+      let createdAt = new Date(user.metadata.creationTime);
+      let lastSignInTime = new Date(user.metadata.lastSignInTime);
+      if(createdAt.getTime() === lastSignInTime.getTime()) {
+        await eThreeActions.InitializeEThree(true);
+      }
+      else {
+        await eThreeActions.InitializeEThree(false);
+      }
+      let backedUp = false;
+      db.collection("users").doc(user.uid).get().then(function (snapshot) {
+        if(snapshot.data()) {
+          tempUser = snapshot.data();
+          tempUser["facebookCredential"] = token;
+          backedUp = snapshot.data().backedUp;
         }
         else {
-          await eThreeActions.InitializeEThree(false);
-        }
-        let backedUp = false;
-        db.collection("users").doc(user.uid).get().then(function (snapshot) {
-          if(snapshot.data()) {
-            tempUser["email"] = snapshot.data().email;
-            tempUser["username"] = snapshot.data().username;
-            tempUser["phone"] = snapshot.data().phone;
-            tempUser["firstName"] = snapshot.data().firstName;
-            tempUser["lastName"] = snapshot.data().lastName;
-            tempUser["headshot"] = snapshot.data().headshot;
-            tempUser["provider"] = snapshot.data().provider;
-            tempUser["facebookCredential"] = token;
-            backedUp = snapshot.data().backedUp;
-          }
-          else {
-            db.collection("users").doc(user.uid).set({
-              email: user.email,
-              username: user.displayName,
-              firstName: "",
-              lastName: "",
-              phone: "",
-              headshot: user.photoURL,
-              backedUp: false,
-              provider: "facebook",
-            });
-          }
-          dispatch(request(false, user));
-          dispatch(success(true, user, tempUser));
-          dispatch(updateBackedUp(backedUp));
-          history.push('/app/dashboard');
-        },
-          error => {
-            dispatch(request(false, {}));
-            dispatch(loginFailure(true, error.toString(), {}, {}));
-            dispatch(alertActions.error(error.toString()));
-            dispatch(alertActions.visible(true));
+          db.collection("users").doc(user.uid).set({
+            email: user.email,
+            username: user.displayName,
+            firstName: "",
+            lastName: "",
+            phoneNumber: "",
+            headshot: user.photoURL,
+            backedUp: false,
+            provider: "facebook",
+            twoFactorAuth: false,
+            whileYouWereAway: {
+              enabled: true,
+              lastShownMilli: 0,
+            },
+            financialData: {},
           });
-      }
-    }).catch(function(error) {
+        }
+        dispatch(request(false, user));
+        dispatch(success(true, user, tempUser));
+        dispatch(updateBackedUp(backedUp));
+        history.push('/app/dashboard');
+      },
+        error => {
+          dispatch(request(false, {}));
+          dispatch(loginFailure(true, error.toString(), {}, {}));
+          dispatch(alertActions.error(error.toString()));
+        });
+    }
+    else {
       dispatch(request(false, {}));
-      dispatch(loginFailure(true, error.toString(), {}, {}));
-      dispatch(alertActions.error(error.toString()));
-      dispatch(alertActions.visible(true));
-    });
+      dispatch(loginFailure(true, "Passed user is null!", {}, {}));
+      dispatch(alertActions.error("Passed user is null!"));
+    }
   };
 
   function request(isLoginPending, user) { return { type: userConstants.LOGIN_REQUEST, isLoginPending, user } }
   function success(isLoginSuccess, user, userData) { return { type: userConstants.LOGIN_SUCCESS, isLoginSuccess, user, userData } }
 }
 
-function googleLogin(history) {
-  return dispatch => {
-    var provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider).then(async function(result) {
-      // This gives you a Google Access Token. You can use it to access the Google API.
-      var token = result.credential.accessToken;
-      // The signed-in user info.
-      var user = result.user;
-      var tempUser = {};
-      if (user) {
-        let createdAt = new Date(user.metadata.creationTime);
-        let lastSignInTime = new Date(user.metadata.lastSignInTime);
-        if(createdAt.getTime() === lastSignInTime.getTime()) {
-          await eThreeActions.InitializeEThree(true);
+function googleLogin(result, history) {
+  return async dispatch => {
+    // This gives you a Google Access Token. You can use it to access the Google API.
+    var token = result.credential.accessToken;
+    // The signed-in user info.
+    var user = result.user;
+    var tempUser = {};
+    if (user) {
+      let createdAt = new Date(user.metadata.creationTime);
+      let lastSignInTime = new Date(user.metadata.lastSignInTime);
+      if(createdAt.getTime() === lastSignInTime.getTime()) {
+        await eThreeActions.InitializeEThree(true);
+      }
+      else {
+        await eThreeActions.InitializeEThree(false);
+      }
+      let backedUp = false;
+      db.collection("users").doc(user.uid).get().then(function (snapshot) {
+        if(snapshot.data()) {
+          tempUser = snapshot.data();
+          tempUser["googleCredential"] = token;
+          backedUp = snapshot.data().backedUp;
         }
         else {
-          await eThreeActions.InitializeEThree(false);
-        }
-        let backedUp = false;
-        db.collection("users").doc(user.uid).get().then(function (snapshot) {
-          if(snapshot.data()) {
-            tempUser["email"] = snapshot.data().email;
-            tempUser["username"] = snapshot.data().username;
-            tempUser["phone"] = snapshot.data().phone;
-            tempUser["firstName"] = snapshot.data().firstName;
-            tempUser["lastName"] = snapshot.data().lastName;
-            tempUser["headshot"] = snapshot.data().headshot;
-            tempUser["provider"] = snapshot.data().provider;
-            tempUser["googleCredential"] = token;
-            backedUp = snapshot.data().backedUp;
-          }
-          else {
-            db.collection("users").doc(user.uid).set({
-              email: user.email,
-              username: user.displayName,
-              firstName: "",
-              lastName: "",
-              phone: "",
-              headshot: user.photoURL,
-              backedUp: false,
-              provider: "google",
-            });
-          }
-          dispatch(request(false, user));
-          dispatch(success(true, user, tempUser));
-          dispatch(updateBackedUp(backedUp));
-          history.push('/app/dashboard');
-        },
-          error => {
-            dispatch(request(false, {}));
-            dispatch(loginFailure(true, error.toString(), {}, {}));
-            dispatch(alertActions.error(error.toString()));
-            dispatch(alertActions.visible(true));
+          db.collection("users").doc(user.uid).set({
+            email: user.email,
+            username: user.displayName,
+            firstName: "",
+            lastName: "",
+            phoneNumber: "",
+            headshot: user.photoURL,
+            backedUp: false,
+            provider: "google",
+            twoFactorAuth: false,
+            whileYouWereAway: {
+              enabled: true,
+              lastShownMilli: 0,
+            },
+            financialData: {},
           });
-      }
-    }).catch(function(error) {
+        }
+        dispatch(request(false, user));
+        dispatch(success(true, user, tempUser));
+        dispatch(updateBackedUp(backedUp));
+        history.push('/app/dashboard');
+      },
+        error => {
+          dispatch(request(false, {}));
+          dispatch(loginFailure(true, error.toString(), {}, {}));
+          dispatch(alertActions.error(error.toString()));
+        });
+    }    
+    else {
       dispatch(request(false, {}));
-      dispatch(loginFailure(true, error.toString(), {}, {}));
-      dispatch(alertActions.error(error.toString()));
-      dispatch(alertActions.visible(true));
-    });
+      dispatch(loginFailure(true, "Passed user is null!", {}, {}));
+      dispatch(alertActions.error("Passed user is null!"));
+    }
 
   };
 
@@ -241,7 +220,7 @@ function reCaptchaUpdate(human, signUp) {
 
 function testReCaptcha(value, signUp) {
   return dispatch => {
-    fetch(apiBaseUrl + 'auth/checkRecaptcha/', {
+    fetch(apiBaseUrl() + 'auth/checkRecaptcha/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -258,23 +237,28 @@ function testReCaptcha(value, signUp) {
       }
       else {
         dispatch(reCaptchaUpdate(false, signUp));
-        alertActions.visible(true);
         alertActions.error(responseJson.type);
       }
     })
     .catch((error) => {
       dispatch(reCaptchaUpdate(false, signUp));
-      alertActions.visible(true);
       alertActions.error(error);
     });
   }
 }
 
 function logout() {
-  auth.signOut();
-  return dispatch => {
-    dispatch(userLogout());
-    dispatch(ethreeReset());
+  return async dispatch => {
+    let eThreeLoggedOut = await eThreeActions.logout();
+    if(eThreeLoggedOut) {
+      auth.signOut();
+      dispatch(userLogout());
+      dispatch(ethreeReset());
+    }
+    else {
+      console.log("EThree unable to log out the user!");
+      dispatch(alertActions.error("EThree unable to log out the user!"));
+    }
   }
 
   function userLogout() { return { type: userConstants.LOGOUT } }
@@ -284,40 +268,41 @@ function logout() {
 function register(email, firstName, password, history) {
    return dispatch => {
       dispatch(request, true, {});
-      auth.createUserWithEmailAndPassword(email, password).then(async (authData) => {
+      auth.createUserWithEmailAndPassword(email, password).then(async (user) => {
         await eThreeActions.InitializeEThree(true);
-        db.collection("users").doc(authData.user.uid).set({
+        db.collection("users").doc(user.user.uid).set({
           email: email,
           firstName: firstName,
           lastName: "",
-          phone: "",
+          phoneNumber: "",
           headshot: "https://s3.amazonaws.com/dejafood.com/mobile_assets/deja_gradient.png",
           backedUp: false,
           provider: 'atlas',
+          twoFactorAuth: false,
+          whileYouWereAway: {
+            enabled: true,
+            lastShownMilli: 0,
+          },
+          financialData: {},
         });
-        dispatch(success(authData));
-        dispatch(login(email, password, history));
+        dispatch(login(user, history));
         dispatch(alertActions.visible(false));
         dispatch(alertActions.clear());
       }).catch(function(error) {
       dispatch(loginFailure(true, error.toString(), {}, {}));
       dispatch(alertActions.error(error.toString()));
-      dispatch(alertActions.visible(true));
     });
   };
 
   function request(isLoginPending, user) { return { type: userConstants.LOGIN_REQUEST, isLoginPending, user } }
-  function success(user) { return { type: userConstants.REGISTER_SUCCESS, user } }
 }
 
 function forgotPassword(emailAddress) {
    return dispatch => {
      auth.sendPasswordResetEmail(emailAddress).then(() => {
-      dispatch(alertActions.visible(true));
       dispatch(alertActions.error("Successfully sent password reset email!"));
     }).catch(function(error) {
       dispatch(alertActions.error(error.toString()));
-      dispatch(alertActions.visible(true));
     });
    };
 }
@@ -327,10 +312,8 @@ function changePassword(password) {
     var user = auth.currentUser;
     user.updatePassword(password).then(() => {
       dispatch(alertActions.success("Successfully updated your password! Use this password next time you login to Atlas One."));
-      dispatch(alertActions.visible(true));
     }).catch(e => {
       dispatch(alertActions.error(e.toString()));
-      dispatch(alertActions.visible(true));
     });
    };
 }

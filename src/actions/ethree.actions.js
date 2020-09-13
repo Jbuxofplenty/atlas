@@ -10,6 +10,9 @@ export const eThreeActions = {
   restoreKey,
   updatePassword,
   localKeyPresent,
+  logout,
+  unregister,
+  rotateKey,
 };
 
 // Virgil Security
@@ -61,6 +64,40 @@ function localKeyPresent() {
   function complete(privateKeyPresent) { return { type: eThreeConstants.UPDATE_PRIVATE_KEY_PRESENT, privateKeyPresent } }
 }
 
+async function unregister() {
+  const eThree = await InitializeEThree(false);
+  if(!eThree) {
+    console.log("End-to-End encyption session has expired. Please log out and log back in to perform this action!");
+    return false;
+  }
+  return await eThree.unregister()
+  .then(async () => {
+    console.log('Successfully unregistered your account!')
+    return true;
+  })
+  .catch(e => {
+    console.error('error: ', e)
+    return false;
+  });
+}
+
+async function logout() {
+  const eThree = await InitializeEThree(false);
+  if(!eThree) {
+    console.log("End-to-End encyption session has expired. Please log out and log back in to perform this action!");
+    return false;
+  }
+  return await eThree.cleanup()
+  .then(async () => {
+    console.log('Successfully deleted your private key in preparation for logging out!')
+    return true;
+  })
+  .catch(e => {
+    console.error('error: ', e)
+    return false;
+  });
+}
+
 function backupKey(keyPassword, uid) {
   return async dispatch => {
     dispatch(alertActions.pending(true));
@@ -78,21 +115,46 @@ function backupKey(keyPassword, uid) {
         console.log('Successfully backed up your private key to the cloud!')
         dispatch(complete(true));
         dispatch(alertActions.success("Successfully backed up your private key to the cloud!"));
-        dispatch(alertActions.visible(true));
       }).catch(e => {
         dispatch(alertActions.error(e.toString()));
-        dispatch(alertActions.visible(true));
       });
     })
     .catch(e => {
       console.error('error: ', e)
       dispatch(alertActions.error(e.toString()));
-      dispatch(alertActions.visible(true));
       return false;
     });
   }
 
   function complete(backedUp) { return { type: eThreeConstants.UPDATE_BACKED_UP, backedUp } }
+}
+
+function rotateKey(uid) {
+  return async dispatch => {
+    dispatch(alertActions.pending(true));
+    const eThree = await InitializeEThree(false);
+    if(!eThree) {
+      dispatch(alertActions.error("End-to-End encyption session has expired. Please log out and log back in to perform this action!"));
+      return;
+    }
+
+    await eThree.rotatePrivateKey()
+      .then(async () => {   
+        await db.collection("users").doc(uid).update({
+          financialData: {},
+        }).then(() => {
+          console.log('Successfully generated your new private key! Make sure to make a backup!')
+          dispatch(alertActions.success("Successfully generated your new private key! Make sure to make a backup!"));
+        }).catch(e => {
+          dispatch(alertActions.error(e.toString()));
+        });
+      })
+      .catch(e => {
+        console.error('error: ', e)
+        dispatch(alertActions.error(e.toString()));
+        return false;
+      });
+  }
 }
 
 function restoreKey(keyPassword) {
@@ -101,7 +163,6 @@ function restoreKey(keyPassword) {
     const eThree = await InitializeEThree(false);
     if(!eThree) {
       dispatch(alertActions.error("End-to-End encyption session has expired. Please log out and log back in to perform this action!"));
-      dispatch(alertActions.visible(true));
       return;
     }
     const hasLocalPrivateKey = await eThree.hasLocalPrivateKey();
@@ -110,18 +171,15 @@ function restoreKey(keyPassword) {
       .then(async () => {
         console.log('Successfully retrieved your private key from the cloud!')
         dispatch(alertActions.success("Successfully retrieved your private key from the cloud!"));
-        dispatch(alertActions.visible(true));
       })
       .catch(e => {
         console.error('error: ', e)
         dispatch(alertActions.error(e.toString()));
-        dispatch(alertActions.visible(true));
         return false;
       });
     else {
       console.log('Private key is already stored locally!')
       dispatch(alertActions.success("Private key is already stored locally!"));
-      dispatch(alertActions.visible(true));
     }
   }
 }
@@ -132,19 +190,16 @@ function updatePassword(oldPassword, newPassword) {
     const eThree = await InitializeEThree(false);
     if(!eThree) {
       dispatch(alertActions.error("End-to-End encyption session has expired. Please log out and log back in to perform this action!"));
-      dispatch(alertActions.visible(true));
       return;
     }
     eThree.changePassword(oldPassword, newPassword)
       .then(async () => {
         console.log('Password updated successfully!')
         dispatch(alertActions.success("Password updated successfully!"));
-        dispatch(alertActions.visible(true));
       })
       .catch(e => {
         console.error('error: ', e)
         dispatch(alertActions.error(e.toString()));
-        dispatch(alertActions.visible(true));
         return false;
       });
   }
@@ -156,27 +211,23 @@ function deleteBackup(uid) {
     const eThree = await InitializeEThree(false);
     if(!eThree) {
       dispatch(alertActions.error("End-to-End encyption session has expired. Please log out and log back in to perform this action!"));
-      dispatch(alertActions.visible(true));
       return;
     }
     await eThree.resetPrivateKeyBackup()
     .then(async () => {
       await db.collection("users").doc(uid).update({
-        backedUp: true,
+        backedUp: false,
       }).then(() => {
         console.log('Deleted backed up private key from the cloud!')
         dispatch(complete(false));
         dispatch(alertActions.success("Successfully deleted backed up private key from the cloud!"));
-        dispatch(alertActions.visible(true));
       }).catch(e => {
         dispatch(alertActions.error(e.toString()));
-        dispatch(alertActions.visible(true));
       });
     })
     .catch(e => {
       console.error('error: ', e)
       dispatch(alertActions.error(e.toString()));
-      dispatch(alertActions.visible(true));
       return false;
     });
   }

@@ -220,7 +220,7 @@ class MaterialUiPhoneNumber extends React.Component {
     }
 
     if (!text || text.length === 0) {
-      return disableCountryCode ? '' : '+';
+      return disableCountryCode ? '' : '+1';
     }
 
     // for all strings with length less than 3, just return it (1, 2 etc.)
@@ -298,7 +298,7 @@ class MaterialUiPhoneNumber extends React.Component {
       disableCountryCode, countryCodeEditable, isModernBrowser, onChange,
     } = this.props;
 
-    let formattedNumber = disableCountryCode ? '' : '+';
+    let formattedNumber = disableCountryCode ? '' : '+1';
 
     if (!countryCodeEditable) {
       const updatedInput = `+${newSelectedCountry.dialCode}`;
