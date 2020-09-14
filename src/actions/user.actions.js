@@ -191,7 +191,7 @@ function googleLogin(result, history) {
             phoneNumber: "",
             headshot: user.photoURL,
             backedUp: false,
-            provider: "facebook",
+            provider: "google",
             twoFactorAuth: false,
             whileYouWereAway: {
               enabled: true,

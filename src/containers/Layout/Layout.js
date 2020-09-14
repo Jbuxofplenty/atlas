@@ -28,6 +28,8 @@ import s from './Layout.module.scss';
 import { eThreeActions } from "actions";
 import { apiBaseUrl } from 'helpers';
 
+import { auth } from '../../firebase'
+
 // Style for app
 import 'App.scss';
 import 'assets/scss/theme.scss';
@@ -67,13 +69,17 @@ class Layout extends React.Component {
     let userData = this.props.userData;
     if(userData) {
       let whileYouWereAway = userData.whileYouWereAway;
-      if(whileYouWereAway !== undefined && !isEmpty(this.props.user)) {
+      var user = auth.currentUser;
+      if(whileYouWereAway !== undefined && user) {
         clearInterval(this.whileYouWereAwayInterval);
         const now = new Date();
-        const currentTime = now.getTime();
-        let lastLoggedInDifference = currentTime - this.props.user.lastLoginAt;
+        const currentTimeUTC = now.getTime();
+        const lastLoginAt = new Date(user.metadata.lastSignInTime);
+        const lastLoginAtUTC = lastLoginAt.getTime();
+        let lastLoggedInDifference = currentTimeUTC - lastLoginAtUTC;
         let oneDayMilli = 86400000;
-        if(whileYouWereAway.enabled && lastLoggedInDifference > oneDayMilli) {
+        let oneMinuteMilli = 60000;
+        if(whileYouWereAway.enabled && (lastLoggedInDifference > oneDayMilli || lastLoggedInDifference < oneMinuteMilli)) {
           let uid = this.props.user.uid;
           fetch(apiBaseUrl() + 'github/whileYouWereAway/', {
             method: 'POST',
@@ -87,7 +93,7 @@ class Layout extends React.Component {
           })
           .then((response) => response.json())
           .then((responseJson) => {
-            if(responseJson.commitMessages > 0) {
+            if(responseJson.commitMessages.length > 0) {
               toast.info(
                 <div className={s.toastContainer}>
                   <strong>While You Were Away!</strong><br/>
