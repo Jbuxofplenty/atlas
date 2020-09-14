@@ -60,7 +60,7 @@ const SimpleButton = withStyles({
   },
 })(Button);
 
-function SignupPage(props) {
+function SignupLoginPage(props) {
   const history = useHistory();
   const [cardAnimaton, setCardAnimation] = React.useState("cardHidden");
   setTimeout(function() {
@@ -74,6 +74,19 @@ function SignupPage(props) {
     props.error("");
   // eslint-disable-next-line
   }, []);
+
+  useEffect(() => {
+    if(!props.signUpPage) {
+      if(props.loginError) {
+        setEmailError(true);
+        setPasswordError(true);
+      }
+      else {
+        setEmailError(false);
+        setPasswordError(false);
+      }
+    }
+  }, [props.loginError, props.signUpPage]);
 
   const classes = useStyles();
   const { ...rest } = props;
@@ -91,8 +104,11 @@ function SignupPage(props) {
     setHuman(props.human);
   }, [props.human]);
 
-  const isInvalid =
+  const isInvalid = props.signUpPage ?
       firstName === '' ||
+      email === '' ||
+      password === ''
+      :
       email === '' ||
       password === '';
 
@@ -131,7 +147,19 @@ function SignupPage(props) {
     if(!validate(email, password)) {
       return;
     }
-    props.register(email, firstName, password, history);
+    if(props.signUpPage) {
+      props.register(email, firstName, password, history);
+    }
+    else {
+      auth.signInWithEmailAndPassword(email, password)
+        .then(user => {
+          props.login(user, history);
+        })
+        .catch(e => {
+          props.error(e.message);
+          props.loginFailure(true, e.message, {}, {});
+        });
+    }
   }
 
   const loginFacebook = (e) => {
@@ -235,7 +263,7 @@ function SignupPage(props) {
               <Card className={classes[cardAnimaton]}>
                 <form className={classes.form}>
                   <CardHeader color="primary" className={classes.cardHeader}>
-                    <h4>Signup with Provider</h4>
+                    <h4>{props.signUpPage ? "Signup" : "Login"} with Provider</h4>
                     <div className={classes.socialLine}>
                       <Button
                         justIcon
@@ -259,23 +287,25 @@ function SignupPage(props) {
                   </CardHeader>
                   <p className={classes.divider}>Or Be Classical</p>
                   <CardBody>
-                    <CustomInput
-                      labelText={"First Name"}
-                      id="first"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      formControlProps={{
-                        fullWidth: true
-                      }}
-                      inputProps={{
-                        type: "text",
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <People className={classes.inputIconsColor} />
-                          </InputAdornment>
-                        )
-                      }}
-                    />
+                    {props.signUpPage &&
+                      <CustomInput
+                        labelText={"First Name"}
+                        id="first"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        formControlProps={{
+                          fullWidth: true
+                        }}
+                        inputProps={{
+                          type: "text",
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <People className={classes.inputIconsColor} />
+                            </InputAdornment>
+                          )
+                        }}
+                      />
+                    }
                     <CustomInput
                       labelText="Email..."
                       id="email"
@@ -313,7 +343,7 @@ function SignupPage(props) {
                         autoComplete: "off"
                       }}
                     />
-                    <ReCaptcha show={!human} signUp={true} />
+                    <ReCaptcha show={!human} signUp={props.signUpPage} />
                   </CardBody>
                   <CardFooter className={classes.cardFooter}>
                     <SimpleButton disabled={isInvalid} simple color="primary" size="lg" onClick={submit}>
@@ -357,8 +387,9 @@ const mapDispatchToProps = (dispatch, history) => {
     register: (email, firstName, password, history)  => dispatch(userActions.register(email, firstName, password, history)),
     googleLogin: (result, history) => dispatch(userActions.googleLogin(result, history)),
     facebookLogin: (result, history) => dispatch(userActions.facebookLogin(result, history)),
+    login: (user, history) => dispatch(userActions.login(user, history)),
   };
 }
 
-const Signup = connect(mapStateToProps, mapDispatchToProps)(SignupPage);
+const Signup = connect(mapStateToProps, mapDispatchToProps)(SignupLoginPage);
 export default Signup;

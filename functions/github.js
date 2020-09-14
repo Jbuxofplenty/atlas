@@ -105,6 +105,7 @@ whileYouWereAway.post('*', async (req, res) => {
   let sinceDate = new Date(whileYouWereAway.lastShownMilli);
   let since = sinceDate.toISOString();
   whileYouWereAway.lastShownMilli = lastShownMilli;
+  console.log(lastShownMilli);
   octokit.repos.listCommits({
       owner: "jbuxofplenty",
       repo: "atlas",
@@ -116,6 +117,7 @@ whileYouWereAway.post('*', async (req, res) => {
       var num = parseInt(i)+1;
       if(i < 5) commitMessages.push(`${num}. ` + data[i].commit.message);
     }
+    console.log(commitMessages);
     if(commitMessages.length > 0) {
       db.collection("users").doc(uid).update({ whileYouWereAway });
     }

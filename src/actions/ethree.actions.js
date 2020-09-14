@@ -72,7 +72,7 @@ async function unregister() {
   }
   return await eThree.unregister()
   .then(async () => {
-    console.log('Successfully unregistered your account!')
+    console.log('Successfully unregistered your EThree account!')
     return true;
   })
   .catch(e => {

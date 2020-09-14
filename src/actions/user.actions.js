@@ -17,19 +17,13 @@ export const userActions = {
     loginReset,
     changePassword,
     updateUserData,
+    sendVerificationEmail,
+    deleteAccount,
 };
 
-function loginFailure(loginError, error, user, userData) {
-  return {
-    type: userConstants.LOGIN_FAILURE,
-    loginError,
-    error,
-    user,
-    userData
-  }
-}
-
+/////////////////////
 // Helpers
+/////////////////////
 function loginReset() {
   return {
     type: userConstants.LOGIN_RESET
@@ -50,7 +44,26 @@ function updateUserData(userData) {
   }
 }
 
+function reset() {
+  return dispatch => {
+    dispatch(dataActions.dataReset());
+  }
+}
+
+function loginFailure(loginError, error, user, userData) {
+  return {
+    type: userConstants.LOGIN_FAILURE,
+    loginError,
+    error,
+    user,
+    userData
+  }
+}
+
+/////////////////////
 // Login/Signup
+/////////////////////
+
 function login(user, history) {
   return async dispatch => {
     var tempUser = {};
@@ -106,7 +119,7 @@ function facebookLogin(result, history) {
           backedUp = snapshot.data().backedUp;
         }
         else {
-          db.collection("users").doc(user.uid).set({
+          tempUser = {    
             email: user.email,
             username: user.displayName,
             firstName: "",
@@ -121,7 +134,8 @@ function facebookLogin(result, history) {
               lastShownMilli: 0,
             },
             financialData: {},
-          });
+          }
+          db.collection("users").doc(user.uid).set(tempUser);
         }
         dispatch(request(false, user));
         dispatch(success(true, user, tempUser));
@@ -168,8 +182,8 @@ function googleLogin(result, history) {
           tempUser["googleCredential"] = token;
           backedUp = snapshot.data().backedUp;
         }
-        else {
-          db.collection("users").doc(user.uid).set({
+        else {   
+          tempUser = {    
             email: user.email,
             username: user.displayName,
             firstName: "",
@@ -177,14 +191,15 @@ function googleLogin(result, history) {
             phoneNumber: "",
             headshot: user.photoURL,
             backedUp: false,
-            provider: "google",
+            provider: "facebook",
             twoFactorAuth: false,
             whileYouWereAway: {
               enabled: true,
               lastShownMilli: 0,
             },
             financialData: {},
-          });
+          }
+          db.collection("users").doc(user.uid).set(tempUser);
         }
         dispatch(request(false, user));
         dispatch(success(true, user, tempUser));
@@ -209,15 +224,92 @@ function googleLogin(result, history) {
   function success(isLoginSuccess, user, userData) { return { type: userConstants.LOGIN_SUCCESS, isLoginSuccess, user, userData } }
 }
 
-function reset() {
-  return dispatch => {
-    dispatch(dataActions.dataReset());
-  }
+function register(email, firstName, password, history) {
+   return dispatch => {
+      dispatch(request, true, {});
+      auth.createUserWithEmailAndPassword(email, password).then(async (user) => {
+        await eThreeActions.InitializeEThree(true);
+        var tempUser = {
+          email: email,
+          firstName: firstName,
+          lastName: "",
+          phoneNumber: "",
+          headshot: "https://s3.amazonaws.com/dejafood.com/mobile_assets/deja_gradient.png",
+          backedUp: false,
+          provider: 'atlas',
+          twoFactorAuth: false,
+          whileYouWereAway: {
+            enabled: true,
+            lastShownMilli: 0,
+          },
+          financialData: {},
+        }
+        dispatch(sendVerificationEmail());
+        db.collection("users").doc(user.user.uid).set(tempUser);
+        let backedUp = tempUser.backedUp;
+        dispatch(request(false, user.user));
+        dispatch(success(true, user.user, tempUser));
+        dispatch(updateBackedUp(backedUp));
+        dispatch(alertActions.visible(false));
+        dispatch(alertActions.clear());
+        history.push('/app/dashboard');
+      }).catch(function(error) {
+      dispatch(loginFailure(true, error.toString(), {}, {}));
+      dispatch(alertActions.error(error.toString()));
+    });
+  };
+
+  function request(isLoginPending, user) { return { type: userConstants.LOGIN_REQUEST, isLoginPending, user } }
+  function success(isLoginSuccess, user, userData) { return { type: userConstants.LOGIN_SUCCESS, isLoginSuccess, user, userData } }
 }
 
-function reCaptchaUpdate(human, signUp) {
-  return { type: userConstants.UPDATE_CAPTCHA, human, signUp}
+/////////////////////
+// Firebase utilities
+/////////////////////
+
+function sendVerificationEmail() {
+  return dispatch => {
+    var user = auth.currentUser;
+    if(user) {
+      user.sendEmailVerification().then(() => {
+        dispatch(alertActions.success("Successfully sent password verification email!"));
+      }).catch(function(error) {
+        dispatch(alertActions.error(error.toString()));
+      });
+    }
+    else {  
+      dispatch(alertActions.error("No active user! Sign out and in again to perform this action."));
+    }
+
+  };
 }
+
+function forgotPassword(emailAddress) {
+   return dispatch => {
+     auth.sendPasswordResetEmail(emailAddress).then(() => {
+      dispatch(alertActions.success("Successfully sent password reset email!"));
+    }).catch(function(error) {
+      dispatch(alertActions.error(error.toString()));
+    });
+   };
+}
+
+function changePassword(password) {
+  return dispatch => {
+    var user = auth.currentUser;
+    user.updatePassword(password).then(() => {
+      dispatch(alertActions.success("Successfully updated your password! Use this password next time you login to Atlas One."));
+    }).catch(e => {
+      dispatch(alertActions.error(e.toString()));
+    });
+   };
+}
+
+
+/////////////////////
+// Recaptcha
+/////////////////////
+
 
 function testReCaptcha(value, signUp) {
   return dispatch => {
@@ -248,6 +340,15 @@ function testReCaptcha(value, signUp) {
   }
 }
 
+function reCaptchaUpdate(human, signUp) {
+  return { type: userConstants.UPDATE_CAPTCHA, human, signUp}
+}
+
+
+//////////////////////
+// Tear Down
+//////////////////////
+
 function logout() {
   return async dispatch => {
     let eThreeLoggedOut = await eThreeActions.logout();
@@ -266,61 +367,31 @@ function logout() {
   function ethreeReset() { return { type: eThreeConstants.ETHREE_RESET } }
 }
 
-function register(email, firstName, password, history) {
-   return dispatch => {
-      dispatch(request, true, {});
-      auth.createUserWithEmailAndPassword(email, password).then(async (user) => {
-        await eThreeActions.InitializeEThree(true);
-        var tempUser = {
-          email: email,
-          firstName: firstName,
-          lastName: "",
-          phoneNumber: "",
-          headshot: "https://s3.amazonaws.com/dejafood.com/mobile_assets/deja_gradient.png",
-          backedUp: false,
-          provider: 'atlas',
-          twoFactorAuth: false,
-          whileYouWereAway: {
-            enabled: true,
-            lastShownMilli: 0,
-          },
-          financialData: {},
-        }
-        db.collection("users").doc(user.user.uid).set(tempUser);
-        let backedUp = tempUser.backedUp;
-        dispatch(request(false, user.user));
-        dispatch(success(true, user.user, tempUser));
-        dispatch(updateBackedUp(backedUp));
-        dispatch(alertActions.visible(false));
-        dispatch(alertActions.clear());
-        history.push('/app/dashboard');
+function deleteAccount(uid) {
+  return async dispatch => {
+    let eThreeUnregistered = await eThreeActions.unregister();
+    if(eThreeUnregistered) {
+      console.log("Successfully unregistered your subscription to the end-to-end encryption service...")
+      db.collection("users").doc(uid).delete().then(function() {
+          console.log("User data successfully deleted from our databases!");
       }).catch(function(error) {
-      dispatch(loginFailure(true, error.toString(), {}, {}));
-      dispatch(alertActions.error(error.toString()));
-    });
-  };
+          console.error("Error removing user data from database: ", error.toString());
+      });
+      var user = auth.currentUser;
+      user.delete().then(function() {
+        console.log("User account successfully deleted!");
+      }).catch(function(error) {
+        console.log("Error deleting user account: ", error.toString());
+      });
+      dispatch(userLogout());
+      dispatch(ethreeReset());
+    }
+    else {
+      console.log("Unable to unregister your subscription to the end-to-end encryption service...")
+    }
+    console.log('deleting account....')
+  }
 
-  function request(isLoginPending, user) { return { type: userConstants.LOGIN_REQUEST, isLoginPending, user } }
-  function success(isLoginSuccess, user, userData) { return { type: userConstants.LOGIN_SUCCESS, isLoginSuccess, user, userData } }
-}
-
-function forgotPassword(emailAddress) {
-   return dispatch => {
-     auth.sendPasswordResetEmail(emailAddress).then(() => {
-      dispatch(alertActions.error("Successfully sent password reset email!"));
-    }).catch(function(error) {
-      dispatch(alertActions.error(error.toString()));
-    });
-   };
-}
-
-function changePassword(password) {
-  return dispatch => {
-    var user = auth.currentUser;
-    user.updatePassword(password).then(() => {
-      dispatch(alertActions.success("Successfully updated your password! Use this password next time you login to Atlas One."));
-    }).catch(e => {
-      dispatch(alertActions.error(e.toString()));
-    });
-   };
+  function userLogout() { return { type: userConstants.LOGOUT } }
+  function ethreeReset() { return { type: eThreeConstants.ETHREE_RESET } }
 }

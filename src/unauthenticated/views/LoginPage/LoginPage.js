@@ -89,7 +89,6 @@ function LoginPage(props) {
     setHuman(props.human);
   }, [props.human]);
 
-
   useEffect(() => {
     if(props.loginError) {
       setEmailError(true);

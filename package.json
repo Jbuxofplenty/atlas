@@ -64,7 +64,7 @@
   },
   "scripts": {
     "start": "export HOST=0.0.0.0 && export PORT=3000 && react-app-rewired start",
-    "build": "export NODE_ENV=production && react-app-rewired build && gulp licenses",
+    "build": "export NODE_ENV=production && GENERATE_SOURCEMAP=false react-app-rewired build && gulp licenses",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject",
     "lint:check": "eslint . --ext=js,jsx;  exit 0",

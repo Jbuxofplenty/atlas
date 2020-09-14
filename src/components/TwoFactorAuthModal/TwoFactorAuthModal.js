@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
 
 // @material-ui
 import { makeStyles } from "@material-ui/core/styles";
@@ -72,7 +73,16 @@ function TwoFactorAuthModal(props) {
         // user.credential contains the Google OAuth credential.
         // user.credential.accessToken contains the Google OAuth access token.
         // user.credential.idToken contains the Google OAuth ID token.
-        console.log(userCredential)
+        if(userCredential.additionalUserInfo.providerId === "google.com") {
+          console.log(props)
+          props.googleLogin(userCredential, props.history);
+        }
+        else if(userCredential.additionalUserInfo.providerId === "facebook.com") {
+          props.facebookLogin(userCredential, props.history);
+        }
+        else {
+          props.login(userCredential, props.history)
+        }
       })
       .catch(e => {
         props.error(e.message);
@@ -216,9 +226,10 @@ const mapDispatchToProps = (dispatch, history) => {
     error: (message) => dispatch(alertActions.error(message)),
     success: (message) => dispatch(alertActions.success(message)),
     setComponent: (component) => dispatch(alertActions.component(component)),
+    login: (user, history) => dispatch(userActions.login(user, history)), 
     googleLogin: (result, history) => dispatch(userActions.googleLogin(result, history)),
     facebookLogin: (result, history) => dispatch(userActions.facebookLogin(result, history)),
   };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(TwoFactorAuthModal);
+export default connect(mapStateToProps, mapDispatchToProps)(withRouter(TwoFactorAuthModal));

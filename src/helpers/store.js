@@ -16,9 +16,11 @@ const persistConfig = {
 const persistedReducer = persistReducer(persistConfig, rootReducer)
 const loggerMiddleware = createLogger();
 
-const store = createStore(persistedReducer, applyMiddleware(
+const middleware = [
   thunkMiddleware,
-  loggerMiddleware
-));
+  process.env.NODE_ENV !== 'production' && loggerMiddleware,
+].filter(Boolean);
+
+const store = createStore(persistedReducer, applyMiddleware(...middleware));
 const persistor = persistStore(store)
 export { store, persistor }

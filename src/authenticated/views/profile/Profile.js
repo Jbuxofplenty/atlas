@@ -20,6 +20,7 @@ import DeleteBackup from "./e2ee/DeleteBackup";
 // personal
 import PersonalInformation from "./personal/PersonalInformation";
 import ChangePassword from "./personal/UpdatePassword";
+import DeleteAccount from "./personal/DeleteAccount";
 
 // security
 import TwoFactorAuth from "./security/TwoFactorAuth";
@@ -30,7 +31,7 @@ class Profile extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      activeTab: '4',
+      activeTab: '2',
       backedUp: props.backedUp,
       localKeyPresent: false,
     };
@@ -146,23 +147,30 @@ class Profile extends React.Component {
         <TabContent activeTab={this.state.activeTab}>
           {/* tab #2 */}
           <TabPane tabId="2" className="py-5">
-            <div>
-              {this.renderEncryption()}
-            </div>
+            {this.state.activeTab === '2' &&
+              <div>
+                {this.renderEncryption()}
+              </div>
+            } 
           </TabPane>
           <TabPane tabId="3" className="py-5">
-            <div>
-              <PersonalInformation />
-              {!this.props.userData.googleCredential && 
-               !this.props.userData.facebookCredential && 
-                <ChangePassword /> 
-              }
-            </div>
+            {this.state.activeTab === '3' &&
+              <div>
+                <PersonalInformation />
+                {this.props.userData.provider !== "google" && 
+                this.props.userData.provider !== "facebook" && 
+                  <ChangePassword /> 
+                }
+                <DeleteAccount />
+              </div>
+            } 
           </TabPane>
           <TabPane tabId="4" className="py-5">
-            <div>
-              <TwoFactorAuth />
-            </div>
+            {this.state.activeTab === '4' &&
+              <div>
+                <TwoFactorAuth />
+              </div>
+            } 
           </TabPane>
         </TabContent>
       </section>
