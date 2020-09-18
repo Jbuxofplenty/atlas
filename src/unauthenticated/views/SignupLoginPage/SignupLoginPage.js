@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useHistory } from "react-router";
 import { connect } from 'react-redux';
 import { alertActions, userActions } from 'actions';
 
@@ -31,6 +30,7 @@ import CardFooter from "components/Card/CardFooter.js";
 import CustomInput from "components/CustomInput/CustomInput.js";
 import ReCaptcha from "components/ReCaptcha/ReCaptcha.js";
 import TwoFactorAuthModal from 'components/TwoFactorAuthModal/TwoFactorAuthModal';
+import Loader from 'components/Loader/Loader';
 
 
 import { auth, firebase } from "../../../firebase";
@@ -61,7 +61,6 @@ const SimpleButton = withStyles({
 })(Button);
 
 function SignupLoginPage(props) {
-  const history = useHistory();
   const [cardAnimaton, setCardAnimation] = React.useState("cardHidden");
   setTimeout(function() {
     setCardAnimation("");
@@ -69,24 +68,10 @@ function SignupLoginPage(props) {
 
   // Component did mount
   useEffect(() => {
-    props.loginReset();
-    props.visible(false);
     props.error("");
+    props.visible(false);
   // eslint-disable-next-line
   }, []);
-
-  useEffect(() => {
-    if(!props.signUpPage) {
-      if(props.loginError) {
-        setEmailError(true);
-        setPasswordError(true);
-      }
-      else {
-        setEmailError(false);
-        setPasswordError(false);
-      }
-    }
-  }, [props.loginError, props.signUpPage]);
 
   const classes = useStyles();
   const { ...rest } = props;
@@ -99,6 +84,19 @@ function SignupLoginPage(props) {
   const [passwordError, setPasswordError] = useState(false);
   const [open, setOpen] = useState(false);
   const [resolver, setResolver] = useState(null);
+
+  useEffect(() => {
+    if(!props.signUpPage) {
+      if(props.loginError && props.errorVisible) {
+        setEmailError(true);
+        setPasswordError(true);
+      }
+      else {
+        setEmailError(false);
+        setPasswordError(false);
+      }
+    }
+  }, [props.loginError, props.signUpPage, props.errorVisible]);
 
   useEffect(() => {
     setHuman(props.human);
@@ -118,14 +116,14 @@ function SignupLoginPage(props) {
     if (!re.test(String(email).toLowerCase())) {
       errorMessage = "Email formatted incorrectly!";
       props.error(errorMessage);
-      props.loginFailure(true, errorMessage, {}, {});
+      props.loginFailure(true, errorMessage, {});
       setEmailError(true);
       return false;
     }
     if (password.length < 6) {
       errorMessage = "Password not at least 6 characters long!";
       props.error(errorMessage);
-      props.loginFailure(true, errorMessage, {}, {});
+      props.loginFailure(true, errorMessage, {});
       setPasswordError(true);
       return false;
     }
@@ -133,13 +131,15 @@ function SignupLoginPage(props) {
   }
 
 
-  const submit = () => {
+  const submit = (e) => {
+    e.preventDefault(); 
     props.error("");
     props.visible(false);
+    props.logout();
     if(!human) {
       var errorMessage = "Please complete the captcha to prove you're a human!";
       props.error(errorMessage);
-      props.loginFailure(true, errorMessage, {}, {});
+      props.loginFailure(true, errorMessage, {});
       return;
     }
     setEmailError(false);
@@ -148,16 +148,16 @@ function SignupLoginPage(props) {
       return;
     }
     if(props.signUpPage) {
-      props.register(email, firstName, password, history);
+      props.register(email, firstName, password);
     }
     else {
       auth.signInWithEmailAndPassword(email, password)
         .then(user => {
-          props.login(user, history);
+          props.login(user);
         })
         .catch(e => {
           props.error(e.message);
-          props.loginFailure(true, e.message, {}, {});
+          props.loginFailure(true, e.message, {});
         });
     }
   }
@@ -166,11 +166,11 @@ function SignupLoginPage(props) {
     e.preventDefault(); 
     props.error("");
     props.visible(false);
-    props.loginReset();
+    props.logout();
     
     var provider = new firebase.auth.FacebookAuthProvider();
     auth.signInWithPopup(provider).then(async function(result) {
-      props.facebookLogin(result, history);
+      props.facebookLogin(result);
     }).catch(function(error) {
       if (error.code === 'auth/multi-factor-auth-required') {
         // The user is a multi-factor user. Second factor challenge is required.
@@ -195,11 +195,11 @@ function SignupLoginPage(props) {
     e.preventDefault(); 
     props.error("");
     props.visible(false);
-    props.loginReset();
+    props.logout();
     
     var provider = new firebase.auth.GoogleAuthProvider();
     auth.signInWithPopup(provider).then(async function(result) {
-      props.googleLogin(result, history);
+      props.googleLogin(result);
     }).catch(function(error) {
       if (error.code === 'auth/multi-factor-auth-required') {
         // The user is a multi-factor user. Second factor challenge is required.
@@ -233,147 +233,156 @@ function SignupLoginPage(props) {
   
 
   return (
-    <div>
-      <Modal
-        open={open}
-        onClose={handleClose}
-      >
+    <>
+      { !open && props.isLoginPending ? <Loader /> :
         <div>
-          <TwoFactorAuthModal resolver={resolver} handleClose={handleClose} enroll={false} />
+          <Modal
+            open={open}
+            onClose={handleClose}
+          >
+            <div>
+              <TwoFactorAuthModal resolver={resolver} handleClose={handleClose} enroll={false} />
+            </div>
+          </Modal>
+          <UnauthenticatedHeader
+            absolute
+            color="transparent"
+            brand="Atlas One"
+            rightLinks={<HeaderLinks />}
+            {...rest}
+          />
+          <div
+            className={classes.pageHeader}
+            style={{
+              backgroundImage: "url(" + image + ")",
+              backgroundSize: "cover",
+              backgroundPosition: "top center"
+            }}
+          >
+            <div className={classes.container}>
+              <GridContainer justify="center">
+                <GridItem xs={12} sm={12} md={4}>
+                  <Card className={classes[cardAnimaton]}>
+                    <CardHeader color="primary" className={classes.cardHeader}>
+                      <h4>{props.signUpPage ? "Signup" : "Login"} with Provider</h4>
+                      <div className={classes.socialLine}>
+                        <Button
+                          justIcon
+                          href=""
+                          target="_blank"
+                          color="transparent"
+                          onClick={loginFacebook}
+                        >
+                          <FontAwesomeIcon icon={faFacebook} className={classes.socialIcons} style={{cursor: 'pointer'}} />
+                        </Button>
+                        <Button
+                          justIcon
+                          href=""
+                          target="_blank"
+                          color="transparent"
+                          onClick={loginGoogle}
+                        >
+                          <FontAwesomeIcon icon={faGooglePlusG} className={classes.socialIcons} style={{cursor: 'pointer'}} />
+                        </Button>
+                      </div>
+                    </CardHeader>
+                    <p className={classes.divider}>Or Be Classical</p>
+                    <CardBody>
+                      <form className={classes.form} onSubmit={submit}>
+                        {props.signUpPage &&
+                          <CustomInput
+                            labelText={"First Name"}
+                            id="first"
+                            value={firstName}
+                            onChange={(e) => setFirstName(e.target.value)}
+                            formControlProps={{
+                              fullWidth: true
+                            }}
+                            inputProps={{
+                              type: "text",
+                              endAdornment: (
+                                <InputAdornment position="end">
+                                  <People className={classes.inputIconsColor} />
+                                </InputAdornment>
+                              )
+                            }}
+                          />
+                        }
+                      </form>
+                      <form className={classes.form} onSubmit={submit}>
+                        <CustomInput
+                          labelText="Email..."
+                          id="email"
+                          value={email}
+                          formControlProps={{
+                            fullWidth: true
+                          }}
+                          error={emailError}
+                          onChange={(e) => setEmail(e.target.value)}
+                          inputProps={{
+                            type: "email",
+                            endAdornment: (
+                              <InputAdornment position="end">
+                                <Email className={classes.inputIconsColor} />
+                              </InputAdornment>
+                            )
+                          }}
+                        />
+                      </form>
+                      <form className={classes.form} onSubmit={submit}>
+                        <CustomInput
+                          labelText="Password"
+                          id="pass"
+                          value={password}
+                          formControlProps={{
+                            fullWidth: true
+                          }}
+                          error={passwordError}
+                          onChange={(e) => setPassword(e.target.value)}
+                          inputProps={{
+                            type: "password",
+                            endAdornment: (
+                              <InputAdornment position="end">
+                              <Lock className={classes.inputIconsColor} />
+                              </InputAdornment>
+                            ),
+                            autoComplete: "off"
+                          }}
+                        />
+                      </form>
+                      <form className={classes.form} onSubmit={submit}>
+                        <ReCaptcha show={!human} signUp={props.signUpPage} />
+                      </form>
+                    </CardBody>
+                    <CardFooter className={classes.cardFooter}>
+                      <SimpleButton disabled={isInvalid} simple color="primary" size="lg" onClick={submit}>
+                        Get started
+                      </SimpleButton>
+                      { !open && props.isLoginSuccess  && <div className={classes.successMessage}>Success.</div> }
+                      { !open && (props.loginError || props.errorVisible) && <div className={classes.errorMessage}>{props.errorMessage}</div> }
+                    </CardFooter>
+                  </Card>
+                </GridItem>
+              </GridContainer>
+            </div>
+            <Footer authenticated={false} whiteFont />
+          </div>
         </div>
-      </Modal>
-      <UnauthenticatedHeader
-        absolute
-        color="transparent"
-        brand="Atlas One"
-        rightLinks={<HeaderLinks />}
-        {...rest}
-      />
-      <div
-        className={classes.pageHeader}
-        style={{
-          backgroundImage: "url(" + image + ")",
-          backgroundSize: "cover",
-          backgroundPosition: "top center"
-        }}
-      >
-        <div className={classes.container}>
-          <GridContainer justify="center">
-            <GridItem xs={12} sm={12} md={4}>
-              <Card className={classes[cardAnimaton]}>
-                <form className={classes.form}>
-                  <CardHeader color="primary" className={classes.cardHeader}>
-                    <h4>{props.signUpPage ? "Signup" : "Login"} with Provider</h4>
-                    <div className={classes.socialLine}>
-                      <Button
-                        justIcon
-                        href=""
-                        target="_blank"
-                        color="transparent"
-                        onClick={loginFacebook}
-                      >
-                        <FontAwesomeIcon icon={faFacebook} className={classes.socialIcons} style={{cursor: 'pointer'}} />
-                      </Button>
-                      <Button
-                        justIcon
-                        href=""
-                        target="_blank"
-                        color="transparent"
-                        onClick={loginGoogle}
-                      >
-                        <FontAwesomeIcon icon={faGooglePlusG} className={classes.socialIcons} style={{cursor: 'pointer'}} />
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <p className={classes.divider}>Or Be Classical</p>
-                  <CardBody>
-                    {props.signUpPage &&
-                      <CustomInput
-                        labelText={"First Name"}
-                        id="first"
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
-                        formControlProps={{
-                          fullWidth: true
-                        }}
-                        inputProps={{
-                          type: "text",
-                          endAdornment: (
-                            <InputAdornment position="end">
-                              <People className={classes.inputIconsColor} />
-                            </InputAdornment>
-                          )
-                        }}
-                      />
-                    }
-                    <CustomInput
-                      labelText="Email..."
-                      id="email"
-                      value={email}
-                      formControlProps={{
-                        fullWidth: true
-                      }}
-                      error={emailError}
-                      onChange={(e) => setEmail(e.target.value)}
-                      inputProps={{
-                        type: "email",
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <Email className={classes.inputIconsColor} />
-                          </InputAdornment>
-                        )
-                      }}
-                    />
-                    <CustomInput
-                      labelText="Password"
-                      id="pass"
-                      value={password}
-                      formControlProps={{
-                        fullWidth: true
-                      }}
-                      error={passwordError}
-                      onChange={(e) => setPassword(e.target.value)}
-                      inputProps={{
-                        type: "password",
-                        endAdornment: (
-                          <InputAdornment position="end">
-                           <Lock className={classes.inputIconsColor} />
-                          </InputAdornment>
-                        ),
-                        autoComplete: "off"
-                      }}
-                    />
-                    <ReCaptcha show={!human} signUp={props.signUpPage} />
-                  </CardBody>
-                  <CardFooter className={classes.cardFooter}>
-                    <SimpleButton disabled={isInvalid} simple color="primary" size="lg" onClick={submit}>
-                      Get started
-                    </SimpleButton>
-                    { !open && props.isLoginPending  && <div className={classes.message}>Please wait...</div> }
-                    { !open && props.isLoginSuccess  && <div className={classes.successMessage}>Success.</div> }
-                    { !open && (props.loginError || props.visible) && <div className={classes.errorMessage}>{props.errorMessage}</div> }
-                  </CardFooter>
-                </form>
-              </Card>
-            </GridItem>
-          </GridContainer>
-        </div>
-        <Footer authenticated={false} whiteFont />
-      </div>
-    </div>
+      }
+    </>
   );
 }
 
 
 const mapStateToProps = (state) => {
   return {
-    isLoginPending: state.authentication.isLoginPending,
-    isLoginSuccess: state.authentication.isLoginSuccess,
-    loginError: state.authentication.loginError,
+    isLoginPending: state.user.isLoginPending,
+    isLoginSuccess: state.user.isLoginSuccess,
+    loginError: state.user.loginError,
     errorMessage: state.alert.message,
-    visible: state.alert.visible,
-    signUp: state.authentication.signUp,
-    human: state.authentication.human,
+    errorVisible: state.alert.visible,
+    signUp: state.user.signUp,
+    human: state.user.human,
   };
 }
 
@@ -383,11 +392,11 @@ const mapDispatchToProps = (dispatch, history) => {
     testReCaptcha: (value, signUp, latestAction) => dispatch(userActions.testReCaptcha(value, signUp, latestAction)),
     error: (errorMessage) => dispatch(alertActions.error(errorMessage)),
     loginFailure: (loginError, error, user, userData) => dispatch(userActions.loginFailure(loginError, error, user, userData)),
-    loginReset: () => dispatch(userActions.loginReset()),
-    register: (email, firstName, password, history)  => dispatch(userActions.register(email, firstName, password, history)),
-    googleLogin: (result, history) => dispatch(userActions.googleLogin(result, history)),
-    facebookLogin: (result, history) => dispatch(userActions.facebookLogin(result, history)),
-    login: (user, history) => dispatch(userActions.login(user, history)),
+    logout: () => dispatch(userActions.logout()),
+    register: (email, firstName, password)  => dispatch(userActions.register(email, firstName, password)),
+    googleLogin: (result) => dispatch(userActions.googleLogin(result)),
+    facebookLogin: (result) => dispatch(userActions.facebookLogin(result)),
+    login: (user) => dispatch(userActions.login(user)),
   };
 }
 

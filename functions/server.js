@@ -12,6 +12,7 @@ const {
 
 const { 
   checkRecaptcha,
+  generateRandomId,
 } = require('./auth');
 
 // Create an Express object and routes (in order)
@@ -55,4 +56,5 @@ v1.use(getDefault);
 module.exports = {
   v1,
   getVirgilJwt,
+  generateRandomId,
 };

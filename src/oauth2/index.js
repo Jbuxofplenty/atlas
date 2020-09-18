@@ -1,4 +1,4 @@
-import coinbaseOAuthObject from './coinbase';
+import { coinbaseOAuthObject } from './coinbase';
 const OAuthObject = {
   "Coinbase": coinbaseOAuthObject,
 }

@@ -6,18 +6,15 @@ const initialState = {
   loginError: false,
   human: true,
   signUp: false,
-  user: {},
   userData: {},
 }
 
-export function authentication(state = initialState, action) {
+export function user(state = initialState, action) {
   switch (action.type) {
     case userConstants.LOGIN_RESET:
       return {
         isLoginPending: false,
-        user: {},
         userData: {},
-        eThree: {},
         isLoginSuccess: false,
         loginError: false,
       };
@@ -25,7 +22,6 @@ export function authentication(state = initialState, action) {
       return {
         ...state,
         isLoginPending: action.isLoginPending,
-        user: action.user,
         isLoginSuccess: false,
         loginError: false,
       };
@@ -33,7 +29,6 @@ export function authentication(state = initialState, action) {
       return {
         ...state,
         isLoginSuccess: action.isLoginSuccess,
-        user: action.user,
         userData: action.userData
       };
     case userConstants.LOGIN_FAILURE:
@@ -41,22 +36,18 @@ export function authentication(state = initialState, action) {
         ...state,
         loginError: action.loginError,
         isLoginSuccess: false,
-        user: action.user,
         userData: action.userData,
-        eThree: {},
       };
     case userConstants.UPDATE_REQUEST:
       return {
         ...state,
         loggedIn: true,
-        user: action.user,
         userData: action.userData,
       };
     case userConstants.UPDATE_SUCCESS:
       return {
         ...state,
         loggedIn: true,
-        user: action.user
       };
     case userConstants.UPDATE_USER_DATA:
       return {

@@ -20,10 +20,15 @@ const functions = require('firebase-functions');
 const {
   v1,
   getVirgilJwt,
+  generateRandomId,
 } = require('./server');
 
+// API
 exports.v1 = functions.https.onRequest(v1);
+
+// Functions requiring firebase context
 exports.getVirgilJwt = getVirgilJwt;
+exports.generateRandomId = generateRandomId;
 
 // Firebase triggers
 const {

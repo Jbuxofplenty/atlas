@@ -30,51 +30,78 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state={
-      user: props.user,
+      user: auth.currentUser,
+      ready: false,
     }
+
+    this.ready = this.ready.bind(this);
+    this.checkReady = this.checkReady.bind(this);
   }
 
   componentDidMount() {
     auth.onAuthStateChanged(function(user) {
-      this.setState({user});
-      if(user && isEmpty(this.props.user)) this.props.history.push('/app/dashboard')
-      else if(!user && !isEmpty(this.props.user)) this.props.history.push('/login')
+      this.setState({ user });
+      if(user && isEmpty(this.props.userData)) this.props.history.push('/app/dashboard')
+      else if(!user && !isEmpty(this.props.userData)) this.props.history.push('/login')
     }.bind(this));
     window.addEventListener("error", function (e) {
       submitIssue(e.error.message, e.error.stack, "bug", true);
     })
+    this.userInterval = setInterval(this.checkReady, 100);
+    this.userTimeout = setTimeout(this.ready, 1000);
   }
   
+  componentWillUnmount() {
+    clearTimeout(this.userTimeout);
+    clearInterval(this.userInterval);
+  }
+
+  checkReady() {
+    if(auth.currentUser) {
+      this.setState({ ready: true });
+      clearTimeout(this.userTimeout);
+      clearInterval(this.userInterval);
+    }
+  }
+
+  ready() {
+    this.setState({ ready: true });
+  }
+
   render() {
     return (
       <Suspense fallback={<Loader className="center-screen" />}>
         <ErrorBoundary>
-          <Switch>
-            {CommonRoutes.map((route, idx) => {
-              return route.component ? (
-                <Route
-                  key={idx}
-                  path={route.path}
-                  exact={route.exact}
-                  name={route.name}
-                  component={route.component} />
-              ) : (null);
-            })}
-            {UnauthenticatedRoutes.map((route, idx) => {
-              return route.component ? (
-                <Route
-                  key={idx}
-                  path={route.path}
-                  exact={route.exact}
-                  name={route.name}
-                  component={route.component} />
-              ) : (null);
-            })}
-            <Route path="/" exact render={() => <Redirect to="/app"/>}/>
-            <PrivateRoute path="/app" dispatch={this.props.dispatch} user={this.state.user} component={LayoutComponent}/>
-            <Redirect from="/home" to="/" />
-            <Redirect to="/404" />
-          </Switch>
+          <>
+            {!this.state.ready ? <Loader className="center-screen" /> :
+              <Switch>
+                {CommonRoutes.map((route, idx) => {
+                  return route.component ? (
+                    <Route
+                      key={idx}
+                      path={route.path}
+                      exact={route.exact}
+                      name={route.name}
+                      component={route.component} />
+                  ) : (null);
+                })}
+                {UnauthenticatedRoutes.map((route, idx) => {
+                  return route.component ? (
+                    <Route
+                      key={idx}
+                      path={route.path}
+                      exact={route.exact}
+                      name={route.name}
+                      component={route.component} />
+                  ) : (null);
+                })}
+                <Route path="/" exact render={() => <Redirect to="/app"/>}/>
+                <PrivateRoute path="/app" dispatch={this.props.dispatch} user={auth.currentUser} component={LayoutComponent}/>
+                <Redirect from="/home" to="/" />
+                <Redirect to="/404" />
+              </Switch>
+            }
+          </>
         </ErrorBoundary>
       </Suspense>
     );
@@ -83,8 +110,7 @@ class App extends Component {
 
 const mapStateToProps = (state) => {
   return {
-    user: state.authentication.user,
-    userData: state.authentication.userData,
+    userData: state.user.userData,
   };
 }
 

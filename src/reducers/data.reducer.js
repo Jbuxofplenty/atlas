@@ -2,7 +2,6 @@ import { dataConstants } from '../constants';
 
 const initialState = {
   institutions: {},
-
 };
 
 export function data(state = initialState, action) {
@@ -13,6 +12,16 @@ export function data(state = initialState, action) {
       return {
         ...state,
         institutions: action.institutions,
+      };
+    case dataConstants.UPDATE_ACCESS_TOKENS:
+      return {
+        ...state,
+        [action.key]: action.accessTokens,
+      };
+    case dataConstants.UPDATE_ACCOUNTS:
+      return {
+        ...state,
+        [action.key]: action.accounts,
       };
     default:
       return state

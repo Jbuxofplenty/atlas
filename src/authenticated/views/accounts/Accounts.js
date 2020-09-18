@@ -41,8 +41,10 @@ class Accounts extends React.Component {
     this.handleClose = this.handleClose.bind(this);
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     this.props.getInstitutions();
+    var tokens = await dataActions.getFinancialData("accessTokens");
+    console.log(tokens);
   }
 
   componentDidUpdate(prevProps) {

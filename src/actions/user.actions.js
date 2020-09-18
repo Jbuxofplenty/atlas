@@ -1,7 +1,7 @@
 import { userConstants, eThreeConstants } from '../constants';
 import { alertActions, dataActions, eThreeActions } from './';
 import { auth, db } from "../firebase";
-import { apiBaseUrl } from 'helpers';
+import { apiBaseUrl, generateRandomId } from 'helpers';
 
 export const userActions = {
     login,
@@ -50,12 +50,11 @@ function reset() {
   }
 }
 
-function loginFailure(loginError, error, user, userData) {
+function loginFailure(loginError, error, userData) {
   return {
     type: userConstants.LOGIN_FAILURE,
     loginError,
     error,
-    user,
     userData
   }
 }
@@ -64,23 +63,42 @@ function loginFailure(loginError, error, user, userData) {
 // Login/Signup
 /////////////////////
 
-function login(user, history) {
-  return async dispatch => {
+const defaultUser = {    
+  username: "",
+  firstName: "",
+  lastName: "",
+  phoneNumber: "",
+  headshot: "",
+  backedUp: false,
+  provider: "",
+  twoFactorAuth: false,
+  whileYouWereAway: {
+    enabled: true,
+    lastShownMilli: 0,
+  },
+  financialData: {},
+  e2ee: false,
+}
+
+function login(user) {
+  return dispatch => {
     var tempUser = {};
     if (user) {
       user = user.user;
-      await eThreeActions.InitializeEThree(false);
-      dispatch(request(true, user));
-      db.collection("users").doc(user.uid).get().then(function (snapshot) {
+      dispatch(request(true));
+      db.collection("users").doc(user.uid).get().then(async function (snapshot) {
         tempUser = snapshot.data();
+        await dispatch(scrubUser(tempUser));
         let backedUp = snapshot.data().backedUp;
-        dispatch(request(false, user));
-        dispatch(success(true, user, tempUser));
+        if(tempUser.e2ee) {
+          await eThreeActions.initializeEThree();
+        }
+        dispatch(request(false));
+        dispatch(success(true, tempUser));
         dispatch(updateBackedUp(backedUp));
-        history.push('/app/dashboard');
       },
         error => {
-          dispatch(request(false, user));
+          dispatch(request(false));
           dispatch(loginFailure(true, error.toString(), {}, {}));
           dispatch(alertActions.error(error.toString()));
         });
@@ -93,54 +111,40 @@ function login(user, history) {
 
   };
 
-  function request(isLoginPending, user) { return { type: userConstants.LOGIN_REQUEST, isLoginPending, user } }
-  function success(isLoginSuccess, user, userData) { return { type: userConstants.LOGIN_SUCCESS, isLoginSuccess, user, userData } }
+  function request(isLoginPending) { return { type: userConstants.LOGIN_REQUEST, isLoginPending } }
+  function success(isLoginSuccess, userData) { return { type: userConstants.LOGIN_SUCCESS, isLoginSuccess, userData } }
 }
 
-function facebookLogin(result, history) {
-  return async dispatch => {
+function facebookLogin(result) {
+  return dispatch => {
     var token = result.credential.accessToken;
     var user = result.user;
-    var tempUser = {};
+    dispatch(request(true));
     if (user) {
-      let createdAt = new Date(user.metadata.creationTime);
-      let lastSignInTime = new Date(user.metadata.lastSignInTime);
-      if(createdAt.getTime() === lastSignInTime.getTime()) {
-        await eThreeActions.InitializeEThree(true);
-      }
-      else {
-        await eThreeActions.InitializeEThree(false);
-      }
       let backedUp = false;
-      db.collection("users").doc(user.uid).get().then(function (snapshot) {
+      var tempUser = {};
+      db.collection("users").doc(user.uid).get().then(async function (snapshot) {
         if(snapshot.data()) {
           tempUser = snapshot.data();
           tempUser["facebookCredential"] = token;
           backedUp = snapshot.data().backedUp;
         }
         else {
-          tempUser = {    
-            email: user.email,
-            username: user.displayName,
-            firstName: "",
-            lastName: "",
-            phoneNumber: "",
-            headshot: user.photoURL,
-            backedUp: false,
-            provider: "facebook",
-            twoFactorAuth: false,
-            whileYouWereAway: {
-              enabled: true,
-              lastShownMilli: 0,
-            },
-            financialData: {},
-          }
-          db.collection("users").doc(user.uid).set(tempUser);
+          Object.assign(tempUser, defaultUser)
+          tempUser.email = user.email;
+          tempUser.username = user.displayName;
+          tempUser.headshot = user.photoURL;
+          tempUser.provider = "facebook";
+          tempUser.randomId = generateRandomId();
+          await db.collection("users").doc(user.uid).set(tempUser);
         }
-        dispatch(request(false, user));
-        dispatch(success(true, user, tempUser));
+        if(tempUser.e2ee) {
+          await eThreeActions.initializeEThree();
+        }
+        await dispatch(scrubUser(tempUser));
+        dispatch(request(false));
+        dispatch(success(true, tempUser));
         dispatch(updateBackedUp(backedUp));
-        history.push('/app/dashboard');
       },
         error => {
           dispatch(request(false, {}));
@@ -155,56 +159,42 @@ function facebookLogin(result, history) {
     }
   };
 
-  function request(isLoginPending, user) { return { type: userConstants.LOGIN_REQUEST, isLoginPending, user } }
-  function success(isLoginSuccess, user, userData) { return { type: userConstants.LOGIN_SUCCESS, isLoginSuccess, user, userData } }
+  function request(isLoginPending) { return { type: userConstants.LOGIN_REQUEST, isLoginPending } }
+  function success(isLoginSuccess, userData) { return { type: userConstants.LOGIN_SUCCESS, isLoginSuccess, userData } }
 }
 
-function googleLogin(result, history) {
-  return async dispatch => {
+function googleLogin(result) {
+  return dispatch => {
     // This gives you a Google Access Token. You can use it to access the Google API.
     var token = result.credential.accessToken;
     // The signed-in user info.
     var user = result.user;
+    dispatch(request(true));
     var tempUser = {};
     if (user) {
-      let createdAt = new Date(user.metadata.creationTime);
-      let lastSignInTime = new Date(user.metadata.lastSignInTime);
-      if(createdAt.getTime() === lastSignInTime.getTime()) {
-        await eThreeActions.InitializeEThree(true);
-      }
-      else {
-        await eThreeActions.InitializeEThree(false);
-      }
       let backedUp = false;
-      db.collection("users").doc(user.uid).get().then(function (snapshot) {
+      db.collection("users").doc(user.uid).get().then(async function (snapshot) {
         if(snapshot.data()) {
           tempUser = snapshot.data();
           tempUser["googleCredential"] = token;
           backedUp = snapshot.data().backedUp;
         }
         else {   
-          tempUser = {    
-            email: user.email,
-            username: user.displayName,
-            firstName: "",
-            lastName: "",
-            phoneNumber: "",
-            headshot: user.photoURL,
-            backedUp: false,
-            provider: "google",
-            twoFactorAuth: false,
-            whileYouWereAway: {
-              enabled: true,
-              lastShownMilli: 0,
-            },
-            financialData: {},
-          }
-          db.collection("users").doc(user.uid).set(tempUser);
+          Object.assign(tempUser, defaultUser)
+          tempUser.email = user.email;
+          tempUser.username = user.displayName;
+          tempUser.headshot = user.photoURL;
+          tempUser.provider = "google";
+          tempUser.randomId = generateRandomId();
+          await db.collection("users").doc(user.uid).set(tempUser);
         }
-        dispatch(request(false, user));
-        dispatch(success(true, user, tempUser));
+        if(tempUser.e2ee) {
+          await eThreeActions.initializeEThree();
+        }
+        await dispatch(scrubUser(tempUser));
+        dispatch(request(false));
+        dispatch(success(true, tempUser));
         dispatch(updateBackedUp(backedUp));
-        history.push('/app/dashboard');
       },
         error => {
           dispatch(request(false, {}));
@@ -220,52 +210,57 @@ function googleLogin(result, history) {
 
   };
 
-  function request(isLoginPending, user) { return { type: userConstants.LOGIN_REQUEST, isLoginPending, user } }
-  function success(isLoginSuccess, user, userData) { return { type: userConstants.LOGIN_SUCCESS, isLoginSuccess, user, userData } }
+  function request(isLoginPending) { return { type: userConstants.LOGIN_REQUEST, isLoginPending } }
+  function success(isLoginSuccess, userData) { return { type: userConstants.LOGIN_SUCCESS, isLoginSuccess, userData } }
 }
 
-function register(email, firstName, password, history) {
+function register(email, firstName, password) {
    return dispatch => {
       dispatch(request, true, {});
       auth.createUserWithEmailAndPassword(email, password).then(async (user) => {
-        await eThreeActions.InitializeEThree(true);
-        var tempUser = {
-          email: email,
-          firstName: firstName,
-          lastName: "",
-          phoneNumber: "",
-          headshot: "https://s3.amazonaws.com/dejafood.com/mobile_assets/deja_gradient.png",
-          backedUp: false,
-          provider: 'atlas',
-          twoFactorAuth: false,
-          whileYouWereAway: {
-            enabled: true,
-            lastShownMilli: 0,
-          },
-          financialData: {},
-        }
+        var tempUser = {};
+        Object.assign(tempUser, defaultUser)
+        tempUser.email = email;
+        tempUser.firstName = firstName;
+        tempUser.headshot = "https://s3.amazonaws.com/dejafood.com/mobile_assets/deja_gradient.png";
+        tempUser.provider = "atlas";
         dispatch(sendVerificationEmail());
-        db.collection("users").doc(user.user.uid).set(tempUser);
+        tempUser.randomId = generateRandomId();
+        await db.collection("users").doc(user.uid).set(tempUser);
         let backedUp = tempUser.backedUp;
-        dispatch(request(false, user.user));
-        dispatch(success(true, user.user, tempUser));
+        await dispatch(scrubUser(tempUser));
+        dispatch(request(false));
+        dispatch(success(true, tempUser));
         dispatch(updateBackedUp(backedUp));
         dispatch(alertActions.visible(false));
         dispatch(alertActions.clear());
-        history.push('/app/dashboard');
       }).catch(function(error) {
       dispatch(loginFailure(true, error.toString(), {}, {}));
       dispatch(alertActions.error(error.toString()));
     });
   };
 
-  function request(isLoginPending, user) { return { type: userConstants.LOGIN_REQUEST, isLoginPending, user } }
-  function success(isLoginSuccess, user, userData) { return { type: userConstants.LOGIN_SUCCESS, isLoginSuccess, user, userData } }
+  function request(isLoginPending) { return { type: userConstants.LOGIN_REQUEST, isLoginPending } }
+  function success(isLoginSuccess, userData) { return { type: userConstants.LOGIN_SUCCESS, isLoginSuccess, userData } }
 }
 
 /////////////////////
 // Firebase utilities
 /////////////////////
+
+function scrubUser(user) {
+  return async dispatch => {
+    var uid = auth.currentUser.uid;
+    var password = uid.concat(user.randomId);
+    var financialDataTypes = ["accessTokens", "accounts"];
+    financialDataTypes.forEach(async type => {
+      var crypted = await eThreeActions.cryptoEncrypt(type, password);
+      dispatch(dataActions.financialDataTypeMap[type].storeUpdateFunction(crypted, user.financialData[crypted]));
+      delete user.financialData[crypted];
+    })
+    delete user.randomId;
+  }
+}
 
 function sendVerificationEmail() {
   return dispatch => {
@@ -350,12 +345,17 @@ function reCaptchaUpdate(human, signUp) {
 //////////////////////
 
 function logout() {
-  return async dispatch => {
-    let eThreeLoggedOut = await eThreeActions.logout();
+  return async (dispatch, getState) => {
+    let eThreeLoggedOut = true;
+    const { userData } = getState().user;
+    if(userData.e2ee) {
+      eThreeLoggedOut = await eThreeActions.logout();
+    }
     if(eThreeLoggedOut) {
       auth.signOut();
       dispatch(userLogout());
       dispatch(ethreeReset());
+      dispatch(dataActions.dataReset());
     }
     else {
       console.log("EThree unable to log out the user!");
@@ -368,28 +368,44 @@ function logout() {
 }
 
 function deleteAccount(uid) {
-  return async dispatch => {
-    let eThreeUnregistered = await eThreeActions.unregister();
-    if(eThreeUnregistered) {
-      console.log("Successfully unregistered your subscription to the end-to-end encryption service...")
-      db.collection("users").doc(uid).delete().then(function() {
-          console.log("User data successfully deleted from our databases!");
-      }).catch(function(error) {
-          console.error("Error removing user data from database: ", error.toString());
-      });
-      var user = auth.currentUser;
-      user.delete().then(function() {
-        console.log("User account successfully deleted!");
-      }).catch(function(error) {
-        console.log("Error deleting user account: ", error.toString());
-      });
-      dispatch(userLogout());
-      dispatch(ethreeReset());
+  return async (dispatch, getState) => {
+    // Very yucky, only way to tell if the user needs to sign in again before deleting his/her account
+    let success = await auth.currentUser.updatePassword("password").then(() => {return true}).catch(e => {
+      if (e.code === 'auth/requires-recent-login') {
+        dispatch(alertActions.error(e.toString()));
+        return false;
+      }
+      return true;
+    });
+    if (success) {
+      let eThreeUnregistered = true;
+      const { userData } = getState().user;
+      if(userData.e2ee) {
+        eThreeUnregistered = await eThreeActions.unregister();
+      }
+      if(eThreeUnregistered) {
+        if(userData.e2ee) {
+          console.log("Successfully unregistered your subscription to the end-to-end encryption service...")
+        }
+        db.collection("users").doc(uid).delete().then(function() {
+            console.log("User data successfully deleted from our databases!");
+        }).catch(function(error) {
+            console.error("Error removing user data from database: ", error.toString());
+        });
+        var user = auth.currentUser;
+        user.delete().then(function() {
+          console.log("User account successfully deleted!");
+        }).catch(function(error) {
+          console.log("Error deleting user account: ", error.toString());
+        });
+        dispatch(userLogout());
+        dispatch(ethreeReset());
+        dispatch(dataActions.dataReset());
+      }
+      else {
+        console.log("Unable to unregister your subscription to the end-to-end encryption service...")
+      }
     }
-    else {
-      console.log("Unable to unregister your subscription to the end-to-end encryption service...")
-    }
-    console.log('deleting account....')
   }
 
   function userLogout() { return { type: userConstants.LOGOUT } }

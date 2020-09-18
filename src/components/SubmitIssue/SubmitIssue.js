@@ -134,7 +134,7 @@ function SubmitIssue(props) {
 
 function mapStateToProps(store) {
   return {
-    email: store.authentication.user.email,
+    email: store.user.user.email,
   };
 }
 

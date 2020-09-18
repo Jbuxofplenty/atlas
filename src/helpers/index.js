@@ -5,5 +5,6 @@ export {
   apiBaseUrl, 
   randomState,
   postMessageLocation,
+  generateRandomId,
 } from './util';
 export { store, persistor } from './store';

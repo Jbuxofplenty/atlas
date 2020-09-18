@@ -4,7 +4,6 @@ import { connect } from 'react-redux';
 import { Switch, Route, withRouter, Redirect } from 'react-router';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import Hammer from 'rc-hammerjs';
-import { isEmpty } from 'lodash';
 import { toast, ToastContainer } from 'react-toastify';
 
 import Profile from 'authenticated/views/profile/Profile';
@@ -34,7 +33,7 @@ import { auth } from '../../firebase'
 import 'App.scss';
 import 'assets/scss/theme.scss';
 
-const CloseButton = ({closeToast}) => <i onClick={closeToast} className="la la-close notifications-close"/>
+const CloseButton = ({closeToast}) => <i onClick={(e) => {e.stopPropagation(); closeToast(e);}} className="la la-close notifications-close"/>
 
 class Layout extends React.Component {
   static propTypes = {
@@ -80,7 +79,7 @@ class Layout extends React.Component {
         let oneDayMilli = 86400000;
         let oneMinuteMilli = 60000;
         if(whileYouWereAway.enabled && (lastLoggedInDifference > oneDayMilli || lastLoggedInDifference < oneMinuteMilli)) {
-          let uid = this.props.user.uid;
+          let uid = auth.currentUser.uid;
           fetch(apiBaseUrl() + 'github/whileYouWereAway/', {
             method: 'POST',
             headers: {
@@ -122,18 +121,21 @@ class Layout extends React.Component {
   }
 
   async userCheck() {
-    if(isEmpty(this.props.user)) {
+    if(!auth.currentUser) {
       this.props.history.replace('/');
     }
     else {
-      const hasLocalPrivateKey = await this.props.localKeyPresent();
-      if(!hasLocalPrivateKey) {
-        toast.error(`You do not have a private key stored locally 
-            on your device to decrypt you financial data! You will 
-            need to restore your local key with the backup you made.`, {
-          onClick: () => this.props.history.push('/app/profile',),
-          autoClose: 15000
-        });
+      if(this.props.userData.e2ee) {
+        // const hasLocalPrivateKey = await this.props.localKeyPresent();
+        const hasLocalPrivateKey = true;
+        if(!hasLocalPrivateKey) {
+          toast.error(`You do not have a private key stored locally 
+              on your device to decrypt you financial data! You will 
+              need to restore your local key with the backup you made.`, {
+            onClick: () => this.props.history.push('/app/profile',),
+            autoClose: 15000
+          });
+        }
       }
     }
   }
@@ -157,7 +159,7 @@ class Layout extends React.Component {
   render() {
     return (
       <div>
-        {isEmpty(this.props.user) ? <Loader timeout={true} className="center-screen" /> :
+        {!auth.currentUser ? <Loader timeout={true} className="center-screen" /> :
           <div
             className={[
               s.root,
@@ -212,8 +214,7 @@ class Layout extends React.Component {
 
 function mapStateToProps(store) {
   return {
-    user: store.authentication.user,
-    userData: store.authentication.userData,
+    userData: store.user.userData,
     sidebarOpened: store.navigation.sidebarOpened,
     sidebarPosition: store.navigation.sidebarPosition,
     sidebarVisibility: store.navigation.sidebarVisibility,

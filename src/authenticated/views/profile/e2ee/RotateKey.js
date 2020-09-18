@@ -10,11 +10,12 @@ import Button from "components/CustomButtons/Button.js";
 
 import s from '../Profile.module.scss';
 import { eThreeActions, alertActions } from "actions";
+import { auth } from '../../../../firebase';
 
 function RotateKey(props) {
   const rotateKey = () => {
     props.setComponent("rotate-key");
-    props.rotateKey(props.uid);
+    props.rotateKey(auth.currentUser.uid);
   }
 
   useEffect(() => {
@@ -73,7 +74,6 @@ function RotateKey(props) {
 
 function mapStateToProps(store) {
   return {
-    uid: store.authentication.user.uid,
     alertType: store.alert.type,
     alertMessage: store.alert.message,
     alertVisible: store.alert.visible,

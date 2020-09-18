@@ -26,7 +26,7 @@ class Notifications extends React.Component {
     this.state = {
       open: false,
       numNotifications: 0,
-      backedUp: props.backedUp,
+      backedUp: props.userData.e2ee ? props.backedUp : true,
     };
   }
 
@@ -36,15 +36,19 @@ class Notifications extends React.Component {
 
   updateNumNotifications(props) {
     let numNotifications = 0;
-    if(!props.backedUp) numNotifications += 1;
+    if(this.props.userData.e2ee) {   
+      if(!props.backedUp) numNotifications += 1;
+    }
     this.setState({ numNotifications });
   }
 
   componentDidUpdate(prevProps) {
-    if(this.props.backedUp !== prevProps.backedUp) {
+    if(this.props.backedUp !== prevProps.backedUp || this.props.userData.e2ee !== prevProps.userData.e2ee) {
       this.updateNumNotifications(this.props);
-      let backedUp = this.props.backedUp;
-      this.setState({ backedUp });
+      if(this.props.userData.e2ee) {   
+        let backedUp = this.props.backedUp;
+        this.setState({ backedUp });
+      }
     }
   }
 
@@ -85,6 +89,7 @@ class Notifications extends React.Component {
 function mapStateToProps(store) {
   return {
     backedUp: store.eThree.backedUp,
+    userData: store.user.userData,
   };
 }
 

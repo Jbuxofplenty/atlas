@@ -15,6 +15,7 @@ import Button from "components/CustomButtons/Button.js";
 
 import s from '../Profile.module.scss';
 import { eThreeActions, alertActions } from "actions";
+import { auth } from '../../../../firebase';
 
 function BackupKey(props) {
   const [showPassword, setShowPassword] = useState(false);
@@ -25,7 +26,7 @@ function BackupKey(props) {
 
   const backupKey = () => {
     props.setComponent("backup-key");
-    props.backupKey(password, props.uid);
+    props.backupKey(password, auth.currentUser.uid);
   }
 
   useEffect(() => {
@@ -105,7 +106,6 @@ function BackupKey(props) {
 
 function mapStateToProps(store) {
   return {
-    uid: store.authentication.user.uid,
     alertType: store.alert.type,
     alertMessage: store.alert.message,
     alertVisible: store.alert.visible,

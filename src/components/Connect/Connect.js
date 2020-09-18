@@ -19,6 +19,8 @@ import styles from "assets/jss/material-kit-react/components/connect.js";
 import OAuthObject from 'oauth2';
 import { randomState, postMessageLocation } from 'helpers';
 
+import { dataActions } from 'actions';
+
 const useStyles = makeStyles(styles);
 
 const SimpleButton = withStyles({
@@ -45,12 +47,24 @@ function Connect(props) {
   const [oAuth] = useState(OAuthObject[props.institution.displayName]);
   const [isPending, setIsPending] = useState(false);
   const [message, setMessage] = useState(`We'll have you login at ${props.institution.displayName} to authorize this application and bring you back here.`);
+  const e2ee = props.userData.e2ee;
+  const privateKeyPresent = props.privateKeyPresent;
+
+  const isInvalid = isSuccess || 
+      (e2ee && !privateKeyPresent);
 
   const mounted = useRef(false);
   useEffect(() => {
-      mounted.current = true;
-      return () => { mounted.current = false; };
+    mounted.current = true;
+    return () => { mounted.current = false; };
   }, []);
+
+  useEffect(() => {
+    if(e2ee && !privateKeyPresent) {
+      setIsError(true);
+      setMessage('Since you have end-to-end encryption enabled, you must have your private key present on your local device.  Go to your profile to retrieve your private key!');
+    }
+  }, [e2ee, privateKeyPresent])
 
   let windowObjectReference = null;
   let previousUrl = null;
@@ -98,8 +112,9 @@ function Connect(props) {
     previousUrl = url;
   };
 
-  useEffect(() => { return () => { clearTimeout(popupTick.current) } 
-    }, [authCode])
+  useEffect(() => { 
+    return () => { clearTimeout(popupTick.current) } 
+  }, [authCode])
 
   const receiveMessage = async event => {
     // Do we trust the sender of this message? (might be
@@ -115,9 +130,12 @@ function Connect(props) {
         setAuthCode(code);
         fetch(oAuth.buildTokenRequest(code), {
           method: 'POST',
-        }).then(response => response.json()).then(data => { 
+        }).then(response => response.json()).then(async data => { 
           setIsPending(false);
           setIsSuccess(true);
+          data.institution = props.institution.displayName;
+          await props.storeFinancialData(props.institution.displayName, "accessTokens", data);
+          oAuth.pullAccountData();
           setMessage(`You successfully connected your ${props.institution.displayName} account!  We're pulling in all of your data now.`);
         }).catch(error => {
           setIsPending(false);
@@ -212,7 +230,7 @@ function Connect(props) {
                   <SimpleButton simple color="primary" size="lg" onClick={props.handleClose}>
                     Cancel
                   </SimpleButton>
-                  <Button disabled={isSuccess} color="primary" size="lg" onClick={oAuthFlow}>
+                  <Button disabled={isInvalid} color="primary" size="lg" onClick={oAuthFlow}>
                     Connect
                   </Button>
                 </div>
@@ -227,8 +245,15 @@ function Connect(props) {
 
 function mapStateToProps(store) {
   return {
-    email: store.authentication.user.email,
+    userData: store.user.userData,
+    privateKeyPresent: store.eThree.privateKeyPresent,
   };
 }
 
-export default connect(mapStateToProps)(Connect);
+const mapDispatchToProps = (dispatch, history) => {
+  return {
+    storeFinancialData: (institution, type, data) => dispatch(dataActions.storeFinancialData(institution, type, data)),
+  };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Connect);

@@ -25,6 +25,7 @@ import { openSidebar, closeSidebar } from 'actions/navigation.actions';
 
 import s from './AuthenticatedHeader.module.scss';
 import 'assets/scss/vendors/animate.css/animate.css';
+import { auth } from '../../firebase';
 
 class AuthenticatedHeader extends React.Component {
   static propTypes = {
@@ -83,7 +84,7 @@ class AuthenticatedHeader extends React.Component {
             <NavItem className={`${s.divider} text-white`} />
             <Dropdown nav isOpen={this.state.userDropdownOpen} toggle={this.toggleUserDropdown} id="basic-nav-dropdown" className={`${s.notificationsMenu}`} style={{marginRight: 'auto'}}>
               <DropdownToggle nav caret style={{color: "#f4f4f5", padding: 0}}>
-                <span className={`small ${s.accountCheck}`}>{this.props.displayName}</span>
+                <span className={`small ${s.accountCheck}`}>{auth.currentUser.displayName}</span>
                 <span className={`${s.avatar} rounded-circle thumb-sm float-left ml-2 mr-2`}>
                   <img src={!isEmpty(this.props.userData) ? this.props.userData.headshot : ""} alt="..."/>
                 </span>
@@ -109,8 +110,7 @@ function mapStateToProps(store) {
     isSidebarOpened: store.navigation.sidebarOpened,
     sidebarVisibility: store.navigation.sidebarVisibility,
     sidebarPosition: store.navigation.sidebarPosition,
-    userData: store.authentication.userData,
-    displayName: store.authentication.user.displayName,
+    userData: store.user.userData,
   };
 }
 

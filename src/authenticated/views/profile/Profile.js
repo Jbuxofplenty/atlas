@@ -16,6 +16,7 @@ import RotateKey from "./e2ee/RotateKey";
 import RestoreKey from "./e2ee/RestoreKey";
 import UpdatePassword from "./e2ee/UpdatePassword";
 import DeleteBackup from "./e2ee/DeleteBackup";
+import EnableE2EE from "./e2ee/EnableE2EE";
 
 // personal
 import PersonalInformation from "./personal/PersonalInformation";
@@ -34,6 +35,7 @@ class Profile extends React.Component {
       activeTab: '2',
       backedUp: props.backedUp,
       localKeyPresent: false,
+      e2ee: props.userData.e2ee,
     };
 
     this.toggle = this.toggle.bind(this);
@@ -53,6 +55,12 @@ class Profile extends React.Component {
 
   componentDidMount() {
     this.checkLocalKeyPresent();
+  }
+
+  componentWillUpdate(prevProps) {
+    if(prevProps.userData.e2ee !== this.props.userData.e2ee) {
+      this.setState({ e2ee: prevProps.userData.e2ee });
+    }
   }
 
   updateBackedUp() {
@@ -86,7 +94,10 @@ class Profile extends React.Component {
   }
 
   renderEncryption() {
-    if(!this.state.backedUp && !this.state.localKeyPresent) {
+    if(!this.state.e2ee) {
+      return null;
+    }
+    else if(!this.state.backedUp && !this.state.localKeyPresent) {
       return (
         <RotateKey newKeyGenerated={this.newKeyGenerated} /> 
       )
@@ -149,6 +160,7 @@ class Profile extends React.Component {
           <TabPane tabId="2" className="py-5">
             {this.state.activeTab === '2' &&
               <div>
+                <EnableE2EE />
                 {this.renderEncryption()}
               </div>
             } 
@@ -181,7 +193,7 @@ class Profile extends React.Component {
 const mapStateToProps = (state) => {
   return {
     backedUp: state.eThree.backedUp,
-    userData: state.authentication.userData,
+    userData: state.user.userData,
   };
 }
 

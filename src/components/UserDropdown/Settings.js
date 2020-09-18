@@ -9,8 +9,22 @@ import { userActions } from 'actions';
 
 
 import s from './ListGroup.module.scss'; // eslint-disable-line
+import { isDev } from 'helpers';
 
 class Settings extends React.Component {
+  constructor(props) {
+    super(props);
+    this.logoutHandle = this.logoutHandle.bind(this);
+  }
+
+  logoutHandle() {
+    if(this.props.userData.e2ee && !isDev()) {
+      this.props.openLogoutModal();
+    }
+    else {
+      this.props.logout();
+    }
+  }
 
   render() {
     return (
@@ -28,7 +42,7 @@ class Settings extends React.Component {
             </span>
             <h5 className="m-0 mt-2">Profile</h5>
           </ListGroupItem>
-          <ListGroupItem className={s.listGroupItem} onClick={() => this.props.openLogoutModal()}>
+          <ListGroupItem className={s.listGroupItem} onClick={() => this.logoutHandle()}>
             <span className={[s.notificationIcon, 'thumb-sm'].join(' ')}>
               <i className="fa fa-sign-out" />
             </span>
@@ -40,10 +54,16 @@ class Settings extends React.Component {
   }
 }
 
+function mapStateToProps(store) {
+  return {
+    userData: store.user.userData,
+  };
+}
+
 const mapDispatchToProps = (dispatch, history) => {
   return {
     logout: () => dispatch(userActions.logout()),
   };
 }
 
-export default withRouter(connect(null, mapDispatchToProps)(Settings));
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Settings));

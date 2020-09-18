@@ -10,7 +10,7 @@ import Switch from '@material-ui/core/Switch';
 import { withStyles } from '@material-ui/core/styles';
 import { green } from '@material-ui/core/colors';
 
-import { db } from '../../../firebase';
+import { db, auth } from '../../../firebase';
 
 import s from './Settings.module.scss';
 import { alertActions, userActions } from "actions";
@@ -35,11 +35,12 @@ function WhileYouWereAway(props) {
   const handleChange = (event) => {
     let enabled = event.target.checked;
     setEnabled(enabled);
-    let userData = props.userData;
+    var userData = {};
+    Object.assign(userData, props.userData);
     userData.whileYouWereAway.enabled = enabled;
     let whileYouWereAway = userData.whileYouWereAway;
     props.updateUserData(userData);
-    db.collection("users").doc(props.uid).update({ whileYouWereAway });
+    db.collection("users").doc(auth.currentUser.uid).update({ whileYouWereAway });
   };
 
   return (
@@ -70,8 +71,7 @@ function WhileYouWereAway(props) {
 
 function mapStateToProps(store) {
   return {
-    uid: store.authentication.user.uid,
-    userData: store.authentication.userData,
+    userData: store.user.userData,
     alertType: store.alert.type,
     alertMessage: store.alert.message,
     alertVisible: store.alert.visible,

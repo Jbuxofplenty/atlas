@@ -18,6 +18,8 @@ import CustomInput from "components/CustomInput/CustomInput.js";
 import styles from "assets/jss/material-kit-react/components/deleteAccountModal.js";
 
 import { userActions } from 'actions';
+import { auth } from "../../firebase";
+import { isDev } from "helpers";
 
 const useStyles = makeStyles(styles);
 
@@ -40,13 +42,12 @@ function DeleteAccountModal(props) {
 
   const classes = useStyles();
 
-  const isInvalid = input !== "DELETEACCOUNT";
+  const isInvalid = input !== "DELETEACCOUNT" || (props.alertVisible && props.alertType === "alert-error");
 
   const deleteAccount = (e) => {
     e.preventDefault();
-    if(input === "DELETEACCOUNT") {
-      props.history.push('/signup');
-      props.deleteAccount(props.user.uid);
+    if(input === "DELETEACCOUNT" || isDev()) {
+      props.deleteAccount(auth.currentUser.uid);
     }
   }
 
@@ -65,31 +66,41 @@ function DeleteAccountModal(props) {
               </CardHeader>
               <CardBody>
                 <GridContainer justify="center">
-                <GridItem xs={12} sm={12} md={12} className={classes.accountContainer}>
-                  <div className={classes.message}>{message}</div>
-                </GridItem>
-                <GridItem xs={12} sm={12} md={12} className={classes.accountContainer}>
-                  <CustomInput
-                    labelText="Delete Account?"
-                    id=""
-                    value={input}
-                    onChange={updateInput}
-                    formControlProps={{
-                      className: "mx-2 align-self-center"
-                    }}
-                  />
-                </GridItem>
+                  <GridItem xs={12} sm={12} md={12} className={classes.accountContainer}>
+                    <div className={classes.message}>{message}</div>
+                  </GridItem>
+                  <GridItem xs={12} sm={12} md={12} className={classes.accountContainer}>
+                    <CustomInput
+                      labelText="Delete Account?"
+                      id=""
+                      value={input}
+                      onChange={updateInput}
+                      formControlProps={{
+                        className: "mx-2 align-self-center"
+                      }}
+                      error={props.alertVisible && props.alertType === "alert-error"}
+                    />
+                  </GridItem>
                 </GridContainer>
               </CardBody>
               <CardFooter className={classes.cardFooter}>
-                <div className={classes.buttonContainer}>
-                  <SimpleButton simple color="primary" size="lg" onClick={props.handleClose}>
-                    Cancel
-                  </SimpleButton>
-                  <Button disabled={isInvalid} color={props.backedUp ? "primary" : "danger"} size="lg" onClick={deleteAccount}>
-                    Delete Account
-                  </Button>
-                </div>
+                <GridContainer justify="center">
+                  <GridItem xs={12} sm={12} md={12} className={classes.accountContainer}>
+                    <div className={classes.buttonContainer}>
+                      <SimpleButton simple color="primary" size="lg" onClick={props.handleClose}>
+                        Cancel
+                      </SimpleButton>
+                      <Button disabled={isInvalid} color={props.backedUp ? "primary" : "danger"} size="lg" onClick={deleteAccount}>
+                        Delete Account
+                      </Button>
+                    </div>
+                  </GridItem>
+                  <GridItem xs={12} sm={12} lg={12} className={`${classes.instructionContainer}`}>
+                    { props.alertVisible && props.alertType === "alert-pending" && <i className="fas fa-spinner fa-spin" style={{fontSize: 20}}/> }
+                    { props.alertVisible && props.alertType === "alert-success" && <div className="successMessage">{props.alertMessage}</div> }
+                    { props.alertVisible && props.alertType === "alert-error" && <div className="errorMessage">{props.alertMessage}</div> }
+                  </GridItem>
+                </GridContainer>
               </CardFooter>
             </form>
           </Card>
@@ -101,7 +112,9 @@ function DeleteAccountModal(props) {
 
 function mapStateToProps(store) {
   return {
-    user: store.authentication.user,
+    alertType: store.alert.type,
+    alertMessage: store.alert.message,
+    alertVisible: store.alert.visible,
   };
 }
 

@@ -4,6 +4,7 @@ const rp = require('request-promise');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const express = require('express');
+const { db } = require('./admin');
 
 // Common variables
 // Company name to include in the emails
@@ -49,6 +50,32 @@ checkRecaptcha.post('*', (req, res) => {
   })
 });
 
+/**
+ * Generates a random id, stored only in firestore for encrypting keys
+ */
+const generateRandomId = functions.https.onCall(async (_data, context) => {
+  if (!context.auth) {
+    // Throwing an HttpsError so that the client gets the error details.
+    throw new functions.https.HttpsError('unauthenticated', 'The function must be called ' +
+      'while authenticated.');
+  }
+  
+  // You can use context.auth.token.email, context.auth.token.phone_number or any unique value for identity
+  const uid = context.auth.token.uid;
+  var chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  var length = getRandomInt(50, 64);
+  var randomId = '';
+  for (var i = length; i > 0; --i) randomId += chars[Math.round(Math.random() * (chars.length - 1))];
+  db.collection("users").doc(uid).update({ randomId });
+  res.send({type: 'success'})
+});
+
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min) + min); //The maximum is exclusive and the minimum is inclusive
+}
+
 const nodemailer = require('nodemailer');
 
 // Configure the email transport using the default SMTP transport and a GMail account.
@@ -71,8 +98,8 @@ const mailTransport = nodemailer.createTransport({
  * Sends a welcome email to the given user
  *
  * All params are referenced from req.body
- * @param {Object} email
- * @param {Object} displayName
+ * @param {string} email
+ * @param {string} displayName
  */
 async function sendWelcomeEmail(email, displayName) {
   const mailOptions = {
@@ -91,8 +118,8 @@ async function sendWelcomeEmail(email, displayName) {
  * Sends a goodbye email to the given user
  *
  * All params are referenced from req.body
- * @param {Object} email
- * @param {Object} displayName
+ * @param {string} email
+ * @param {string} displayName
  */
 async function sendGoodbyeEmail(email, displayName) {
   const mailOptions = {
@@ -111,5 +138,6 @@ module.exports = {
   checkRecaptcha,
   sendWelcomeEmail,
   sendGoodbyeEmail,
+  generateRandomId,
 };
   

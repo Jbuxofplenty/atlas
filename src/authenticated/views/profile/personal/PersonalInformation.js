@@ -12,13 +12,14 @@ import Button from "components/CustomButtons/Button.js";
 
 import s from '../Profile.module.scss';
 import { userActions, alertActions } from "actions";
+import { auth } from "../../../../firebase";
 
 function PersonalInformation(props) {
   const [firstName, setFirstName] = useState(props.firstName);
   const [lastName, setLastName] = useState(props.lastName);
 
   const updateNames = () => {
-    db.collection("users").doc(props.user.uid).update({ firstName, lastName });
+    db.collection("users").doc(auth.currentUser.uid).update({ firstName, lastName });
     var userData = {};
     Object.assign(userData, props.userData);
     userData["firstName"] = firstName;
@@ -36,7 +37,6 @@ function PersonalInformation(props) {
     props.clear();
     // eslint-disable-next-line
   }, []);
-
   return (
     <div>
       <h3 className={`${s.header} mb-3`}>Personal Information</h3>
@@ -75,13 +75,13 @@ function PersonalInformation(props) {
             <AuthCustomInput
               id="email"
               labelText="Email"
-              value={props.email}
+              value={auth.currentUser.email}
               disabled
               fullWidth
             />
           </GridItem>
           <GridItem xs={12} sm={12} md={6} lg={2} className={s.instructionContainer}>
-              {props.user.emailVerified ?
+              {auth.currentUser.emailVerified ?
                 <div className={s.instructionContainer}>
                   <i className="fa fa-check successMessage email-icon mr-3 mb-sm-4 mb-md-0"/>
                   <span className="ml-xs">Email Verified</span>
@@ -93,7 +93,7 @@ function PersonalInformation(props) {
                 </div>
               }
           </GridItem>
-          {!props.user.emailVerified &&
+          {!auth.currentUser.emailVerified &&
             <GridItem xs={12} sm={12} md={6} lg={4} className={s.instructionContainer}>
               <Button 
                 color="primary" 
@@ -118,11 +118,9 @@ function PersonalInformation(props) {
 
 function mapStateToProps(store) {
   return {
-    email: store.authentication.user.email,
-    user: store.authentication.user,
-    userData: store.authentication.userData,
-    firstName: store.authentication.userData.firstName,
-    lastName: store.authentication.userData.lastName,
+    userData: store.user.userData,
+    firstName: store.user.userData.firstName,
+    lastName: store.user.userData.lastName,
     alertType: store.alert.type,
     alertMessage: store.alert.message,
     alertVisible: store.alert.visible,

@@ -334,13 +334,13 @@ function LoginPage(props) {
 
 const mapStateToProps = (state) => {
   return {
-    isLoginPending: state.authentication.isLoginPending,
-    isLoginSuccess: state.authentication.isLoginSuccess,
-    loginError: state.authentication.loginError,
+    isLoginPending: state.user.isLoginPending,
+    isLoginSuccess: state.user.isLoginSuccess,
+    loginError: state.user.loginError,
     errorMessage: state.alert.message,
     visible: state.alert.visible,
-    signUp: state.authentication.signUp,
-    human: state.authentication.human,
+    signUp: state.user.signUp,
+    human: state.user.human,
   };
 }
 

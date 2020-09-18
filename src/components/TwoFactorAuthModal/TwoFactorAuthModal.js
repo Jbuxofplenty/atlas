@@ -212,7 +212,7 @@ function TwoFactorAuthModal(props) {
 
 function mapStateToProps(store) {
   return {
-    twoFactorAuth: store.authentication.userData.twoFactorAuth,
+    twoFactorAuth: store.user.userData.twoFactorAuth,
     alertType: store.alert.type,
     alertMessage: store.alert.message,
     alertVisible: store.alert.visible,

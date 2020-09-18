@@ -8,12 +8,13 @@ import Button from "components/CustomButtons/Button.js";
 
 import s from '../Profile.module.scss';
 import { eThreeActions, alertActions } from "actions";
+import { auth } from '../../../../firebase';
 
 function DeleteBackup(props) {
 
   const deleteBackup = () => {
     props.setComponent("delete-backup");
-    props.deleteBackup(props.uid);
+    props.deleteBackup(auth.currentUser.uid);
   }
 
   useEffect(() => {
@@ -61,7 +62,6 @@ function DeleteBackup(props) {
 
 function mapStateToProps(store) {
   return {
-    uid: store.authentication.user.uid,
     alertType: store.alert.type,
     alertMessage: store.alert.message,
     alertVisible: store.alert.visible,

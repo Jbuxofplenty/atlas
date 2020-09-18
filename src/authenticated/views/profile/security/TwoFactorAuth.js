@@ -54,10 +54,11 @@ function TwoFactorAuth(props) {
     props.setComponent('2fa');
     var twoFactorAuth = event.target.checked;
     setTwoFA(twoFactorAuth);
-    let userData = props.userData;
+    var userData = {};
+    Object.assign(userData, props.userData);
     userData.twoFactorAuth = twoFactorAuth;
     if(!twoFactorAuth) {
-      db.collection("users").doc(props.uid).update({ twoFactorAuth, phoneNumber: "" });
+      db.collection("users").doc(auth.currentUser.uid).update({ twoFactorAuth, phoneNumber: "" });
       setPhoneNumber("");
       userData.phoneNumber = "";
       var options = auth.currentUser.multiFactor.enrolledFactors;
@@ -72,20 +73,20 @@ function TwoFactorAuth(props) {
       }
     }
     else {
-      console.log(props.uid)
-      db.collection("users").doc(props.uid).update({ twoFactorAuth });
+      db.collection("users").doc(auth.currentUser.uid).update({ twoFactorAuth });
     }
     props.updateUserData(userData);
   };
 
   const handlePhoneChange = async (value) => {
     await setPhoneNumber(value);
-    let userData = props.userData;
+    var userData = {};
+    Object.assign(userData, props.userData);
     userData.phoneNumber = value;
     props.updateUserData(userData);
     if(value.length === 17) {
       handleOpen(value);
-      db.collection("users").doc(props.uid).update({ phoneNumber: value });
+      db.collection("users").doc(auth.currentUser.uid).update({ phoneNumber: value });
     }
   };
 
@@ -196,8 +197,7 @@ function TwoFactorAuth(props) {
 
 function mapStateToProps(store) {
   return {
-    uid: store.authentication.user.uid,
-    userData: store.authentication.userData,
+    userData: store.user.userData,
     alertType: store.alert.type,
     alertMessage: store.alert.message,
     alertVisible: store.alert.visible,

@@ -72,7 +72,7 @@ function DeleteAccount(props) {
 
 function mapStateToProps(store) {
   return {
-    user: store.authentication.user,
+    user: store.user.user,
     alertType: store.alert.type,
     alertMessage: store.alert.message,
     alertVisible: store.alert.visible,
