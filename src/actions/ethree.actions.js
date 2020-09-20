@@ -238,7 +238,6 @@ function backupKey(keyPassword, uid) {
     const eThree = await initializeEThree();
     if(!eThree) {
       dispatch(alertActions.error("End-to-End encyption session has expired. Please log out and log back in to perform this action!"));
-      dispatch(alertActions.visible(true));
       return;
     }
     await eThree.backupPrivateKey(keyPassword)

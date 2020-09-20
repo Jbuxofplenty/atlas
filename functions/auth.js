@@ -50,26 +50,6 @@ checkRecaptcha.post('*', (req, res) => {
   })
 });
 
-/**
- * Generates a random id, stored only in firestore for encrypting keys
- */
-const generateRandomId = functions.https.onCall(async (_data, context) => {
-  if (!context.auth) {
-    // Throwing an HttpsError so that the client gets the error details.
-    throw new functions.https.HttpsError('unauthenticated', 'The function must be called ' +
-      'while authenticated.');
-  }
-  
-  // You can use context.auth.token.email, context.auth.token.phone_number or any unique value for identity
-  const uid = context.auth.token.uid;
-  var chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  var length = getRandomInt(50, 64);
-  var randomId = '';
-  for (var i = length; i > 0; --i) randomId += chars[Math.round(Math.random() * (chars.length - 1))];
-  db.collection("users").doc(uid).update({ randomId });
-  res.send({type: 'success'})
-});
-
 function getRandomInt(min, max) {
   min = Math.ceil(min);
   max = Math.floor(max);
@@ -138,6 +118,5 @@ module.exports = {
   checkRecaptcha,
   sendWelcomeEmail,
   sendGoodbyeEmail,
-  generateRandomId,
 };
   

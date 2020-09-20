@@ -34,14 +34,14 @@ function RestoreKey(props) {
       <div className="d-flex flex-column justify-content-center w-100">
         <div className={`${s.rounded}`}></div>
         <GridContainer justify="center" className={`${s.gridContainer}`}>
-          <GridItem xs={12} sm={12}  md={6} lg={5} className={`${s.instructionContainer}`}>
+          <GridItem xs={12} sm={12}  md={6} lg={5} className={`my-2 ${s.instructionContainer}`}>
             <div className={`${s.instructionText}`}>
               Retrieve backed up private key from the cloud.  Enter the correct
               password you used to backup your private key initially.
             </div>
           </GridItem>
-          <GridItem xs={12} sm={12}  md={6} lg={7}>
-            <GridContainer justify="center" className={`${s.gridContainer}`}>
+          <GridItem xs={12} sm={12}  md={6} lg={7} className="my-2">
+            <GridContainer justify="center" className={`${s.internalGridContainer}`}>
               <GridItem xs={12} sm={12}  md={6} lg={8}>
                 <AuthCustomInput
                   id="restore-password"

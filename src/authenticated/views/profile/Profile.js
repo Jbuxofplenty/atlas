@@ -42,25 +42,24 @@ class Profile extends React.Component {
     this.updateBackedUp = this.updateBackedUp.bind(this);
     this.newKeyGenerated = this.newKeyGenerated.bind(this);
     this.checkLocalKeyPresent = this.checkLocalKeyPresent.bind(this);
+    this._isMounted = false;
   }
 
-  componentDidUpdate(prevProps) {
-    if(this.props.backedUp !== prevProps.backedUp) {
+  componentDidUpdate(nextProps) {
+    if(this.props.backedUp !== nextProps.backedUp) {
       this.timeout = setTimeout(
         this.updateBackedUp, 
         3000
       );
     }
+    if(nextProps.userData.e2ee !== this.props.userData.e2ee) {
+      this._isMounted && this.setState({ e2ee: nextProps.userData.e2ee });
+    }
   }
 
   componentDidMount() {
-    this.checkLocalKeyPresent();
-  }
-
-  componentWillUpdate(prevProps) {
-    if(prevProps.userData.e2ee !== this.props.userData.e2ee) {
-      this.setState({ e2ee: prevProps.userData.e2ee });
-    }
+    this._isMounted = true;
+    this._isMounted && this.checkLocalKeyPresent();
   }
 
   updateBackedUp() {

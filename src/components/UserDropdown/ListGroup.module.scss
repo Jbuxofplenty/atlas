@@ -66,10 +66,20 @@
     top: 2px;
   }
 }
+
+.noAccounts {
+  display: flex;
+  height: 320px;
+  text-align: center;
+  padding-top: 20px;
+}
   
-  .notificationIcon {
+.notificationIcon {
   margin-right: 1rem;
   float: left;
 
+  display: flex;
+  flex-direction: row;
+  align-items: center;
   @include clearfix;
 }

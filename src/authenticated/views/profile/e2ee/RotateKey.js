@@ -37,7 +37,7 @@ function RotateKey(props) {
       <div className="d-flex flex-column justify-content-center w-100">
         <div className={`${s.rounded}`}></div>
         <GridContainer justify="center" className={`${s.gridContainer}`}>
-          <GridItem xs={12} sm={12}  md={6} lg={5} className={`${s.instructionContainer}`}>
+          <GridItem xs={12} sm={12}  md={6} lg={5} className={`my-2 ${s.instructionContainer}`}>
             <div className={`${s.instructionText}`}>
               Unfortunately, you do not have a private key stored on this 
               device or a backup of the private key in the cloud.  You
@@ -48,7 +48,7 @@ function RotateKey(props) {
             </div>
           </GridItem>
           <GridItem xs={12} sm={12} md={6} lg={7}>
-            <GridContainer justify="center" className={`${s.gridContainer}`}>
+            <GridContainer justify="center" className={`my-2 ${s.internalGridContainer}`}>
               <GridItem xs={12} sm={12} lg={12} className={`${s.instructionContainer}`}>
                 <Button 
                   color="primary" 
@@ -59,7 +59,7 @@ function RotateKey(props) {
                   Generate new private key
                 </Button>
               </GridItem>
-              <GridItem xs={12} sm={12} lg={12} className={`${s.instructionContainer}`}>
+              <GridItem xs={12} sm={12} lg={12} className={`my-2 ${s.instructionContainer}`}>
                 { props.alertVisible && props.alertType === "alert-pending" && props.alertComponent === "rotate-key" && <i className="fas fa-spinner fa-spin" style={{fontSize: 20}}/> }
                 { props.alertVisible && props.alertType === "alert-success" &&  props.alertComponent === "rotate-key" && <div className="successMessage">{props.alertMessage}</div> }
                 { props.alertVisible && props.alertType === "alert-error" && props.alertComponent === "rotate-key" && <div className="errorMessage">{props.alertMessage}</div> }

@@ -28,6 +28,7 @@ export function navigation(state = initialState, action) {
     case navigationConstants.CHANGE_ACTIVE_SIDEBAR_ITEM:
       return {
         ...state,
+        sidebarOpened: false,
         activeItem: action.activeItem,
       };
     default:

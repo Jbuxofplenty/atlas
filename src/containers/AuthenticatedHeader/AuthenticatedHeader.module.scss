@@ -314,13 +314,8 @@
   :global .dropdown-menu {
     left: auto !important;
     right: 0 !important;
+    margin-right: 10px !important;
     top: $navbar-height !important;
-  }
-
-  @media(max-width: 580px) {
-    :global .dropdown-menu {
-      right: -50% !important;
-    }
   }
 }
 

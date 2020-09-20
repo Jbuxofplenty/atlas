@@ -5,6 +5,8 @@ import { store } from 'helpers';
 // Function ensures API request will be made with a valid access token
 export async function apiRequest(endpoint, institution, data) {
   const apiBaseUrl = OAuthObject[institution].apiBaseUrl;
+  var url = endpoint.startsWith("https://") ? endpoint : apiBaseUrl + endpoint;
+  const headers = OAuthObject[institution].headers;
   const method = data ? 'POST' : 'GET';
   var accessTokens = await dataActions.getFinancialData('accessTokens');
   var accessToken = accessTokens[institution];
@@ -20,15 +22,21 @@ export async function apiRequest(endpoint, institution, data) {
   }
   var responseData;
   if(method === 'GET') {
-    responseData = await fetch(apiBaseUrl + endpoint, {
+    responseData = await fetch(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': authHeader
+        'Authorization': authHeader,
+        ...headers,
       }
     })
     .then((response) => response.json())
-    .then((responseJson) => {
+    .then(async (responseJson) => {
+      // Very specific to coinbase
+      if(responseJson.errors && responseJson.errors[0].id === "expired_token") {
+        await refreshToken(accessToken.refresh_token, institution);
+        return apiRequest(endpoint, institution, data);
+      }
       return responseJson;
     })
     .catch((error) => {
@@ -38,7 +46,7 @@ export async function apiRequest(endpoint, institution, data) {
     });
   }
   else {
-    responseData = await fetch(apiBaseUrl + endpoint, {
+    responseData = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -47,7 +55,12 @@ export async function apiRequest(endpoint, institution, data) {
       body: JSON.stringify(data)
     })
     .then((response) => response.json())
-    .then((responseJson) => {
+    .then(async (responseJson) => {
+      // Very specific to coinbase
+      if(responseJson.errors && responseJson.errors[0].id === "expired_token") {
+        await refreshToken(accessToken.refresh_token, institution);
+        return apiRequest(endpoint, institution, data);
+      }
       return responseJson;
     })
     .catch((error) => {
@@ -76,5 +89,5 @@ export async function refreshToken(refreshToken, institution) {
     console.log(error)
     return false;
   });
-  await store.dispatch(dataActions.storeFinancialData(institution, "accessTokens", responseData))
+  await store.dispatch(dataActions.storeFinancialDataFirestore(institution, "accessTokens", responseData))
 }

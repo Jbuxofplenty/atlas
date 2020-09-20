@@ -5,12 +5,12 @@ import { connect } from 'react-redux';
 import GridContainer from "components/Grid/GridContainer.js";
 import GridItem from "components/Grid/GridItem.js";
 import Button from "components/CustomButtons/Button.js";
-import DeleteAccountModal from "components/DeleteAccountModal/DeleteAccountModal.js";
+import DeleteAccountModal from "./DeleteAccountModal.js";
 
 // material-ui
 import Modal from '@material-ui/core/Modal';
 
-import s from '../Profile.module.scss';
+import s from '../Accounts.module.scss';
 import { eThreeActions, alertActions } from "actions";
 
 function DeleteAccount(props) {
@@ -32,21 +32,19 @@ function DeleteAccount(props) {
         onClose={handleClose}
       >
         <div>
-          <DeleteAccountModal handleClose={handleClose} />
+          <DeleteAccountModal handleClose={handleClose} account={props.account} />
         </div>
       </Modal>
-      <h3 className={`${s.header} mb-3 mt-5`}>Delete Account</h3>
-      <div className="d-flex flex-column justify-content-center w-100">
-        <div className={`${s.rounded}`}></div>
+      <h5 className={`${s.header} mb-3 mt-5`}>Delete Account</h5>
+      <div className="d-flex flex-column justify-content-center">
         <GridContainer justify="center" className={`${s.gridContainer}`}>
           <GridItem xs={12} sm={12} md={6} className={`${s.instructionContainer}`}>
             <div className={`${s.instructionText} text-center text-sm-left`}>
-              This action will securely delete all of your information on
-              the Atlas One platform.  Note, you will need to create a new
-              account if you'd like to continue to use our service.
+              {`This action will securely delete all of your ${props.account.displayName}
+                financial information from the Atlas One platform.`}
             </div>
           </GridItem>
-          <GridItem xs={12} sm={12} md={6} lg={6} className="my-4">
+          <GridItem xs={12} sm={12} md={6} lg={6} className="mt-2">
             <GridContainer justify="center" className={`${s.internalGridContainer}`}>
               <GridItem xs={12} sm={12} md={12} className={`${s.instructionContainer}`}>
                 <Button 

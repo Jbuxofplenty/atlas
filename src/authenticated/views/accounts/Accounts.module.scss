@@ -88,3 +88,66 @@
     }
   }
 }
+
+.header {
+  margin-left: 1em;
+}
+
+.gridContainer {
+  width: 95% !important;
+  align-self: center;
+}
+
+.instructionText {
+  vertical-align: middle;
+  width: 95% !important;
+  align-self: center;
+}
+
+.instructionContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.rounded {
+  border-top: 3px solid #bbb;
+  border-radius: 5px;
+  width: 95%;
+  align-self: center;
+  margin-bottom: 2em;
+}
+
+.cardFooter {
+  height: 2em;
+  padding-top: 2em;
+  padding-bottom: 2em;
+  border-top: none;
+  display: flex;
+  align-items: center;
+  flex-direction: row-reverse;
+}
+
+.halfCircle {
+  width: 5em;
+  height: 2.5em; /* as the half of the width */
+  background-color: #262b4d;
+  border-top-left-radius: 110px;  /* 100px of height + 10px of border */
+  border-top-right-radius: 110px; /* 100px of height + 10px of border */
+  margin-top: 20px;
+  align-self: center;
+  top: 5rem !important;
+  position: relative;
+  cursor: pointer;
+}
+
+.spin {
+  -webkit-animation:spin 1s forwards;
+  -moz-animation:spin 1s forwards;
+  animation:spin 1s forwards;
+  transition-property: transform;
+}
+
+@-moz-keyframes spin { 100% { -moz-transform: rotate(180deg); } }
+@-webkit-keyframes spin { 100% { -webkit-transform: rotate(180deg); } }
+@keyframes spin { 100% { -webkit-transform: rotate(180deg); transform:rotate(180deg); } }

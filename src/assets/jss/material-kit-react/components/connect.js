@@ -27,6 +27,7 @@ const connectStyle = {
     marginBottom: "2em",
     fontSize: '18px',
     width: "75%",
+    color: "grey"
   },
   icon: {
     alignSelf: 'center',

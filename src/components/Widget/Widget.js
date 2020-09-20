@@ -150,6 +150,7 @@ class Widget extends React.Component {
       collapse,
       refresh,
       settings,
+      settingsClick,
       settingsInverse,
       tooltipPlacement,
       showTooltip,
@@ -204,7 +205,7 @@ class Widget extends React.Component {
           !customControls && mainControls && (
             <div className={`${s.widgetControls} widget-controls`}>
               {settings && (
-                <button><i className="la la-cog" /></button>
+                <button onClick={settingsClick}><i className="la la-cog" /></button>
               )}
               {settingsInverse && (
                 <button className={`bg-gray-transparent ${s.inverse}`}><i

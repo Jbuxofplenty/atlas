@@ -1,14 +1,15 @@
 import { dataConstants } from '../constants';
 import { db, auth } from '../firebase';
-import { eThreeActions } from 'actions';
+import { eThreeActions, alertActions } from 'actions';
 import { store } from 'helpers';
+import OAuthObject from 'oauth2';
 
 const financialDataTypeMap = {
   "accessTokens": {
-    storeUpdateFunction: (encryptedFinancialDataKey, encryptedFinancialData) => updateAccessTokens(encryptedFinancialDataKey, encryptedFinancialData)
+    storeUpdateFunction: (encryptedAccessTokensKey, encryptedAccessTokens) => updateFinancialData(encryptedAccessTokensKey, encryptedAccessTokens)
   },
   "accounts": {
-    storeUpdateFunction: (encryptedFinancialDataKey, encryptedFinancialData) => updateAccounts(encryptedFinancialDataKey, encryptedFinancialData)
+    storeUpdateFunction: (encryptedAccountsKey, encryptedAccounts) => updateAccounts(encryptedAccountsKey, encryptedAccounts)
   }
 }
 
@@ -17,7 +18,9 @@ export const dataActions = {
   getInstitutions,
   getFinancialDataFirestore,
   getFinancialData,
+  storeFinancialDataFirestore,
   storeFinancialData,
+  deleteAccount,
   financialDataTypeMap,
 };
 
@@ -32,29 +35,48 @@ function dataReset() {
 ////// Financial Data ///////
 /////////////////////////////
 
-function storeFinancialData(institution, type, data) {
+function storeFinancialDataFirestore(institution, type, data) {
   return async (dispatch, getState) => {
     const { userData } = getState().user;
     var encryptedObject;
     var uid = auth.currentUser.uid;
     var password = await eThreeActions.cryptoPassword();
-    var encryptedAccessTokensString = await eThreeActions.cryptoEncrypt(type, password);
-    var accessTokens = await dispatch(getFinancialDataFirestore(type, userData.e2ee));
+    var encryptedFinancialDataString = await eThreeActions.cryptoEncrypt(type, password);
+    var financialData = await dispatch(getFinancialDataFirestore(type, userData.e2ee));
     if(userData.e2ee) {
-      accessTokens[institution] = data;
-      encryptedObject = await eThreeActions.eThreeEncrypt(accessTokens);
+      financialData[institution] = data;
+      encryptedObject = await eThreeActions.eThreeEncrypt(financialData);
     }
     else {
-      accessTokens[institution] = data;
-      encryptedObject = await eThreeActions.cryptoEncrypt(accessTokens, password);
+      financialData[institution] = data;
+      encryptedObject = await eThreeActions.cryptoEncrypt(financialData, password);
     }
-    var encryptedAccessTokens = {
-      [encryptedAccessTokensString]: encryptedObject
+    var encryptedFinancialData = {
+      [encryptedFinancialDataString]: encryptedObject
     };
     await db.collection("users").doc(uid).set({
-      "financialData" : encryptedAccessTokens
+      "financialData" : encryptedFinancialData
     }, { merge: true });
-    dispatch(financialDataTypeMap[type].storeUpdateFunction(encryptedAccessTokensString, encryptedObject));
+    dispatch(financialDataTypeMap[type].storeUpdateFunction(encryptedFinancialDataString, encryptedObject));
+  }
+}
+
+function storeFinancialData(institution, type, data) {
+  return async (dispatch, getState) => {
+    const { userData } = getState().user;
+    var encryptedObject;
+    var password = await eThreeActions.cryptoPassword();
+    var encryptedFinancialDataString = await eThreeActions.cryptoEncrypt(type, password);
+    var financialData = await getFinancialData(type, userData.e2ee);
+    if(userData.e2ee) {
+      financialData[institution] = data;
+      encryptedObject = await eThreeActions.eThreeEncrypt(financialData);
+    }
+    else {
+      financialData[institution] = data;
+      encryptedObject = await eThreeActions.cryptoEncrypt(financialData, password);
+    }
+    dispatch(financialDataTypeMap[type].storeUpdateFunction(encryptedFinancialDataString, encryptedObject));
   }
 }
 
@@ -81,7 +103,6 @@ function getFinancialDataFirestore(type, e2ee) {
         dispatch(financialDataTypeMap[type].storeUpdateFunction(encryptedFinancialDataKey, encryptedFinancialData));
         return unEncryptedFinancialData;
       }
-
     })
     .catch(error => {
       console.log(error)
@@ -110,7 +131,44 @@ async function getFinancialData(type) {
   }
 }
 
-function updateAccessTokens(key, accessTokens) { 
+function deleteAccount(institution) {
+  return async (dispatch, getState) => {
+    dispatch(alertActions.pending(true));
+    const { userData } = getState().user;
+    // Revoke the access token first
+    var financialData = await dispatch(getFinancialDataFirestore("accessTokens", userData.e2ee));
+    var success = await OAuthObject[institution].revokeToken(financialData[institution].access_token);
+    if(!success) {
+      dispatch(alertActions.error("Unable to revoke your access token!"));
+      return
+    }
+    var encryptedObject;
+    var uid = auth.currentUser.uid;
+    var password = await eThreeActions.cryptoPassword();
+    const types = ["accessTokens", "accounts"];
+    var encryptedFinancialData = {};
+    types.forEach(async type => {
+      var encryptedFinancialDataString = await eThreeActions.cryptoEncrypt(type, password);
+      financialData = await dispatch(getFinancialDataFirestore(type, userData.e2ee));
+      if(userData.e2ee) {
+        delete financialData[institution];
+        encryptedObject = await eThreeActions.eThreeEncrypt(financialData);
+      }
+      else {
+        delete financialData[institution];
+        encryptedObject = await eThreeActions.cryptoEncrypt(financialData, password);
+      }
+      encryptedFinancialData[encryptedFinancialDataString] = encryptedObject;
+      dispatch(financialDataTypeMap[type].storeUpdateFunction(encryptedFinancialDataString, encryptedObject));
+    })
+    await db.collection("users").doc(uid).set({
+      "financialData" : encryptedFinancialData
+    });
+    dispatch(alertActions.success("Successfully deleted your account!  Click the button to reload this page."));
+  }
+}
+
+function updateFinancialData(key, accessTokens) { 
   return { type: dataConstants.UPDATE_ACCESS_TOKENS, key, accessTokens } 
 }
 

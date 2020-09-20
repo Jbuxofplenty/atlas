@@ -67,7 +67,7 @@ class Charts extends React.Component {
     const { cd, ld, initEchartsOptions, sparklineData } = this.state
     return (
       <div className={s.root}>
-        <h1 className="page-title">Visual - <span className="fw-semi-bold">Charts</span></h1>
+        <h1 className="page-title"><span className="fw-semi-bold">Charts</span></h1>
         <div>
           <Row>
             <Col lg={7} xs={12}>

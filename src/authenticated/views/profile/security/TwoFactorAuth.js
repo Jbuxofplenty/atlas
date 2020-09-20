@@ -51,6 +51,7 @@ function TwoFactorAuth(props) {
   const interval = useRef(null);
 
   const handleChange = async (event) => {
+    props.clear();
     props.setComponent('2fa');
     var twoFactorAuth = event.target.checked;
     setTwoFA(twoFactorAuth);
@@ -147,14 +148,14 @@ function TwoFactorAuth(props) {
       <div className="d-flex flex-column justify-content-center w-100">
         <div className={`${s.rounded}`}></div>
         <GridContainer justify="center" className={`${s.gridContainer}`}>
-          <GridItem xs={12} sm={6} md={9} className={`${s.instructionContainer}`}>
+          <GridItem xs={10} sm={9} md={9} className={`${s.instructionContainer}`}>
             <div className={`${s.instructionText}`}>
               This feature should definitely be enabled.  It provides an extra
               layer of security to ensure nefarious individuals can't access
               your personal data.
             </div>
           </GridItem>
-          <GridItem xs={12} sm={6} md={3} className={`${s.instructionContainer}`}>
+          <GridItem xs={2} sm={3} md={3} className={`${s.instructionContainer}`}>
             <GreenSwitch
               checked={twoFA}
               onChange={handleChange}
@@ -164,10 +165,12 @@ function TwoFactorAuth(props) {
         </GridContainer>
         {twoFA &&
           <GridContainer justify="center" className={`mt-5 ${s.gridContainer}`}>
-            <GridItem xs={12} sm={6} md={6} className={`${s.instructionContainer}`}>
-              <div className={`align-text-center ${s.instructionText}`}>
+            <GridItem xs={12} sm={6} md={6} className={`my-2 ${s.instructionContainer}`}>
+              <div className={`text-center ${s.instructionText}`}>
                 Phone Number
               </div>
+            </GridItem>
+            <GridItem xs={12} sm={6} md={6} className={`my-2 ${s.instructionContainer}`}>
               <MaterialUiPhoneNumber 
                 onlyCountries={['us']}
                 defaultCountry={'us'} 
@@ -211,6 +214,7 @@ const mapDispatchToProps = (dispatch, history) => {
     success: (message) => dispatch(alertActions.success(message)),
     error: (message) => dispatch(alertActions.error(message)),
     setComponent: (component) => dispatch(alertActions.component(component)),
+    clear: () => dispatch(alertActions.clear()),
   };
 }
 

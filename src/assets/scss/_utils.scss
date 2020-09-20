@@ -107,13 +107,11 @@ $z-index-variants: (more: 1, less: -1, '10': 10, '-10': -10);
   }
 
   .status {
-    position: absolute;
-    top: 0;
-    left: 0;
+    position: relative;
     display: inline-block;
-    width: 0.7em;
-    height: 0.7em;
-    border: 0.15em solid $white;
+    width: 1em;
+    height: 1em;
+    border: 0.2em solid $white;
 
     @include border-radius(50%);
 

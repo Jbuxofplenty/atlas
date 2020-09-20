@@ -21,7 +21,7 @@ import Footer from '../Footer/Footer';
 import Sidebar from '../Sidebar';
 import BreadcrumbHistory from 'components/BreadcrumbHistory';
 import Loader from 'components/Loader';
-import { openSidebar, closeSidebar } from 'actions/navigation.actions';
+import { navigationActions } from 'actions';
 
 import s from './Layout.module.scss';
 import { eThreeActions } from "actions";
@@ -143,12 +143,12 @@ class Layout extends React.Component {
   handleSwipe(e) {
     if ('ontouchstart' in window) {
       if (e.direction === 4 && !this.state.chatOpen) {
-        this.props.dispatch(openSidebar());
+        this.props.openSidebar();
         return;
       }
 
       if (e.direction === 2 && this.props.sidebarOpened) {
-        this.props.dispatch(closeSidebar());
+        this.propscloseSidebar();
         return;
       }
 
@@ -223,6 +223,8 @@ function mapStateToProps(store) {
 
 const mapDispatchToProps = (dispatch, history) => {
   return {
+    closeSidebar: () => dispatch(navigationActions.closeSidebar()),
+    openSidebar: () => dispatch(navigationActions.openSidebar()),
     localKeyPresent: () => dispatch(eThreeActions.localKeyPresent()),
   };
 }

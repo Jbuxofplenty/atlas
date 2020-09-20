@@ -36,24 +36,34 @@ class App extends Component {
 
     this.ready = this.ready.bind(this);
     this.checkReady = this.checkReady.bind(this);
+    this.login = this.login.bind(this);
   }
 
   componentDidMount() {
     auth.onAuthStateChanged(function(user) {
       this.setState({ user });
-      if(user && isEmpty(this.props.userData)) this.props.history.push('/app/dashboard')
+      if(user && isEmpty(this.props.userData)) {
+        this.setState({ ready: false });
+        this.loginTimeout = setTimeout(this.login, 2000);
+      }
       else if(!user && !isEmpty(this.props.userData)) this.props.history.push('/login')
     }.bind(this));
     window.addEventListener("error", function (e) {
       submitIssue(e.error.message, e.error.stack, "bug", true);
     })
     this.userInterval = setInterval(this.checkReady, 100);
-    this.userTimeout = setTimeout(this.ready, 1000);
+    this.userTimeout = setTimeout(this.ready, 1500);
   }
   
   componentWillUnmount() {
     clearTimeout(this.userTimeout);
+    clearTimeout(this.loginTimeout);
     clearInterval(this.userInterval);
+  }
+
+  login() {
+    this.setState({ ready: true });
+    this.props.history.push('/app/dashboard');
   }
 
   checkReady() {
@@ -111,6 +121,7 @@ class App extends Component {
 const mapStateToProps = (state) => {
   return {
     userData: state.user.userData,
+    isLoginPending: state.user.isLoginPending,
   };
 }
 

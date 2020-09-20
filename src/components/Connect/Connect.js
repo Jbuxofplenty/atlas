@@ -19,7 +19,7 @@ import styles from "assets/jss/material-kit-react/components/connect.js";
 import OAuthObject from 'oauth2';
 import { randomState, postMessageLocation } from 'helpers';
 
-import { dataActions } from 'actions';
+import { dataActions, alertActions } from 'actions';
 
 const useStyles = makeStyles(styles);
 
@@ -50,13 +50,14 @@ function Connect(props) {
   const e2ee = props.userData.e2ee;
   const privateKeyPresent = props.privateKeyPresent;
 
-  const isInvalid = isSuccess || 
-      (e2ee && !privateKeyPresent);
+  const isInvalid = isPending || (e2ee && !privateKeyPresent);
 
   const mounted = useRef(false);
   useEffect(() => {
+    props.clear();
     mounted.current = true;
     return () => { mounted.current = false; };
+  // eslint-disable-next-line
   }, []);
 
   useEffect(() => {
@@ -131,12 +132,13 @@ function Connect(props) {
         fetch(oAuth.buildTokenRequest(code), {
           method: 'POST',
         }).then(response => response.json()).then(async data => { 
+          data.institution = props.institution.displayName;
+          await props.storeFinancialDataFirestore(props.institution.displayName, "accessTokens", data);
+          await oAuth.pullAccountData();
+          setMessage(`You successfully connected your ${props.institution.displayName} account!  We're pulling in all of your data now. Please wait to refresh the page`);
+          setIsError(false);
           setIsPending(false);
           setIsSuccess(true);
-          data.institution = props.institution.displayName;
-          await props.storeFinancialData(props.institution.displayName, "accessTokens", data);
-          oAuth.pullAccountData();
-          setMessage(`You successfully connected your ${props.institution.displayName} account!  We're pulling in all of your data now.`);
         }).catch(error => {
           setIsPending(false);
           setIsError(true);
@@ -152,11 +154,16 @@ function Connect(props) {
   };
 
   const oAuthFlow = async () => {
-    setIsPending(true);
-    if(oAuth.type === "OAuth") {
-      oAuth.state = randomState();
-      const authRequest = oAuth.buildAuthRequest(oAuth.state);
-      openSignInWindow(authRequest, props.institution.displayName);
+    if(isSuccess) {
+      window.location.reload(false);
+    }
+    else {
+      setIsPending(true);
+      if(oAuth.type === "OAuth") {
+        oAuth.state = randomState();
+        const authRequest = oAuth.buildAuthRequest(oAuth.state);
+        openSignInWindow(authRequest, props.institution.displayName);
+      }
     }
   }
 
@@ -165,7 +172,7 @@ function Connect(props) {
       return (
         <div className={classes[messageAnimation]}>
           <hr className={classes.rounded} />
-          <i className={`la la-refresh la-spin ${classes.message}`} />
+          <i className={`fas fa-spinner fa-spin ${classes.message}`} style={{fontSize: 40}}/>
         </div>
       )
     }
@@ -195,7 +202,6 @@ function Connect(props) {
       )
     }
   }
-
   return (
     <div className="connect-modal">
       <GridContainer justify="center"> 
@@ -231,7 +237,7 @@ function Connect(props) {
                     Cancel
                   </SimpleButton>
                   <Button disabled={isInvalid} color="primary" size="lg" onClick={oAuthFlow}>
-                    Connect
+                    {isSuccess ? "Reload" : "Connect"}
                   </Button>
                 </div>
               </CardFooter>
@@ -247,12 +253,16 @@ function mapStateToProps(store) {
   return {
     userData: store.user.userData,
     privateKeyPresent: store.eThree.privateKeyPresent,
+    alertType: store.alert.type,
+    alertMessage: store.alert.message,
+    alertVisible: store.alert.visible,
   };
 }
 
 const mapDispatchToProps = (dispatch, history) => {
   return {
-    storeFinancialData: (institution, type, data) => dispatch(dataActions.storeFinancialData(institution, type, data)),
+    storeFinancialDataFirestore: (institution, type, data) => dispatch(dataActions.storeFinancialDataFirestore(institution, type, data)),
+    clear: () => dispatch(alertActions.clear()),
   };
 }
 

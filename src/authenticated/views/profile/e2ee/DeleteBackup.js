@@ -28,7 +28,7 @@ function DeleteBackup(props) {
       <div className="d-flex flex-column justify-content-center w-100">
         <div className={`${s.rounded}`}></div>
         <GridContainer justify="center" className={`${s.gridContainer}`}>
-          <GridItem xs={12} sm={12} md={6} className={`${s.instructionContainer}`}>
+          <GridItem xs={12} sm={12} md={6} className={`my-2 ${s.instructionContainer}`}>
             <div className={`${s.instructionText}`}>
               Delete your backup private key stored in the cloud.  Be careful,
               if you lose your existing key (from clearing you cookies) you will
@@ -37,7 +37,7 @@ function DeleteBackup(props) {
             </div>
           </GridItem>
           <GridItem xs={12} sm={12} md={6} lg={6}>
-            <GridContainer justify="center" className={`${s.gridContainer}`}>
+            <GridContainer justify="center" className={`my-2 ${s.internalGridContainer}`}>
               <GridItem xs={12} sm={12} md={12} className={`${s.instructionContainer}`}>
                 <Button 
                   color="danger" 

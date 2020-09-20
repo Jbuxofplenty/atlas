@@ -46,12 +46,12 @@ function EnableE2EE(props) {
   const [e2eeEnabled, setE2EE] = useState(props.userData.e2ee);
 
   useEffect(() => {
-    props.visible(false);
     props.clear();
     // eslint-disable-next-line
   }, []);
 
   const handleChange = async (event) => {
+    props.clear();
     props.setComponent('e2ee');
     var e2ee = event.target.checked;
     // Enabled
@@ -87,7 +87,7 @@ function EnableE2EE(props) {
       <div className="d-flex flex-column justify-content-center w-100">
         <div className={`${s.rounded}`}></div>
         <GridContainer justify="center" className={`${s.gridContainer}`}>
-          <GridItem xs={12} sm={6} md={9} className={`${s.instructionContainer}`}>
+          <GridItem xs={10} sm={9} md={9} className={`${s.instructionContainer}`}>
             <div className={`${s.instructionText}`}>
               Enabling this feature encrypts all of your financial data
               as defined in the end-to-end encryption paradigm.  The
@@ -95,7 +95,7 @@ function EnableE2EE(props) {
               on your devices alone.
             </div>
           </GridItem>
-          <GridItem xs={12} sm={6} md={3} className={`${s.instructionContainer}`}>
+          <GridItem xs={2} sm={3} md={3} className={`${s.instructionContainer}`}>
             <GreenSwitch
               checked={e2eeEnabled}
               onChange={handleChange}

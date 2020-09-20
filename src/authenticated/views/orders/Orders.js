@@ -1,132 +1,122 @@
 import React from 'react';
+import { connect } from 'react-redux';
+import { dataActions } from 'actions';
 import {
+  TabContent, 
+  TabPane, 
+  Nav, 
+  NavItem, 
+  NavLink, 
+  InputGroup, 
+  InputGroupAddon, 
+  Input,
+  InputGroupText,
   Row,
   Col,
   Table,
-  Badge,
 } from 'reactstrap';
+import classnames from 'classnames';
 
-import Widget from 'components/Widget/Widget';
+import OrdersTable from "./components/OrdersTable.js";
+
 import s from './Orders.module.scss';
 
 class Orders extends React.Component {
-
   constructor(props) {
     super(props);
-
     this.state = {
-      tableStyles: [
-        {
-          id: 1,
-          picture: require('../../../assets/img/bg4.jpg'), // eslint-disable-line global-require
-          description: 'Palo Alto',
-          info: {
-            type: 'JPEG',
-            dimensions: '200x150',
-          },
-          date: new Date('September 14, 2012'),
-          size: '45.6 KB',
-          progress: {
-            percent: 29,
-            colorClass: 'success',
-          },
-        }
-      ],
-      checkboxes1: [false, true, false, false],
-      checkboxes2: [false, false, false, false, false, false],
-      checkboxes3: [false, false, false, false, false, false],
+      activeTab: 0,
+      accounts: null,
     };
 
-    this.checkAll = this.checkAll.bind(this);
+    this.toggle = this.toggle.bind(this);
+    this._isMounted = false;
   }
 
-  parseDate(date) {
-    this.dateSet = date.toDateString().split(' ');
-
-    return `${date.toLocaleString('en-us', { month: 'long' })} ${this.dateSet[2]}, ${this.dateSet[3]}`;
-  }
-
-  checkAll(ev, checkbox) {
-    const checkboxArr = (new Array(this.state[checkbox].length)).fill(ev.target.checked);
-    this.setState({
-      [checkbox]: checkboxArr,
-    });
-  }
-
-  changeCheck(ev, checkbox, id) {
-    //eslint-disable-next-line
-    this.state[checkbox][id] = ev.target.checked;
-    if (!ev.target.checked) {
-      //eslint-disable-next-line
-      this.state[checkbox][0] = false;
+  async componentDidMount() {
+    this._isMounted = true;
+    var tempAccounts = this._isMounted && await dataActions.getFinancialData("accounts");
+    var accounts = [];
+    for (var key in tempAccounts){
+      accounts.push(tempAccounts[key]);
     }
-    this.setState({
-      [checkbox]: this.state[checkbox],
-    });
+    this._isMounted && this.setState({ accounts });
+  }
+
+  componentWillUnmount() {
+    this._isMounted = false;
+  }
+
+  componentDidUpdate(nextProps) {
+    if(this.props.userData !== nextProps.userData) {
+
+    }
+  }
+
+  toggle(tab) {
+    if (this.state.activeTab !== tab) {
+      this.setState({
+        activeTab: tab,
+      });
+    }
   }
 
   render() {
     return (
-      <div className={s.root}>
-        <h2 className="page-title">Trades</h2>
-        <Row>
-          <Col lg={12}>
-            <Widget
-              title={<h5>Table <span className="fw-semi-bold">Styles</span></h5>} settings close
-            >
-              <h3>Hover <span className="fw-semi-bold">Table</span></h3>
-              <div className="table-responsive">
-                <Table className="table-hover">
-                  <thead>
-                    <tr>
-                      <th>#</th>
-                      <th>First Name</th>
-                      <th>Last Name</th>
-                      <th>Email</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  {/* eslint-disable */}
-                  <tbody>
-                    <tr>
-                      <td>1</td>
-                      <td>Mark</td>
-                      <td>Otto</td>
-                      <td><a href="#">ottoto@example.com</a></td>
-                      <td><Badge color="gray" className="text-secondary" pill>Pending</Badge></td>
-                    </tr>
-                    <tr>
-                      <td>2</td>
-                      <td>Jacob</td>
-                      <td>Thornton</td>
-                      <td><a href="#">fat.thor@example.com</a></td>
-                      <td><Badge color="gray" className="text-secondary" pill>Unconfirmed</Badge></td>
-                    </tr>
-                    <tr>
-                      <td>3</td>
-                      <td>Larry</td>
-                      <td>the Bird</td>
-                      <td><a href="#">larry@example.com</a></td>
-                      <td><Badge color="primary" className="text-secondary" pill>New</Badge></td>
-                    </tr>
-                    <tr>
-                      <td>4</td>
-                      <td>Peter</td>
-                      <td>Horadnia</td>
-                      <td><a href="#">peter@example.com</a></td>
-                      <td><Badge color="success" className="text-secondary" pill>Active</Badge></td>
-                    </tr>
-                  </tbody>
-                  {/* eslint-enable */}
-                </Table>
-              </div>
-            </Widget>
-          </Col>
-        </Row>
-      </div>
+      <section className={`${s.root} mb-4`}>
+        <h1 className="page-title">Orders</h1>
+        {this.state.accounts &&
+          <>
+            <Nav className="bg-transparent" tabs>
+              <NavItem>
+                <NavLink
+                  className={classnames({ active: this.state.activeTab === 0 })}
+                  onClick={() => { this.toggle(0); }}
+                >
+                  <i className="icon-pane fa fa-globe-americas"/>
+                  <span className="ml-xs">All Orders</span>
+                </NavLink>
+              </NavItem>
+                {this.state.accounts.map((account, index) => 
+                  <NavItem key={index}>
+                    <NavLink
+                      className={classnames({ active: this.state.activeTab === index+1 })}
+                      onClick={() => { this.toggle(index+1); }}
+                    >
+                      <span className="ml-xs">{account.displayName}</span>
+                    </NavLink>
+                  </NavItem>
+                )}
+            </Nav>
+
+            {/* tab content */}
+
+            <TabContent activeTab={this.state.activeTab}>
+              {this.state.accounts.map((account, index) => 
+                <TabPane tabId={index+1} className="py-5" key={index}>
+                  <OrdersTable account={account} />
+                </TabPane>
+              )}
+              <TabPane tabId={0} className="py-5">
+                <OrdersTable />
+              </TabPane>
+            </TabContent>
+          </>
+        } 
+      </section>
     );
   }
-
 }
 
-export default Orders;
+const mapStateToProps = (state) => {
+  return {
+    institutions: state.data.institutions,
+  };
+}
+
+const mapDispatchToProps = (dispatch, history) => {
+  return {
+  };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Orders);

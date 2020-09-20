@@ -21,7 +21,7 @@ import Logout from "components/Logout/Logout.js";
 // material-ui
 import Modal from '@material-ui/core/Modal';
 
-import { openSidebar, closeSidebar } from 'actions/navigation.actions';
+import { navigationActions, eThreeActions } from 'actions';
 
 import s from './AuthenticatedHeader.module.scss';
 import 'assets/scss/vendors/animate.css/animate.css';
@@ -29,7 +29,6 @@ import { auth } from '../../firebase';
 
 class AuthenticatedHeader extends React.Component {
   static propTypes = {
-    dispatch: PropTypes.func.isRequired,
     sidebarPosition: PropTypes.string,
   };
 
@@ -55,8 +54,8 @@ class AuthenticatedHeader extends React.Component {
 
   toggleSidebar() {
     this.props.isSidebarOpened
-      ? this.props.dispatch(closeSidebar())
-      : this.props.dispatch(openSidebar())
+      ? this.props.closeSidebar()
+      : this.props.openSidebar()
   }
 
   openLogoutModal() {
@@ -89,7 +88,7 @@ class AuthenticatedHeader extends React.Component {
                   <img src={!isEmpty(this.props.userData) ? this.props.userData.headshot : ""} alt="..."/>
                 </span>
               </DropdownToggle>
-              <DropdownMenu right className={`${s.notificationsWrapper} py-0 animate__animated animate__faster animate__fadeInUp`}>
+              <DropdownMenu right positionFixed className={`${s.notificationsWrapper} py-0 animate__animated animate__faster animate__fadeInUp`}>
                 <UserDropdown toggle={this.toggleUserDropdown} openLogoutModal={this.openLogoutModal} />
               </DropdownMenu>
             </Dropdown>
@@ -114,5 +113,14 @@ function mapStateToProps(store) {
   };
 }
 
-export default withRouter(connect(mapStateToProps)(AuthenticatedHeader));
+const mapDispatchToProps = (dispatch, history) => {
+  return {
+    closeSidebar: () => dispatch(navigationActions.closeSidebar()),
+    openSidebar: () => dispatch(navigationActions.openSidebar()),
+    localKeyPresent: () => dispatch(eThreeActions.localKeyPresent()),
+  };
+}
+
+
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(AuthenticatedHeader));
 

@@ -1,0 +1,6 @@
+{
+  "name": "wallets",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./Wallets.js"
+}

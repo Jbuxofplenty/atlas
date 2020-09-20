@@ -2,10 +2,12 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { NavLink, withRouter } from 'react-router-dom';
 import { Collapse, Badge } from 'reactstrap';
+import { connect } from 'react-redux';
 import { Route } from 'react-router';
 import classnames from 'classnames';
 
 import s from './LinksGroup.module.scss';
+import { navigationActions } from "actions";
 
 class LinksGroup extends Component {
   static propTypes = {
@@ -61,7 +63,6 @@ class LinksGroup extends Component {
       this.state.headerLinkWasClicked;
 
     const {exact} = this.props.exact;
-
     if (!this.props.childrenLinks) {
       if (this.props.isHeader) {
         return (
@@ -71,6 +72,9 @@ class LinksGroup extends Component {
               activeClassName={s.headerLinkActive}
               exact={exact}
               target={this.props.target}
+              onClick={(e) => {
+                this.props.openSidebar();
+              }}
             >
               <span className={s.icon}>
                 <i className={`${this.props.iconName}`} />
@@ -147,4 +151,21 @@ class LinksGroup extends Component {
   }
 }
 
-export default withRouter(LinksGroup);
+
+
+function mapStateToProps(store) {
+  return {
+    sidebarOpened: store.navigation.sidebarOpened,
+    sidebarStatic: store.navigation.sidebarStatic,
+    activeItem: store.navigation.activeItem,
+  };
+}
+
+const mapDispatchToProps = (dispatch, history) => {
+  return {
+    closeSidebar: () => dispatch(navigationActions.closeSidebar()),
+    openSidebar: () => dispatch(navigationActions.openSidebar()),
+  };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(withRouter(LinksGroup));

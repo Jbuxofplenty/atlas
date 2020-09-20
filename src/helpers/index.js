@@ -6,5 +6,6 @@ export {
   randomState,
   postMessageLocation,
   generateRandomId,
+  asyncForEach,
 } from './util';
 export { store, persistor } from './store';
