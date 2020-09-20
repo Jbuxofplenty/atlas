@@ -68,8 +68,7 @@ function SignupLoginPage(props) {
 
   // Component did mount
   useEffect(() => {
-    props.error("");
-    props.visible(false);
+    props.clear();
   // eslint-disable-next-line
   }, []);
 
@@ -351,14 +350,14 @@ function SignupLoginPage(props) {
                         />
                       </form>
                       <form className={classes.form} onSubmit={submit}>
-                        <ReCaptcha show={!human} signUp={props.signUpPage} />
+                        <ReCaptcha show={!human} signUp={props.signUpPage} size={'invisible'} />
                       </form>
                     </CardBody>
                     <CardFooter className={classes.cardFooter}>
                       <SimpleButton disabled={isInvalid} simple color="primary" size="lg" onClick={submit}>
                         Get started
                       </SimpleButton>
-                      { !open && props.isLoginSuccess  && <div className={classes.successMessage}>Success.</div> }
+                      { !open && props.errorVisible && props.isLoginSuccess  && <div className={classes.successMessage}>Success.</div> }
                       { !open && (props.loginError || props.errorVisible) && <div className={classes.errorMessage}>{props.errorMessage}</div> }
                     </CardFooter>
                   </Card>
@@ -389,6 +388,7 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch, history) => {
   return {
     visible: (show) => dispatch(alertActions.visible(show)),
+    clear: () => dispatch(alertActions.clear()),
     testReCaptcha: (value, signUp, latestAction) => dispatch(userActions.testReCaptcha(value, signUp, latestAction)),
     error: (errorMessage) => dispatch(alertActions.error(errorMessage)),
     loginFailure: (loginError, error, user, userData) => dispatch(userActions.loginFailure(loginError, error, user, userData)),

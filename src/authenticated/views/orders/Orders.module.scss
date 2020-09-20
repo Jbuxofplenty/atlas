@@ -1,7 +1,25 @@
 @import 'assets/scss/app';
 
-.root {
+table {
+  border-spacing: 0;
 
+  tr {
+    :last-child {
+      td {
+        border-bottom: 0;
+      }
+    }
+  }
+
+  th,
+  td {
+    margin: 0;
+    padding: 0.5rem;
+
+    :last-child {
+      border-right: 0;
+    }
+  }
 }
 
 .mainTableWidget {
@@ -10,4 +28,59 @@
       border: none;
     }
   }
+}
+
+.isSorted {
+  color: #ffffff !important;
+  i {
+    color: #ffffff;
+  }
+}
+
+.header { 
+  color: #b3aeae;
+  &:hover {
+    color: #ffffff;
+    i {
+      color: #ffffff;
+    }
+  }
+}
+
+i {
+  color: #888787;
+}
+
+.navbarForm {
+
+  .inputAddon {
+    border: none;
+    background-color: transparentize($text-transparent, 0.1);
+    transition: background-color ease-in-out 0.15s;
+  }
+
+  input {
+    font-size: unquote("min(2.5vw, 15px)");
+    color: $white;
+    background-color: transparentize($text-transparent, 0.1);
+    border: none;
+    min-height: 30px !important;
+
+    &:focus {
+      box-shadow: $input-box-shadow !important;
+    }
+  }
+}
+
+.lineItem:hover td {
+  color: white;
+}
+
+.cell {
+  text-align: center;
+  align-self: center;
+}
+
+.tableContainer {
+  overflow-x: auto;
 }

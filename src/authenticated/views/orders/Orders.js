@@ -7,13 +7,6 @@ import {
   Nav, 
   NavItem, 
   NavLink, 
-  InputGroup, 
-  InputGroupAddon, 
-  Input,
-  InputGroupText,
-  Row,
-  Col,
-  Table,
 } from 'reactstrap';
 import classnames from 'classnames';
 
@@ -98,7 +91,7 @@ class Orders extends React.Component {
                 </TabPane>
               )}
               <TabPane tabId={0} className="py-5">
-                <OrdersTable />
+                <OrdersTable accounts={this.state.accounts} />
               </TabPane>
             </TabContent>
           </>

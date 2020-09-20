@@ -161,7 +161,7 @@ function deleteAccount(institution) {
       encryptedFinancialData[encryptedFinancialDataString] = encryptedObject;
       dispatch(financialDataTypeMap[type].storeUpdateFunction(encryptedFinancialDataString, encryptedObject));
     })
-    await db.collection("users").doc(uid).set({
+    await db.collection("users").doc(uid).update({
       "financialData" : encryptedFinancialData
     });
     dispatch(alertActions.success("Successfully deleted your account!  Click the button to reload this page."));

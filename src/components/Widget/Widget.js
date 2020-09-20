@@ -186,7 +186,7 @@ class Widget extends React.Component {
 
 
     return (
-    <React.Fragment>
+    <div className="w-100">
       <section
         style={{display: hideWidget ? 'none' : ''}}
         className={
@@ -371,7 +371,7 @@ class Widget extends React.Component {
       </Modal>
       )}
       <div style={{display: fullscreened ? 'block'  : 'none'}} className={s.widgetBackground}></div>
-      </React.Fragment>
+      </div>
     );
   }
 }

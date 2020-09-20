@@ -46,6 +46,8 @@ function Connect(props) {
   const [authCode, setAuthCode] = useState('');
   const [oAuth] = useState(OAuthObject[props.institution.displayName]);
   const [isPending, setIsPending] = useState(false);
+  const [signInWindowOpen, setSignInWindowOpen] = useState(false);
+  console.log(signInWindowOpen);
   const [message, setMessage] = useState(`We'll have you login at ${props.institution.displayName} to authorize this application and bring you back here.`);
   const e2ee = props.userData.e2ee;
   const privateKeyPresent = props.privateKeyPresent;
@@ -99,6 +101,7 @@ function Connect(props) {
     popupTick.current = setInterval(function() {
       if (windowObjectReference.closed) {
         clearInterval(popupTick);
+        console.log('there')
         if(mounted.current && authCode === '') {
           setIsPending(false);
           setIsError(true);
@@ -128,6 +131,7 @@ function Connect(props) {
     if (data.source === 'oauth-login-redirect') {
       const { code, state } = data;
       if(state === oAuth.state) {
+        setSignInWindowOpen(false);
         setAuthCode(code);
         fetch(oAuth.buildTokenRequest(code), {
           method: 'POST',
@@ -135,7 +139,7 @@ function Connect(props) {
           data.institution = props.institution.displayName;
           await props.storeFinancialDataFirestore(props.institution.displayName, "accessTokens", data);
           await oAuth.pullAccountData();
-          setMessage(`You successfully connected your ${props.institution.displayName} account!  We're pulling in all of your data now. Please wait to refresh the page`);
+          setMessage(`You successfully connected your ${props.institution.displayName} account!  We're pulling in all of your data now`);
           setIsError(false);
           setIsPending(false);
           setIsSuccess(true);
@@ -159,6 +163,7 @@ function Connect(props) {
     }
     else {
       setIsPending(true);
+      setSignInWindowOpen(true);
       if(oAuth.type === "OAuth") {
         oAuth.state = randomState();
         const authRequest = oAuth.buildAuthRequest(oAuth.state);
@@ -168,13 +173,25 @@ function Connect(props) {
   }
 
   const showMessageHTML = () => {
+    console.log(signInWindowOpen)
     if(isPending) {
-      return (
-        <div className={classes[messageAnimation]}>
-          <hr className={classes.rounded} />
-          <i className={`fas fa-spinner fa-spin ${classes.message}`} style={{fontSize: 40}}/>
-        </div>
-      )
+      if(signInWindowOpen) {
+        return (
+          <div className={classes[messageAnimation]}>
+            <hr className={classes.rounded} />
+            <i className={`fas fa-spinner fa-spin ${classes.message}`} style={{fontSize: 40}}/>
+          </div>
+        )
+      }
+      else {
+        return (
+          <div className={classes[messageAnimation]}>
+            <hr className={classes.rounded} />
+            <i className={`fas fa-spinner fa-spin ${classes.message}`} style={{fontSize: 40}}/>
+            <div className={classes.message}>Successfully validated your credentials! Setting up your account in Atlas One...</div> 
+          </div>
+        )
+      }
     }
     else if(isError){
       return (

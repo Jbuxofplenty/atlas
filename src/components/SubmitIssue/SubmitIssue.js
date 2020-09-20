@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { connect } from 'react-redux';
 
 // @material-ui
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles, withStyles, createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
 import Radio from "@material-ui/core/Radio";
 
 // core components
@@ -17,9 +17,28 @@ import CustomInput from "components/CustomInput/CustomInput.js";
 import styles from "assets/jss/material-kit-react/components/submitIssue.js";
 
 // API
+import { auth } from '../../firebase';
 import { submitIssue } from 'helpers';
 
 const useStyles = makeStyles(styles);
+
+const SimpleButton = withStyles({
+  label: {
+    color: '#121858',
+  },
+})(Button);
+
+const theme = createMuiTheme({
+  overrides: {
+    // Style sheet name ⚛️
+    MuiIconButton: {
+      // Name of the rule
+      label: {
+        color: '#121858',
+      },
+    },
+  },
+});
 
 function SubmitIssue(props) {
   const [cardAnimaton, setCardAnimation] = React.useState("cardHidden");
@@ -43,7 +62,8 @@ function SubmitIssue(props) {
     setShowMessage(true);
     var label = "bug";
     if(!bug) label = "feature";
-    var message = "Email: " + props.email + "\n" + body;
+    var email = auth.currentUser.email;
+    var message = "Email: " + email + "\n" + body;
     var success = await submitIssue(title, message, label, false);
     if(success) {
       props.handleClose();
@@ -65,76 +85,84 @@ function SubmitIssue(props) {
   }
 
   return (
-    <div className="submit-issue-modal">
-      <GridContainer justify="center">
-        <GridItem xs={12}>
-          <Card className={classes[cardAnimaton]}>
-            <form className={classes.form}>
-              <CardHeader color="primary" className={classes.cardHeader}>
-                <h4 className={classes.headerText}>Submit a bug or feature request to the development team</h4>
-              </CardHeader>
-              <CardBody>
-                <GridContainer justify="center">
-                  <GridItem xs={12} sm={12} md={6}>
-                    <CustomInput
-                      labelText="Title"
-                      id="title"
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      formControlProps={{
-                        fullWidth: true
-                      }}
-                    />
-                  </GridItem>
-                  <GridItem xs={12} sm={12} md={6}>
-                    <div className={classes.radioContainer}>
+    <ThemeProvider theme={theme}>
+      <div className="submit-issue-modal">
+        <GridContainer justify="center">
+          <GridItem xs={12}>
+            <Card className={classes[cardAnimaton]}>
+              <form className={classes.form}>
+                <CardHeader color="primary" className={classes.cardHeader}>
+                  <h4 className={classes.headerText}>Submit a bug or feature request to the development team</h4>
+                </CardHeader>
+                <CardBody>
+                  <GridContainer justify="center">
+                    <GridItem xs={12} sm={12} md={6}>
+                      <CustomInput
+                        labelText="Title"
+                        id="title"
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        formControlProps={{
+                          fullWidth: true
+                        }}
+                      />
+                    </GridItem>
+                    <GridItem xs={12} sm={12} md={6}>
                       <div className={classes.radioContainer}>
-                        <div className={classes.radioLabel}><Radio checked={bug} name={"bug"} onChange={bugFeature} color="primary"/></div>
-                        <div className={classes.radioLabel}>Bug</div>
+                        <div className={classes.radioContainer}>
+                          <div className={classes.radioLabel}>
+                            <Radio 
+                              checked={bug} 
+                              name={"bug"} 
+                              onChange={bugFeature} 
+                              color="primary" 
+                            />
+                          </div>
+                          <div className={classes.radioLabel}>Bug</div>
+                        </div>
+                        <div className={classes.radioContainer}>
+                          <div className={classes.radioLabel}><Radio checked={!bug} name={"feature"} onChange={bugFeature} color="primary"/></div>
+                          <div className={classes.radioLabel}>Feature</div>
+                        </div>
                       </div>
-                      <div className={classes.radioContainer}>
-                        <div className={classes.radioLabel}><Radio checked={!bug} name={"feature"} onChange={bugFeature} color="primary"/></div>
-                        <div className={classes.radioLabel}>Feature</div>
-                      </div>
-                    </div>
-                  </GridItem>
-                </GridContainer>
-                <CustomInput
-                    labelText="Description"
-                    id="body"
-                    value={body}
-                    onChange={(e) => setBody(e.target.value)}
-                  formControlProps={{
-                    fullWidth: true,
-                    className: classes.textArea
-                  }}
-                  inputProps={{
-                    multiline: true,
-                    rows: 5
-                  }}
-                />
-              </CardBody>
-              <CardFooter className={classes.cardFooter}>
-                <Button disabled={isInvalid} simple color="primary" size="lg" onClick={submitIssueHandle}>
-                  Submit Issue
-                </Button>
-                { showMessage ? isError 
-                    ? <div className={classes.message}>{error}</div> 
-                    : <span><i className={`la la-refresh la-spin ${classes.message}`} /> Loading...</span> 
-                    : null 
-                }
-              </CardFooter>
-            </form>
-          </Card>
-        </GridItem>
-      </GridContainer>
-    </div>
+                    </GridItem>
+                  </GridContainer>
+                  <CustomInput
+                      labelText="Description"
+                      id="body"
+                      value={body}
+                      onChange={(e) => setBody(e.target.value)}
+                    formControlProps={{
+                      fullWidth: true,
+                      className: classes.textArea
+                    }}
+                    inputProps={{
+                      multiline: true,
+                      rows: 5
+                    }}
+                  />
+                </CardBody>
+                <CardFooter className={classes.cardFooter}>
+                  <SimpleButton disabled={isInvalid} simple color="primary" size="lg" onClick={submitIssueHandle}>
+                    Submit Issue
+                  </SimpleButton>
+                  { showMessage ? isError 
+                      ? <div className={classes.message}>{error}</div> 
+                      : <span><i className={`la la-refresh la-spin ${classes.message}`} /> Loading...</span> 
+                      : null 
+                  }
+                </CardFooter>
+              </form>
+            </Card>
+          </GridItem>
+        </GridContainer>
+      </div>
+    </ThemeProvider>
   );
 }
 
 function mapStateToProps(store) {
   return {
-    email: store.user.user.email,
   };
 }
 

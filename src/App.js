@@ -36,16 +36,12 @@ class App extends Component {
 
     this.ready = this.ready.bind(this);
     this.checkReady = this.checkReady.bind(this);
-    this.login = this.login.bind(this);
   }
 
   componentDidMount() {
     auth.onAuthStateChanged(function(user) {
       this.setState({ user });
-      if(user && isEmpty(this.props.userData)) {
-        this.setState({ ready: false });
-        this.loginTimeout = setTimeout(this.login, 2000);
-      }
+      if(user && isEmpty(this.props.userData)) this.props.history.push('/app/dashboard')
       else if(!user && !isEmpty(this.props.userData)) this.props.history.push('/login')
     }.bind(this));
     window.addEventListener("error", function (e) {
@@ -57,13 +53,7 @@ class App extends Component {
   
   componentWillUnmount() {
     clearTimeout(this.userTimeout);
-    clearTimeout(this.loginTimeout);
     clearInterval(this.userInterval);
-  }
-
-  login() {
-    this.setState({ ready: true });
-    this.props.history.push('/app/dashboard');
   }
 
   checkReady() {
@@ -83,7 +73,7 @@ class App extends Component {
       <Suspense fallback={<Loader className="center-screen" />}>
         <ErrorBoundary>
           <>
-            {!this.state.ready ? <Loader className="center-screen" /> :
+            {!this.state.ready || this.props.isLoginPending ? <Loader className="center-screen" /> :
               <Switch>
                 {CommonRoutes.map((route, idx) => {
                   return route.component ? (

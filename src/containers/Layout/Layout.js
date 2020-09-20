@@ -49,7 +49,6 @@ class Layout extends React.Component {
 
   constructor(props) {
     super(props);
-    this.handleSwipe = this.handleSwipe.bind(this);
     this.userCheck = this.userCheck.bind(this);
     this.whileYouWereAway = this.whileYouWereAway.bind(this);
   }
@@ -140,22 +139,6 @@ class Layout extends React.Component {
     }
   }
 
-  handleSwipe(e) {
-    if ('ontouchstart' in window) {
-      if (e.direction === 4 && !this.state.chatOpen) {
-        this.props.openSidebar();
-        return;
-      }
-
-      if (e.direction === 2 && this.props.sidebarOpened) {
-        this.propscloseSidebar();
-        return;
-      }
-
-      this.setState({ chatOpen: e.direction === 2 });
-    }
-  }
-
   render() {
     return (
       <div>
@@ -185,6 +168,7 @@ class Layout extends React.Component {
                       classNames="fade"
                       timeout={200}
                       exit={false}
+                      unmountOnExit
                     >
                       <Switch>
                         <Route path="/app" exact render={() => <Redirect to="/app/dashboard" />} />

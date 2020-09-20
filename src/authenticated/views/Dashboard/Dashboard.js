@@ -2,6 +2,7 @@ import React from 'react';
 import {
   Row,
   Col,
+  Container,
 } from 'reactstrap';
 
 import AccountsWidget from './components/AccountsWidget';
@@ -41,17 +42,19 @@ class Dashboard extends React.Component {
         {this.state.accounts &&
           <>
             <h1 className="page-title">Dashboard &nbsp;</h1>
-            <Row>
-              <Col lg={6} md={12}>
-                <AccountsWidget accounts={this.state.accounts} />
-              </Col>
-              <Col lg={4} xs={12}>
-                
-              </Col>
-              <Col lg={4} xs={12}>
-                
-              </Col>
-            </Row>
+            <Container className="w-100">
+              <Row>
+                <Col lg={6} md={12}>
+                  <AccountsWidget accounts={this.state.accounts} />
+                </Col>
+                <Col lg={4} xs={12}>
+                  
+                </Col>
+                <Col lg={4} xs={12}>
+                  
+                </Col>
+              </Row>
+            </Container>
           </>
         }
       </div>

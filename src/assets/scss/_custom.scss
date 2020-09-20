@@ -148,9 +148,11 @@ input:focus ~ label, input.used ~ label {
   top: 0; left: 0; bottom: 0; right: 0;
   width: 50%;
   max-width: 400px;
-  min-width: 300px;
+  min-width: 275px;
+  width: 90%;
   height: 75%;
-  overflow: scroll;
+  overflow-y: scroll;
+  overflow-x: hidden;
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
@@ -165,9 +167,11 @@ input:focus ~ label, input.used ~ label {
   top: 0; left: 0; bottom: 0; right: 0;
   width: 75%;
   max-width: 700px;
-  min-width: 400px;
-  height: 90%;
-  overflow: scroll;
+  min-width: 275px;
+  width: 90%;
+  height: 75%;
+  overflow-y: scroll;
+  overflow-x: hidden;
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
@@ -180,10 +184,13 @@ input:focus ~ label, input.used ~ label {
   margin: auto;
   position: absolute;
   top: 0; left: 0; bottom: 0; right: 0;
-  width: 400px;
-  height: 90%;
+  max-width: 400px;
+  min-width: 275px;
+  width: 90%;
+  height: 75%;
   max-height: 500px;
-  overflow: scroll;
+  overflow-y: scroll;
+  overflow-x: hidden;
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
@@ -200,4 +207,30 @@ input:focus ~ label, input.used ~ label {
 .errorMessage {
   color: red;
   text-align: center;
+}
+
+body::-webkit-scrollbar {
+  width: 1em;
+}
+ 
+body::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  background-color: #17193B;
+}
+
+body::-webkit-scrollbar-thumb {
+  background-color: rgb(49, 48, 48);
+}
+
+div::-webkit-scrollbar {
+  width: 1em;
+}
+ 
+div::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  background-color: #17193B;
+}
+
+div::-webkit-scrollbar-thumb {
+  background-color: rgb(49, 48, 48);
 }

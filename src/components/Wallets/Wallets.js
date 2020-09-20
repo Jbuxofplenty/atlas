@@ -1,51 +1,274 @@
-import React, { useEffect } from "react";
+import React, { useEffect }  from 'react'
+import { useTable, useSortBy } from 'react-table'
+import matchSorter from 'match-sorter'
 import { connect } from 'react-redux';
-import {
-  Table,
-} from 'reactstrap';
 
-import Widget from 'components/Widget/Widget';
+// material-ui
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableContainer from '@material-ui/core/TableContainer';
+import TableHead from '@material-ui/core/TableHead';
+import TablePagination from '@material-ui/core/TablePagination';
+import TableRow from '@material-ui/core/TableRow';
+import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
+
 import s from './Wallets.module.scss';
 import { eThreeActions, alertActions } from "actions";
 
-function Wallet(props) {
 
+
+const theme = createMuiTheme({
+  overrides: {
+    // Style sheet name ⚛️
+    MuiTableCell: {
+      // Name of the rule
+      body: {
+        border: 0,
+        color: '#888787',
+      },
+      head: {
+        border: 0,
+        color: '#888787',
+      },
+    },
+    MuiSelect: {
+      root: {
+        color: '#888787',
+        '&:hover': {
+          color: '#ffffff',
+       },
+      },
+      select: {
+        color: '#888787',
+        '&:hover': {
+          color: '#ffffff',
+       },
+      },
+    },
+    MuiTablePagination: {
+      caption: {
+        color: '#888787',
+        '&:hover': {
+          color: '#ffffff',
+       },
+      },
+    },
+    MuiIconButton: {
+      label: {
+        color: '#888787',
+        '&:hover': {
+          color: '#ffffff',
+       },
+      },
+    },
+    MuiList: {
+      root: {
+        backgroundColor: '#17193B'
+      },
+    },
+    MuiButtonBase: {
+      root: {
+        color: '#888787',
+        '&:hover': {
+          color: '#ffffff',
+       },
+      },
+    },
+  },
+});
+
+// Define a default UI for filtering
+function DefaultColumnFilter({
+  column: { filterValue, preFilteredRows, setFilter },
+}) {
+  const count = preFilteredRows.length
+
+  return (
+    <input
+      value={filterValue || ''}
+      onChange={e => {
+        setFilter(e.target.value || undefined) // Set undefined to remove the filter entirely
+      }}
+      placeholder={`Search ${count} records...`}
+    />
+  )
+}
+
+function fuzzyTextFilterFn(rows, id, filterValue) {
+  return matchSorter(rows, filterValue, { keys: [row => row.values[id]] })
+}
+
+// Let the table remove the filter if the string is empty
+fuzzyTextFilterFn.autoRemove = val => !val
+
+// Our table component
+function ReactTable({ columns, data }) {
+  const filterTypes = React.useMemo(
+    () => ({
+      // Add a new fuzzyTextFilterFn filter type.
+      fuzzyText: fuzzyTextFilterFn,
+      // Or, override the default text filter to use
+      // "startWith"
+      text: (rows, id, filterValue) => {
+        return rows.filter(row => {
+          const rowValue = row.values[id]
+          return rowValue !== undefined
+            ? String(rowValue)
+                .toLowerCase()
+                .startsWith(String(filterValue).toLowerCase())
+            : true
+        })
+      },
+    }),
+    []
+  )
+
+  const defaultColumn = React.useMemo(
+    () => ({
+      // Let's set up our default Filter UI
+      Filter: DefaultColumnFilter,
+    }),
+    []
+  )
+
+  const {
+    getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    rows,
+    prepareRow,
+  } = useTable(
+    {
+      columns,
+      data,
+      defaultColumn, // Be sure to pass the defaultColumn option
+      filterTypes,
+    },
+    useSortBy,
+  )
+
+  // We don't want to render all of the rows for this example, so cap
+  // it for this use case
+  const [page, setPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const firstPageRows = rows.slice(page*rowsPerPage, (page+1)*rowsPerPage)
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  return (
+    <TableContainer>
+      <Table {...getTableProps()} className="w-100">
+        <TableHead>
+          {headerGroups.map(headerGroup => (
+            <TableRow {...headerGroup.getHeaderGroupProps()}>
+              {headerGroup.headers.map(column => (
+                <TableCell {...column.getHeaderProps()} {...column.getHeaderProps(column.getSortByToggleProps())} className={`${s.header} ${column.isSorted && s.isSorted}`}>
+                  {column.render('Header')}
+                    {column.isSorted
+                      ? column.isSortedDesc
+                        ? <i className={`icon-pane ml-1 fa fa-sort-down`}/>
+                        : <i className={`icon-pane ml-1 fa fa-sort-up`}/>
+                      : <i className={`icon-pane ml-1 fa fa-sort`}/>}
+                </TableCell>
+              ))}
+            </TableRow>
+          ))}
+        </TableHead>
+        <TableBody {...getTableBodyProps()}>
+          {firstPageRows.map((row, i) => {
+            prepareRow(row)
+            return (
+              <TableRow {...row.getRowProps()} className={s.lineItem}>
+                {row.cells.map(cell => {
+                  return <TableCell {...cell.getCellProps()} className={s.cell}>{cell.render('Cell')}</TableCell>
+                })}
+              </TableRow>
+            )
+          })}
+        </TableBody>
+      </Table>
+      <TablePagination
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={rows.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onChangePage={handleChangePage}
+          onChangeRowsPerPage={handleChangeRowsPerPage}
+        />
+    </TableContainer>
+  )
+}
+
+// Define a custom filter filter function!
+function filterGreaterThan(rows, id, filterValue) {
+  return rows.filter(row => {
+    const rowValue = row.values[id]
+    return rowValue >= filterValue
+  })
+}
+
+// This is an autoRemove method on the filter function that
+// when given the new filter value and returns true, the filter
+// will be automatically removed. Normally this is just an undefined
+// check, but here, we want to remove the filter if it's not a number
+filterGreaterThan.autoRemove = val => typeof val !== 'number'
+
+function Wallets(props) {
   useEffect(() => {
     props.visible(false);
     // eslint-disable-next-line
   }, []);
 
+
+  const columns = React.useMemo(
+    () => [
+        {
+          Header: '#',
+        Cell: row => {return <div>{row.row.index+1}</div>},
+        },
+        {
+          Header: 'Name',
+          accessor: 'currency.name',
+        },
+        {
+          Header: 'Current Balance',
+          accessor: 'balance.amount',
+        Cell: (row) => {console.log(row); return (<div>{row.cell.value} {row.row.original.balance.currency}</div>)},
+        },
+        {
+          Header: 'Last Updated',
+          accessor: 'updated_at',
+          Cell: ({ cell: { value } }) => (<div>{new Date(value).toLocaleString('en-US')}</div>),
+        },
+        {
+          Header: 'Primary',
+          accessor: 'primary',
+          Cell: ({ cell: { value } }) => (<>{
+            value && (<i className={`successMessage icon-pane fa fa-check`}/>)}
+          </>),
+        },
+      ],
+    []
+  )
+
   return (
-    <div className={s.root}>
-        <h4 className="page-title">Wallets</h4>
-        {props.account.wallets.length === 0 ? <div className={s.noAccounts}>No wallets are attached to your {props.account.displayName} account!</div> :
-          <Widget className="w-100 align-self-center">
-            <div className="table-responsive align-self-center">
-              <Table className="table-hover align-self-center">
-                <thead>
-                  <tr>
-                    <th className={s.cell}>#</th>
-                    <th className={s.cell}>Name</th>
-                    <th className={s.cell}>Current Balance</th>
-                  </tr>
-                </thead>
-                {/* eslint-disable */}
-                <tbody>
-                  {props.account.wallets.map((wallet, index) =>
-                    <tr className={s.lineItem} key={index}>
-                      <td className={s.cell}>{index+1}</td>
-                      <td className={s.cell}>{wallet.currency.name}</td>
-                      <td className={s.cell}>{wallet.balance.amount} {wallet.balance.currency}</td>
-                    </tr>
-                  )}
-                </tbody>
-                {/* eslint-enable */}
-              </Table>
-            </div>
-          </Widget>
-        }
-      </div>
-  );
+    <ThemeProvider theme={theme}>
+      {props.account.wallets.length === 0 ? <div className={s.noAccounts}>No wallets are attached to your {props.account.displayName} account!</div> :
+        <div className={s.tableContainer}>
+          <ReactTable columns={columns} data={props.account.wallets} />
+        </div>
+      }
+    </ThemeProvider>
+  )
 }
 
 function mapStateToProps(store) {
@@ -64,4 +287,5 @@ const mapDispatchToProps = (dispatch, history) => {
     setComponent: (component) => dispatch(alertActions.component(component)),
   };
 }
-export default connect(mapStateToProps, mapDispatchToProps)(Wallet);
+
+export default connect(mapStateToProps, mapDispatchToProps)(Wallets);

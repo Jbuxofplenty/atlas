@@ -1,0 +1,23 @@
+@import 'assets/scss/app';
+
+.root {
+  width: 95% !important;
+  align-self: center;
+}
+
+.mainTableWidget {
+  :global {
+    .table td {
+      border: none;
+    }
+  }
+}
+
+.lineItem:hover td {
+  color: white;
+}
+
+.cell {
+  text-align: center;
+  align-self: center;
+}
