@@ -53,7 +53,7 @@ class Profile extends React.Component {
       );
     }
     if(nextProps.userData.e2ee !== this.props.userData.e2ee) {
-      this.setState({ e2ee: nextProps.userData.e2ee });
+      this.setState({ e2ee: this.props.userData.e2ee });
     }
   }
 
@@ -93,6 +93,7 @@ class Profile extends React.Component {
   }
 
   renderEncryption() {
+    console.log(this.state.e2ee)
     if(!this.state.e2ee) {
       return null;
     }

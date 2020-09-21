@@ -31,6 +31,27 @@ function CandlestickWidget(props) {
   useEffect(() => {
     props.clear();
     props.setComponent('candlestick-widget')
+    if(!props.stockData || !props.stockData[ticker] || !props.stockData[ticker]["candlestick"]){
+      var now = new Date().getTime();
+      var tempDate = new Date();
+      tempDate.setMonth(tempDate.getMonth() - 1);
+      var oneMonthAgo = tempDate.getTime();
+      props.retrieveStockData(ticker, oneMonthAgo, now, "candlestick");
+    }
+    else {
+      updateOptions();
+    }
+    // eslint-disable-next-line
+  }, []);
+
+  useEffect(() => {
+    if(props.stockData && props.stockData[ticker] && props.stockData[ticker]["candlestick"]){
+      updateOptions();
+    }
+    // eslint-disable-next-line
+  }, [props.stockData, ticker]);
+
+  const updateOptions = () => {
     var tempOptions = {};
     Object.assign(tempOptions, candlestickOptions);
     tempOptions.legend.data = [ticker];
@@ -52,17 +73,8 @@ function CandlestickWidget(props) {
     tempOptions.series[0].data = data;
     tempOptions.series[0].name = ticker;
     tempOptions.series[0].type = 'candlestick';
-    console.log(tempOptions)
     setOptions(tempOptions);
-    if(props.stockData && props.stockData[ticker] && props.stockData[ticker]["candlestick"]) return;
-    var now = new Date().getTime();
-    var tempDate = new Date();
-    tempDate.setMonth(tempDate.getMonth() - 1);
-    var oneMonthAgo = tempDate.getTime();
-    props.retrieveStockData(ticker, oneMonthAgo, now, "candlestick");
-    // setOptions(tempOptions);
-    // eslint-disable-next-line
-  }, []);
+  }
 
   return (
     <Widget 

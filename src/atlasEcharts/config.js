@@ -10,7 +10,8 @@ const chartColors = {
   gray: '#d6dee5',
   default: '#595d78',
   textColor: '#e0e0e1',
-  gridLineColor: '#040620'
+  gridLineColor: '#040620',
+  black: '#000000',
 };
 
 export default {
