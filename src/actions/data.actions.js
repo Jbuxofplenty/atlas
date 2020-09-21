@@ -1,7 +1,7 @@
 import { dataConstants } from '../constants';
 import { db, auth } from '../firebase';
 import { eThreeActions, alertActions } from 'actions';
-import { store } from 'helpers';
+import { store, finnhubClient } from 'helpers';
 import OAuthObject from 'oauth2';
 
 const financialDataTypeMap = {
@@ -22,6 +22,7 @@ export const dataActions = {
   storeFinancialData,
   deleteAccount,
   financialDataTypeMap,
+  retrieveStockData,
 };
 
 function dataReset() {
@@ -32,7 +33,7 @@ function dataReset() {
 }
 
 /////////////////////////////
-////// Financial Data ///////
+//// User Financial Data ////
 /////////////////////////////
 
 function storeFinancialDataFirestore(institution, type, data) {
@@ -196,4 +197,25 @@ function getInstitutions() {
     })
   }
   function updateInstitutions(institutions) { return { type: dataConstants.UPDATE_INSTITUTIONS, institutions } }
+}
+
+
+/////////////////////////////
+////// Financial Data ///////
+/////////////////////////////
+
+const finnhubTypes = {
+  "candlestick": "D",
+}
+
+function retrieveStockData(ticker, timeStart, timeEnd, dataType) {
+  return async dispatch => {
+    // Finnhub expects seconds since UTC epoch rather than milliseconds
+    finnhubClient.stockCandles(ticker, finnhubTypes[dataType], parseInt(timeStart.toString().slice(0, -3)), parseInt(timeEnd.toString().slice(0, -3)), {}, (error, data, response) => {
+      if(!data && response.statusCode === 429) dispatch(alertActions.error("We've hit our free-tier limit for our financial data provider!  It should open back up in another minute."))
+      dispatch(updateStockData(ticker, data, dataType));
+      console.log(response, data, dataType)
+    });
+  }
+  function updateStockData(ticker, data, dataType) { return { type: dataConstants.UPDATE_STOCK_DATA, ticker, data, dataType } }
 }

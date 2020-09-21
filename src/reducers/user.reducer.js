@@ -13,6 +13,7 @@ export function user(state = initialState, action) {
   switch (action.type) {
     case userConstants.LOGIN_RESET:
       return {
+        ...state,
         isLoginPending: false,
         userData: {},
         isLoginSuccess: false,

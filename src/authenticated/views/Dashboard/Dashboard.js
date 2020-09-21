@@ -6,6 +6,7 @@ import {
 } from 'reactstrap';
 
 import AccountsWidget from './components/AccountsWidget';
+import CandlestickWidget from './components/CandlestickWidget';
 
 import { dataActions } from 'actions';
 
@@ -44,14 +45,13 @@ class Dashboard extends React.Component {
             <h1 className="page-title">Dashboard &nbsp;</h1>
             <Container className="w-100">
               <Row>
+                <Col lg={12} xs={12}>
+                  <CandlestickWidget />
+                </Col>
+              </Row>
+              <Row>
                 <Col lg={6} md={12}>
                   <AccountsWidget accounts={this.state.accounts} />
-                </Col>
-                <Col lg={4} xs={12}>
-                  
-                </Col>
-                <Col lg={4} xs={12}>
-                  
                 </Col>
               </Row>
             </Container>
