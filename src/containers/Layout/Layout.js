@@ -25,9 +25,7 @@ import { navigationActions } from 'actions';
 
 import s from './Layout.module.scss';
 import { eThreeActions } from "actions";
-import { apiBaseUrl } from 'helpers';
-
-import { auth } from '../../firebase'
+import { apiBaseUrl, auth } from 'helpers';
 
 // Style for app
 import 'App.scss';

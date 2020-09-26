@@ -10,7 +10,7 @@ import Button from "components/CustomButtons/Button.js";
 
 import s from '../Profile.module.scss';
 import { eThreeActions, alertActions } from "actions";
-import { auth } from '../../../../firebase';
+import { auth } from 'helpers';
 
 function RotateKey(props) {
   const rotateKey = () => {

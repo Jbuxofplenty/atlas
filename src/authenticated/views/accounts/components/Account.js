@@ -21,7 +21,6 @@ function Account(props) {
   useEffect(() => {
     props.visible(false);
     setAccountObject(OAuthObject[props.account.displayName])
-    console.log(props.account)
     // eslint-disable-next-line
   }, []);
 

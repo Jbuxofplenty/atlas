@@ -29,7 +29,7 @@ const ReCaptchaPage = (props) => {
     <div className={componentClasses.join(' ')}>
       <div className="my-3 d-flex justify-content-center w-100">
         <ReCAPTCHA
-          sitekey="6LebX8UZAAAAALvXtDQ5obj2A8AXvS2AzB1S_iRe"
+          sitekey={siteKey}
           onChange={onChange}
           onExpired={onExpired}
           size={props.size}

@@ -25,7 +25,7 @@ import { navigationActions, eThreeActions } from 'actions';
 
 import s from './AuthenticatedHeader.module.scss';
 import 'assets/scss/vendors/animate.css/animate.css';
-import { auth } from '../../firebase';
+import { auth } from 'helpers';
 
 class AuthenticatedHeader extends React.Component {
   static propTypes = {

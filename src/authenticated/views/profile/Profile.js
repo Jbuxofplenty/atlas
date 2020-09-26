@@ -93,7 +93,6 @@ class Profile extends React.Component {
   }
 
   renderEncryption() {
-    console.log(this.state.e2ee)
     if(!this.state.e2ee) {
       return null;
     }

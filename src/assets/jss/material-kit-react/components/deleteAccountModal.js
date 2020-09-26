@@ -77,6 +77,11 @@ const connectStyle = {
     display: "flex",
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  instructionContainer: {
+    display: "flex",
+    justifyContent: 'center',
+    alignItems: 'center',
   }
 };
 

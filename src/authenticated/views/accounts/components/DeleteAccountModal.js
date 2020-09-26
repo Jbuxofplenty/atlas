@@ -81,7 +81,7 @@ function DeleteAccountModal(props) {
                     </div>
                   </GridItem>
                   <GridItem xs={12} sm={12} lg={12} className={`${classes.instructionContainer} mt-3`}>
-                    { props.alertVisible && props.alertType === "alert-pending" && <i className="fas fa-spinner fa-spin" style={{fontSize: 20}}/> }
+                    { props.alertVisible && props.alertType === "alert-pending" && <i className="fas fa-spinner fa-spin align-self-center" style={{fontSize: 20}}/> }
                     { props.alertVisible && props.alertType === "alert-success" && <div className="successMessage">{props.alertMessage}</div> }
                     { props.alertVisible && props.alertType === "alert-error" && <div className="errorMessage">{props.alertMessage}</div> }
                   </GridItem>

@@ -242,7 +242,7 @@ function Wallets(props) {
         {
           Header: 'Current Balance',
           accessor: 'balance.amount',
-        Cell: (row) => {console.log(row); return (<div>{row.cell.value} {row.row.original.balance.currency}</div>)},
+        Cell: (row) => {return (<div>{row.cell.value} {row.row.original.balance.currency}</div>)},
         },
         {
           Header: 'Last Updated',

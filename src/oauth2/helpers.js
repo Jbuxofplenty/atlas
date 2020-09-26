@@ -1,6 +1,6 @@
 import OAuthObject from './index';
 import { dataActions } from 'actions';
-import { store } from 'helpers';
+import { store, p } from 'helpers';
 
 // Function ensures API request will be made with a valid access token
 export async function apiRequest(endpoint, institution, data) {
@@ -14,7 +14,7 @@ export async function apiRequest(endpoint, institution, data) {
   const buffer = 200;
   var authHeader = 'Bearer ' + accessToken.access_token;
   // Assumes created_at field in seconds from UTC epoch
-  if(now < parseFloat(accessToken.created_at*1000) + parseFloat(accessToken.expires_in) + buffer) {
+  if(now < parseFloat(accessToken.created_at)*1000 + parseFloat(accessToken.expires_in) + buffer) {
     await refreshToken(accessToken.refresh_token, institution);
     accessTokens = await dataActions.getFinancialData('accessTokens');
     accessToken = accessTokens[institution];
@@ -40,8 +40,8 @@ export async function apiRequest(endpoint, institution, data) {
       return responseJson;
     })
     .catch((error) => {
-      console.log("Error in request from " + institution + " when retrieving data from " + apiBaseUrl + endpoint + "!")
-      console.log(error)
+      p("Error in request from " + institution + " when retrieving data from " + apiBaseUrl + endpoint + "!")
+      p(error)
       return false;
     });
   }
@@ -64,8 +64,8 @@ export async function apiRequest(endpoint, institution, data) {
       return responseJson;
     })
     .catch((error) => {
-      console.log("Error in request from " + institution + " when retrieving data from " + apiBaseUrl + endpoint + "!")
-      console.log(error)
+      p("Error in request from " + institution + " when retrieving data from " + apiBaseUrl + endpoint + "!")
+      p(error)
       return false;
     });
   }
@@ -85,8 +85,8 @@ export async function refreshToken(refreshToken, institution) {
     return responseJson;
   })
   .catch((error) => {
-    console.log("Error in request from " + institution + " when trying to generate a new access token!")
-    console.log(error)
+    p("Error in request from " + institution + " when trying to generate a new access token!")
+    p(error)
     return false;
   });
   await store.dispatch(dataActions.storeFinancialDataFirestore(institution, "accessTokens", responseData))

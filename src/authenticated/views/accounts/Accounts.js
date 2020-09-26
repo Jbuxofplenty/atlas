@@ -51,7 +51,6 @@ class Accounts extends React.Component {
     for (var key in tempAccounts){
       accounts.push(tempAccounts[key]);
     }
-    console.log(accounts)
     this._isMounted && this.setState({ accounts });
     this._isMounted && this.props.getInstitutions();
   }

@@ -1,7 +1,7 @@
 import { dataConstants } from '../constants';
-import { db, auth } from '../firebase';
+import { db, auth } from '../helpers/firebase';
 import { eThreeActions, alertActions } from 'actions';
-import { store, finnhubClient } from 'helpers';
+import { store, finnhubClient, p } from 'helpers';
 import OAuthObject from 'oauth2';
 
 const financialDataTypeMap = {
@@ -106,7 +106,7 @@ function getFinancialDataFirestore(type, e2ee) {
       }
     })
     .catch(error => {
-      console.log(error)
+      p(error)
     })
   }
 }
@@ -192,7 +192,7 @@ function getInstitutions() {
       dispatch(updateInstitutions(institutions));
     })
     .catch(error => {
-      console.log(error)
+      p(error)
       dispatch(updateInstitutions({}));
     })
   }
@@ -214,7 +214,7 @@ function retrieveStockData(ticker, timeStart, timeEnd, dataType) {
     finnhubClient.stockCandles(ticker, finnhubTypes[dataType], parseInt(timeStart.toString().slice(0, -3)), parseInt(timeEnd.toString().slice(0, -3)), {}, (error, data, response) => {
       if(!data && response.statusCode === 429) dispatch(alertActions.error("We've hit our free-tier limit for our financial data provider!  It should open back up in another minute."))
       dispatch(updateStockData(ticker, data, dataType));
-      console.log(response, data, dataType)
+      p(response, data, dataType)
     });
   }
   function updateStockData(ticker, data, dataType) { return { type: dataConstants.UPDATE_STOCK_DATA, ticker, data, dataType } }

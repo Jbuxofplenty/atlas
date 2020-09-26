@@ -15,7 +15,7 @@ import CardHeader from "components/Card/CardHeader.js";
 import CardFooter from "components/Card/CardFooter.js";
 import CustomInput from "components/CustomInput/CustomInput.js";
 
-import { firebase, auth } from '../../firebase';
+import { firebase, auth } from 'helpers';
 
 import styles from "assets/jss/material-kit-react/components/twoFactorAuthModal.js";
 import { alertActions, userActions } from "actions";
@@ -74,7 +74,6 @@ function TwoFactorAuthModal(props) {
         // user.credential.accessToken contains the Google OAuth access token.
         // user.credential.idToken contains the Google OAuth ID token.
         if(userCredential.additionalUserInfo.providerId === "google.com") {
-          console.log(props)
           props.googleLogin(userCredential, props.history);
         }
         else if(userCredential.additionalUserInfo.providerId === "facebook.com") {

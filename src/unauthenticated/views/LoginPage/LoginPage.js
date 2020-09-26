@@ -32,7 +32,7 @@ import CustomInput from "components/CustomInput/CustomInput.js";
 import ReCaptcha from "components/ReCaptcha/ReCaptcha.js";
 import TwoFactorAuthModal from 'components/TwoFactorAuthModal/TwoFactorAuthModal';
 
-import { auth, firebase } from "../../../firebase";
+import { auth, firebase } from "../../../helpers/firebase";
 
 import styles from "assets/jss/material-kit-react/views/loginPage.js";
 

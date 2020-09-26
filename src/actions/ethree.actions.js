@@ -1,8 +1,9 @@
 import crypto from 'crypto';
 import { eThreeConstants } from '../constants';
 import { alertActions, dataActions } from 'actions';
-import { db, functions, auth } from '../firebase';
+import { db, functions, auth } from '../helpers/firebase';
 import { EThree, KeyPairType } from '@virgilsecurity/e3kit-browser';
+import { p, } from 'helpers';
 
 const algorithm = 'aes-256-ctr';
 
@@ -31,7 +32,7 @@ async function initializeEThree() {
   const initializeFunction = () => getToken()
       .then(result => result.data.token)
       .catch(error => {
-        console.log(error);
+        p(error);
         return null;
       });
   if(!initializeFunction) {
@@ -43,13 +44,13 @@ async function initializeEThree() {
   const eThree = await EThree.initialize(initializeFunction, {
     keyPairType: KeyPairType.CURVE25519_ROUND5_ED25519_FALCON,
   }).then(async eThree => {
-    console.log('Initialized EThree instance succesfully!')
+    p('Initialized EThree instance succesfully!')
     return eThree;
   }).catch(error => {
       // Error handling
       const code = error.code;
       // code === 'unauthenticated' if user not authenticated
-      console.log(code, error)
+      p(code, error)
       return null;
   });
   return eThree;
@@ -61,7 +62,7 @@ function registerNewUser() {
     const initializeFunction = () => getToken()
         .then(result => result.data.token)
         .catch(error => {
-          console.log(error);
+          p(error);
           return null;
         });
     if(!initializeFunction) {
@@ -75,20 +76,20 @@ function registerNewUser() {
     }).then(async eThree => {
       await eThree.register()
         .then(() => {
-          console.log('success')
+          p('success')
           dispatch(complete(true));
         })
         .catch(e => {
           console.error('error: ', e)
           dispatch(complete(false));
         });
-      console.log('Initialized EThree instance succesfully!')
+      p('Initialized EThree instance succesfully!')
       return eThree;
     }).catch(error => {
         // Error handling
         const code = error.code;
         // code === 'unauthenticated' if user not authenticated
-        console.log(code, error)
+        p(code, error)
         return null;
     });
     return eThree;
@@ -201,12 +202,12 @@ function localKeyPresent() {
 async function unregister() {
   const eThree = await initializeEThree();
   if(!eThree) {
-    console.log("End-to-End encyption session has expired. Please log out and log back in to perform this action!");
+    p("End-to-End encyption session has expired. Please log out and log back in to perform this action!");
     return false;
   }
   return await eThree.unregister()
   .then(async () => {
-    console.log('Successfully unregistered your EThree account!')
+    p('Successfully unregistered your EThree account!')
     return true;
   })
   .catch(e => {
@@ -218,12 +219,12 @@ async function unregister() {
 async function logout() {
   const eThree = await initializeEThree();
   if(!eThree) {
-    console.log("End-to-End encyption session has expired. Please log out and log back in to perform this action!");
+    p("End-to-End encyption session has expired. Please log out and log back in to perform this action!");
     return false;
   }
   return await eThree.cleanup()
   .then(async () => {
-    console.log('Successfully deleted your private key in preparation for logging out!')
+    p('Successfully deleted your private key in preparation for logging out!')
     return true;
   })
   .catch(e => {
@@ -245,7 +246,7 @@ function backupKey(keyPassword, uid) {
       await db.collection("users").doc(uid).update({
         backedUp: true,
       }).then(() => {
-        console.log('Successfully backed up your private key to the cloud!')
+        p('Successfully backed up your private key to the cloud!')
         dispatch(complete(true));
         dispatch(alertActions.success("Successfully backed up your private key to the cloud!"));
       }).catch(e => {
@@ -276,7 +277,7 @@ function rotateKey(uid) {
         await db.collection("users").doc(uid).update({
           financialData: {},
         }).then(() => {
-          console.log('Successfully generated your new private key! Make sure to make a backup!')
+          p('Successfully generated your new private key! Make sure to make a backup!')
           dispatch(complete(true));
           dispatch(alertActions.success("Successfully generated your new private key! Make sure to make a backup!"));
         }).catch(e => {
@@ -307,7 +308,7 @@ function restoreKey(keyPassword) {
 
     if (!hasLocalPrivateKey) await eThree.restorePrivateKey(keyPassword)
       .then(async () => {
-        console.log('Successfully retrieved your private key from the cloud!')
+        p('Successfully retrieved your private key from the cloud!')
         dispatch(alertActions.success("Successfully retrieved your private key from the cloud!"));
       })
       .catch(e => {
@@ -316,7 +317,7 @@ function restoreKey(keyPassword) {
         return false;
       });
     else {
-      console.log('Private key is already stored locally!')
+      p('Private key is already stored locally!')
       dispatch(alertActions.success("Private key is already stored locally!"));
     }
   }
@@ -332,7 +333,7 @@ function updatePassword(oldPassword, newPassword) {
     }
     eThree.changePassword(oldPassword, newPassword)
       .then(async () => {
-        console.log('Password updated successfully!')
+        p('Password updated successfully!')
         dispatch(alertActions.success("Password updated successfully!"));
       })
       .catch(e => {
@@ -356,7 +357,7 @@ function deleteBackup(uid) {
       await db.collection("users").doc(uid).update({
         backedUp: false,
       }).then(() => {
-        console.log('Deleted backed up private key from the cloud!')
+        p('Deleted backed up private key from the cloud!')
         dispatch(complete(false));
         dispatch(alertActions.success("Successfully deleted backed up private key from the cloud!"));
       }).catch(e => {

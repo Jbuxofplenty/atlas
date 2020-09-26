@@ -44,3 +44,9 @@ export async function asyncForEach(array, callback) {
     await callback(array[index], index, array);
   }
 }
+
+export function p(text) {
+  if(isDev()) {
+    console.log(text);
+  }
+}

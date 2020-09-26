@@ -10,7 +10,7 @@ import Switch from '@material-ui/core/Switch';
 import { withStyles } from '@material-ui/core/styles';
 import { green } from '@material-ui/core/colors';
 
-import { db, auth } from '../../../../firebase';
+import { db, auth } from 'helpers';
 
 import s from '../Profile.module.scss';
 import { 
@@ -44,6 +44,7 @@ const styles = {
 
 function EnableE2EE(props) {
   const [e2eeEnabled, setE2EE] = useState(props.userData.e2ee);
+  const [isPending, setIsPending] = useState(false);
 
   useEffect(() => {
     props.clear();
@@ -51,6 +52,8 @@ function EnableE2EE(props) {
   }, []);
 
   const handleChange = async (event) => {
+    if(isPending) return;
+    setIsPending(true);
     props.clear();
     props.setComponent('e2ee');
     var e2ee = event.target.checked;
@@ -72,13 +75,14 @@ function EnableE2EE(props) {
       }
     }
     setE2EE(e2ee);
-    db.collection("users").doc(auth.currentUser.uid).update({ e2ee });
+    await db.collection("users").doc(auth.currentUser.uid).update({ e2ee });
 
     // Update redux store after all operations have been performed
     var userData = {};
     Object.assign(userData, props.userData);
     userData.e2ee = e2ee;
-    props.updateUserData(userData);
+    await props.updateUserData(userData);
+    setIsPending(false);
   };
 
   return (

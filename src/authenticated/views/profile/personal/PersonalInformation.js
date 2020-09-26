@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { connect } from 'react-redux';
-import { db } from "../../../../firebase";
+import { db } from "../../../../helpers/firebase";
 
 // core components
 import GridContainer from "components/Grid/GridContainer.js";
@@ -12,7 +12,7 @@ import Button from "components/CustomButtons/Button.js";
 
 import s from '../Profile.module.scss';
 import { userActions, alertActions } from "actions";
-import { auth } from "../../../../firebase";
+import { auth } from "../../../../helpers/firebase";
 
 function PersonalInformation(props) {
   const [firstName, setFirstName] = useState(props.firstName);

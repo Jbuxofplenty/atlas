@@ -47,7 +47,6 @@ function Connect(props) {
   const [oAuth] = useState(OAuthObject[props.institution.displayName]);
   const [isPending, setIsPending] = useState(false);
   const [signInWindowOpen, setSignInWindowOpen] = useState(false);
-  console.log(signInWindowOpen);
   const [message, setMessage] = useState(`We'll have you login at ${props.institution.displayName} to authorize this application and bring you back here.`);
   const e2ee = props.userData.e2ee;
   const privateKeyPresent = props.privateKeyPresent;
@@ -68,6 +67,12 @@ function Connect(props) {
       setMessage('Since you have end-to-end encryption enabled, you must have your private key present on your local device.  Go to your profile to retrieve your private key!');
     }
   }, [e2ee, privateKeyPresent])
+
+  useEffect(() => {
+    if(props.alertType === 'alert-success' && props.alertMessage !== '') {
+      setMessage(props.alertMessage);
+    }
+  }, [props.alertMessage, props.alertType])
 
   let windowObjectReference = null;
   let previousUrl = null;
@@ -101,7 +106,6 @@ function Connect(props) {
     popupTick.current = setInterval(function() {
       if (windowObjectReference.closed) {
         clearInterval(popupTick);
-        console.log('there')
         if(mounted.current && authCode === '') {
           setIsPending(false);
           setIsError(true);
@@ -139,7 +143,7 @@ function Connect(props) {
           data.institution = props.institution.displayName;
           await props.storeFinancialDataFirestore(props.institution.displayName, "accessTokens", data);
           await oAuth.pullAccountData();
-          setMessage(`You successfully connected your ${props.institution.displayName} account!  We're pulling in all of your data now`);
+          setMessage(`You successfully connected your ${props.institution.displayName} account!`);
           setIsError(false);
           setIsPending(false);
           setIsSuccess(true);
@@ -173,7 +177,6 @@ function Connect(props) {
   }
 
   const showMessageHTML = () => {
-    console.log(signInWindowOpen)
     if(isPending) {
       if(signInWindowOpen) {
         return (
@@ -280,6 +283,7 @@ const mapDispatchToProps = (dispatch, history) => {
   return {
     storeFinancialDataFirestore: (institution, type, data) => dispatch(dataActions.storeFinancialDataFirestore(institution, type, data)),
     clear: () => dispatch(alertActions.clear()),
+    setComponent: (component) => dispatch(alertActions.component(component)),
   };
 }
 

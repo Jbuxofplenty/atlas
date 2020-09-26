@@ -290,20 +290,21 @@ function OrdersTable(props) {
 
   useEffect(() => {
     props.visible(false);
-    var tempOrders;
+    var tempOrders = [];
     if(props.account) {
       setAccountObject(OAuthObject[props.account.displayName]);
-      tempOrders = props.account.orders.buys.concat(props.account.orders.sells);
+      if(props.account.orders && props.account.orders.buys && props.account.orders.sells)
+        tempOrders = props.account.orders.buys.concat(props.account.orders.sells);
     }
     else if(props.accounts) {
       tempOrders = [];
       props.accounts.forEach(account => {
-        tempOrders = tempOrders.concat(account.orders.buys).concat(account.orders.sells);
+        if(account.orders && account.orders.buys && account.orders.sells)
+          tempOrders = tempOrders.concat(account.orders.buys).concat(account.orders.sells);
       })
     }
     setOrders(tempOrders);
-    // eslint-disable-next-line
-  }, []);
+  }, [props]);
 
   const retrieveAccountData = async () => {
     setIsLoad(true);

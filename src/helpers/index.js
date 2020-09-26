@@ -10,5 +10,13 @@ export {
   postMessageLocation,
   generateRandomId,
   asyncForEach,
+  p,
 } from './util';
 export { store, persistor } from './store';
+export { 
+  auth, 
+  db,
+  fire,
+  functions,
+  firebase,
+} from './firebase';

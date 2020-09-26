@@ -1,7 +1,7 @@
 import { userConstants, eThreeConstants } from '../constants';
 import { alertActions, dataActions, eThreeActions } from './';
-import { auth, db } from "../firebase";
-import { apiBaseUrl, generateRandomId } from 'helpers';
+import { auth, db } from "../helpers/firebase";
+import { apiBaseUrl, generateRandomId, p } from 'helpers';
 
 export const userActions = {
     login,
@@ -358,7 +358,7 @@ function logout() {
       dispatch(dataActions.dataReset());
     }
     else {
-      console.log("EThree unable to log out the user!");
+      p("EThree unable to log out the user!");
       dispatch(alertActions.error("EThree unable to log out the user!"));
     }
   }
@@ -385,25 +385,25 @@ function deleteAccount(uid) {
       }
       if(eThreeUnregistered) {
         if(userData.e2ee) {
-          console.log("Successfully unregistered your subscription to the end-to-end encryption service...")
+          p("Successfully unregistered your subscription to the end-to-end encryption service...")
         }
         db.collection("users").doc(uid).delete().then(function() {
-            console.log("User data successfully deleted from our databases!");
+            p("User data successfully deleted from our databases!");
         }).catch(function(error) {
             console.error("Error removing user data from database: ", error.toString());
         });
         var user = auth.currentUser;
         user.delete().then(function() {
-          console.log("User account successfully deleted!");
+          p("User account successfully deleted!");
         }).catch(function(error) {
-          console.log("Error deleting user account: ", error.toString());
+          p("Error deleting user account: ", error.toString());
         });
         dispatch(userLogout());
         dispatch(ethreeReset());
         dispatch(dataActions.dataReset());
       }
       else {
-        console.log("Unable to unregister your subscription to the end-to-end encryption service...")
+        p("Unable to unregister your subscription to the end-to-end encryption service...")
       }
     }
   }

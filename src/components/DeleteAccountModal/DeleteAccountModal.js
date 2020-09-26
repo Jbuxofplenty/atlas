@@ -18,7 +18,7 @@ import CustomInput from "components/CustomInput/CustomInput.js";
 import styles from "assets/jss/material-kit-react/components/deleteAccountModal.js";
 
 import { userActions } from 'actions';
-import { auth } from "../../firebase";
+import { auth } from "../../helpers/firebase";
 import { isDev } from "helpers";
 
 const useStyles = makeStyles(styles);

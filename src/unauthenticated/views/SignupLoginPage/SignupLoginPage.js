@@ -33,7 +33,7 @@ import TwoFactorAuthModal from 'components/TwoFactorAuthModal/TwoFactorAuthModal
 import Loader from 'components/Loader/Loader';
 
 
-import { auth, firebase } from "../../../firebase";
+import { auth, firebase } from "../../../helpers/firebase";
 
 import styles from "assets/jss/material-kit-react/views/loginPage.js";
 
@@ -349,9 +349,6 @@ function SignupLoginPage(props) {
                           }}
                         />
                       </form>
-                      <form className={classes.form} onSubmit={submit}>
-                        <ReCaptcha show={!human} signUp={props.signUpPage} size={'invisible'} />
-                      </form>
                     </CardBody>
                     <CardFooter className={classes.cardFooter}>
                       <SimpleButton disabled={isInvalid} simple color="primary" size="lg" onClick={submit}>
@@ -364,6 +361,9 @@ function SignupLoginPage(props) {
                 </GridItem>
               </GridContainer>
             </div>
+            <form className={classes.form} onSubmit={submit}>
+              <ReCaptcha show={!human} signUp={props.signUpPage} size={'invisible'} />
+            </form>
             <Footer authenticated={false} whiteFont />
           </div>
         </div>

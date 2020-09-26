@@ -30,6 +30,16 @@ exporting(Highcharts);
 exportData(Highcharts);
 
 
+{/* <Col lg={12} xs={12}>
+<Widget
+  title={<h5>Highcharts <span className="fw-semi-bold">Live Chart</span></h5>}
+  close collapse
+>
+  <HighchartsReact options={ld} />
+</Widget>
+</Col> */}
+
+
 class Charts extends React.Component {
 
   state = {
@@ -57,10 +67,6 @@ class Charts extends React.Component {
         }
       }
     }
-  }
-
-  componentWillUnmount() {
-    clearInterval(liveChartInterval);
   }
 
   render() {
@@ -167,14 +173,6 @@ class Charts extends React.Component {
                       opts={initEchartsOptions}
                       style={{height: "170px"}}
                     />
-                  </Widget>
-                </Col>
-                <Col lg={12} xs={12}>
-                  <Widget
-                    title={<h5>Highcharts <span className="fw-semi-bold">Live Chart</span></h5>}
-                    close collapse
-                  >
-                    <HighchartsReact options={ld} />
                   </Widget>
                 </Col>
               </Row>

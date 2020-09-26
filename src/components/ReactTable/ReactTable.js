@@ -395,8 +395,6 @@ function ReactTable() {
 
   const data = React.useMemo(() => makeData(1000), [])
 
-  console.log(data);
-
   return (
     <Styles>
       <Table columns={columns} data={data} />

@@ -17,8 +17,7 @@ import CustomInput from "components/CustomInput/CustomInput.js";
 import styles from "assets/jss/material-kit-react/components/submitIssue.js";
 
 // API
-import { auth } from '../../firebase';
-import { submitIssue } from 'helpers';
+import { submitIssue, auth } from 'helpers';
 
 const useStyles = makeStyles(styles);
 

@@ -13,7 +13,7 @@ import { withStyles } from '@material-ui/core/styles';
 import { green } from '@material-ui/core/colors';
 import Modal from '@material-ui/core/Modal';
 
-import { db, auth } from '../../../../firebase';
+import { db, auth } from 'helpers';
 
 import s from '../Profile.module.scss';
 import { alertActions, userActions } from "actions";

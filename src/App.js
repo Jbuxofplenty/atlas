@@ -21,7 +21,7 @@ import UnauthenticatedRoutes from 'unauthenticated/routes';
 import { CommonRoutes } from './views';
 
 // Firebase
-import { auth } from './firebase';
+import { auth } from './helpers/firebase';
 import { submitIssue } from './helpers';
 
 const LayoutComponent = React.lazy(() => import('containers/Layout'))

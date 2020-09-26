@@ -10,7 +10,7 @@ import Switch from '@material-ui/core/Switch';
 import { withStyles } from '@material-ui/core/styles';
 import { green } from '@material-ui/core/colors';
 
-import { db, auth } from '../../../firebase';
+import { db, auth } from 'helpers';
 
 import s from './Settings.module.scss';
 import { alertActions, userActions } from "actions";

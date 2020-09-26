@@ -31,6 +31,7 @@ function buildAuthRequest(state) {
   params.response_type = "code";
   params.state = state;
   params.redirect_uri = authCallbackURL;
+  params.account = "all";
   return authorizationURL + "?" + queryString.stringify(params) + buildScopesQueryParam()
 }
 

@@ -1,21 +1,36 @@
 import { apiRequest } from 'oauth2/helpers';
-import { dataActions } from 'actions';
-import { store, asyncForEach } from 'helpers';
+import { dataActions, alertActions } from 'actions';
+import { store, asyncForEach, p } from 'helpers';
 
 const coin = "Coinbase";
 
-async function getWalletsTotalBalance() {
-  var response = await apiRequest('accounts', coin);
+async function getExchangeRates() {
+  var response = await apiRequest('exchange-rates', coin);
   if(!response || !response.data) return false;
-  var wallets = response.data;
+  return response.data.rates;
+}
+
+async function getWalletsTotalBalance(exchangeRates) {
+  var enter = true;
+  var wallets = [];
+  var nextUri = 'accounts';
+  var response;
+  while(enter || (response && response.pagination && response.pagination.next_uri)) {
+    if(!enter) nextUri = response.pagination.next_uri.slice(4);
+    response = await apiRequest(nextUri, coin);
+    if(!response || !response.data) return false;
+    wallets = wallets.concat(response.data);
+    enter = false;
+  }
   var financialData = {
     wallets,
     totalBalance: 0
   };
   wallets.forEach(wallet => {
-    financialData.totalBalance += parseFloat(wallet.balance.amount);
+    financialData.totalBalance += parseFloat(wallet.balance.amount) / parseFloat(exchangeRates[wallet.currency.code]);
   })
   await store.dispatch(dataActions.storeFinancialData(coin, "accounts", financialData));
+  await store.dispatch(alertActions.success(`Pulled in data for ${wallets.length} wallets!`));
   return financialData;
 }
 
@@ -39,6 +54,7 @@ async function getOrders(walletsTotalBalance) {
     sells.forEach(sell => {
       orders.sells.push(sell);
     })
+    await store.dispatch(alertActions.success(`Pulled in order data for your ${wallet.name}!`));
   })
   var financialData = {
     ...walletsTotalBalance,
@@ -50,7 +66,8 @@ async function getOrders(walletsTotalBalance) {
 
 async function pullAccountData() {
   var success = true;
-  var walletsTotalBalance = await getWalletsTotalBalance();
+  var exchangeRates = await getExchangeRates();
+  var walletsTotalBalance = await getWalletsTotalBalance(exchangeRates);
   if(!walletsTotalBalance) return false;
   success = await getOrders(walletsTotalBalance);
   var accounts = await dataActions.getFinancialData("accounts");
@@ -65,7 +82,7 @@ async function revokeToken(token) {
   return true;
   // Currently issue with the revoke function, will contact coinbase
   // var accessToken = { token };
-  // console.log(token);
+  // p(token);
   // var response = await apiRequest('https://api.coinbase.com/oauth/revoke', coin, accessToken);
   // if(!response) return false;
   // return response;
@@ -76,6 +93,7 @@ const coinbaseAPI = {
   getWalletsTotalBalance: getWalletsTotalBalance,
   revokeToken: revokeToken,
   getOrders: getOrders,
+  getExchangeRates: getExchangeRates,
   apiBaseUrl: "https://api.coinbase.com/v2/",
   headers: {
     "CB-VERSION": "2020-08-23"

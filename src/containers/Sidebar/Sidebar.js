@@ -35,7 +35,6 @@ class Sidebar extends React.Component {
 
   componentDidUpdate(nextProps) {
     if (nextProps.sidebarOpened !== this.props.sidebarOpened) {
-      console.log(this.props.sidebarOpened);
       if (nextProps.sidebarOpened) {
         this.element.style.height = `${this.element.scrollHeight}px`;
       } else {
