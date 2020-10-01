@@ -26,7 +26,8 @@ function UpdatePassword(props) {
       newPassword === '' ||
       oldPassword === '';
 
-  const updatePassword = () => {
+  const updatePassword = (e) => {
+    if(e) e.preventDefault();
     props.setComponent("update-pass");
     props.updatePassword(oldPassword, newPassword);
   }
@@ -36,74 +37,76 @@ function UpdatePassword(props) {
       <h3 className={`${s.header} mb-3 mt-5`}>Update Private Key Password</h3>
       <div className="d-flex flex-column justify-content-center w-100">
         <div className={`${s.rounded}`}></div>
-        <GridContainer justify="center" className={`${s.gridContainer}`}>
-          <GridItem xs={12} sm={12} md={6} lg={4}>
-            <AuthCustomInput
-              id="e2ee-old-password"
-              labelText="Old Password"
-              value={oldPassword}
-              white
-              onChange={(e) => setOldPassword(e.target.value)}
-              fullWidth
-              inputProps={{
-                color: "secondary",
-                type: showOldPassword ? 'text' : 'password',
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="Toggle password visibility"
-                      onChange={() => setShowOldPassword(!showOldPassword)}
-                      color="secondary"
-                    >
-                      {showOldPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </GridItem>
-          <GridItem xs={12} sm={12} md={6} lg={4}>
-            <AuthCustomInput
-              id="e2ee-new-password"
-              labelText="New Password"
-              value={newPassword}
-              white
-              onChange={(e) => setNewPassword(e.target.value)}
-              fullWidth
-              inputProps={{
-                color: "secondary",
-                type: showNewPassword ? 'text' : 'password',
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="Toggle password visibility"
-                      onChange={() => setShowNewPassword(!showNewPassword)}
-                      color="secondary"
-                    >
-                      {showNewPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </GridItem>
-          <GridItem xs={12} sm={12} lg={2} className={`${s.instructionContainer}`}>
-            <Button 
-              color="primary" 
-              size="lg" 
-              className="mb-lg-3 ml-lg-5"
-              onClick={()=> updatePassword()}
-              disabled={isInvalid}
-            >
-              Update Password
-            </Button>
-          </GridItem>
-          <GridItem xs={12} sm={12} lg={12} className={`${s.instructionContainer}`}>
-            { props.alertVisible && props.alertType === "alert-pending" && props.alertComponent === "update-pass" && <i className="fas fa-spinner fa-spin" style={{fontSize: 20}}/> }
-            { props.alertVisible && props.alertType === "alert-success" &&  props.alertComponent === "update-pass" && <div className="successMessage">{props.alertMessage}</div> }
-            { props.alertVisible && props.alertType === "alert-error" && props.alertComponent === "update-pass" && <div className="errorMessage">{props.alertMessage}</div> }
-          </GridItem>
-        </GridContainer>
+        <form onSubmit={updatePassword} className={`${s.gridContainer}`}>
+          <GridContainer justify="center" className={`${s.internalGridContainer}`}>
+            <GridItem xs={12} sm={12} md={6} lg={4} className={`ml-3 ml-md-0`}>
+              <AuthCustomInput
+                id="e2ee-old-password"
+                labelText="Old Password"
+                value={oldPassword}
+                white
+                onChange={(e) => setOldPassword(e.target.value)}
+                fullWidth
+                inputProps={{
+                  color: "secondary",
+                  type: showOldPassword ? 'text' : 'password',
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="Toggle password visibility"
+                        onChange={() => setShowOldPassword(!showOldPassword)}
+                        color="secondary"
+                      >
+                        {showOldPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </GridItem>
+            <GridItem xs={12} sm={12} md={6} lg={4} className={`ml-3 ml-md-0`}>
+              <AuthCustomInput
+                id="e2ee-new-password"
+                labelText="New Password"
+                value={newPassword}
+                white
+                onChange={(e) => setNewPassword(e.target.value)}
+                fullWidth
+                inputProps={{
+                  color: "secondary",
+                  type: showNewPassword ? 'text' : 'password',
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="Toggle password visibility"
+                        onChange={() => setShowNewPassword(!showNewPassword)}
+                        color="secondary"
+                      >
+                        {showNewPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </GridItem>
+            <GridItem xs={12} sm={12} lg={2} className={`${s.instructionContainer}`}>
+              <Button 
+                color="primary" 
+                size="lg" 
+                className="mb-lg-3 ml-lg-5"
+                onClick={()=> updatePassword()}
+                disabled={isInvalid}
+              >
+                Update Password
+              </Button>
+            </GridItem>
+            <GridItem xs={12} sm={12} lg={12} className={`${s.instructionContainer}`}>
+              { props.alertVisible && props.alertType === "alert-pending" && props.alertComponent === "update-pass" && <i className="fas fa-spinner fa-spin" style={{fontSize: 20}}/> }
+              { props.alertVisible && props.alertType === "alert-success" &&  props.alertComponent === "update-pass" && <div className="successMessage">{props.alertMessage}</div> }
+              { props.alertVisible && props.alertType === "alert-error" && props.alertComponent === "update-pass" && <div className="errorMessage">{props.alertMessage}</div> }
+            </GridItem>
+          </GridContainer>
+        </form>
       </div>
     </div>
   );

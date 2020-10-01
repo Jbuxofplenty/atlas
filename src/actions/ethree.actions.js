@@ -309,18 +309,23 @@ function restoreKey(keyPassword) {
     if (!hasLocalPrivateKey) await eThree.restorePrivateKey(keyPassword)
       .then(async () => {
         p('Successfully retrieved your private key from the cloud!')
+        dispatch(complete(true));
         dispatch(alertActions.success("Successfully retrieved your private key from the cloud!"));
       })
       .catch(e => {
         console.error('error: ', e)
+        dispatch(complete(false));
         dispatch(alertActions.error(e.toString()));
         return false;
       });
     else {
       p('Private key is already stored locally!')
       dispatch(alertActions.success("Private key is already stored locally!"));
+      dispatch(complete(true));
     }
   }
+
+  function complete(privateKeyPresent) { return { type: eThreeConstants.UPDATE_PRIVATE_KEY_PRESENT, privateKeyPresent } }
 }
 
 function updatePassword(oldPassword, newPassword) {

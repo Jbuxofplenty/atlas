@@ -95,7 +95,9 @@ function getFinancialDataFirestore(type, e2ee) {
         return {};
       }
       else if(e2ee) {
-        unEncryptedFinancialData = await eThreeActions.eThreeDecrypt(encryptedFinancialData);
+        unEncryptedFinancialData = await eThreeActions.eThreeDecrypt(encryptedFinancialData).catch(error => {
+          return {};
+        });
         dispatch(financialDataTypeMap[type].storeUpdateFunction(encryptedFinancialDataKey, encryptedFinancialData));
         return unEncryptedFinancialData;
       }
@@ -123,7 +125,9 @@ async function getFinancialData(type) {
     return {};
   }
   else if(userData.e2ee) {
-    unEncryptedFinancialData = await eThreeActions.eThreeDecrypt(encryptedFinancialData);
+    unEncryptedFinancialData = await eThreeActions.eThreeDecrypt(encryptedFinancialData).catch(error => {
+      return {};
+    });
     return unEncryptedFinancialData;
   }
   else {
@@ -212,7 +216,8 @@ function retrieveStockData(ticker, timeStart, timeEnd, dataType) {
   return async dispatch => {
     // Finnhub expects seconds since UTC epoch rather than milliseconds
     finnhubClient.stockCandles(ticker, finnhubTypes[dataType], parseInt(timeStart.toString().slice(0, -3)), parseInt(timeEnd.toString().slice(0, -3)), {}, (error, data, response) => {
-      if(!data && response.statusCode === 429) dispatch(alertActions.error("We've hit our free-tier limit for our financial data provider!  It should open back up in another minute."))
+      console.log(error)
+      if(!data && error.statusCode === 429) dispatch(alertActions.error("We've hit our free-tier limit for our financial data provider!  It should open back up in another minute."))
       dispatch(updateStockData(ticker, data, dataType));
       p(response, data, dataType)
     });

@@ -304,7 +304,7 @@ function OrdersTable(props) {
       })
     }
     setOrders(tempOrders);
-  }, [props]);
+  }, [props, props.account]);
 
   const retrieveAccountData = async () => {
     setIsLoad(true);

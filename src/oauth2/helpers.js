@@ -37,6 +37,9 @@ export async function apiRequest(endpoint, institution, data) {
         await refreshToken(accessToken.refresh_token, institution);
         return apiRequest(endpoint, institution, data);
       }
+      if(responseJson.errors && responseJson.errors[0].id === "revoked_token") {
+        p('need to handle revoked token in the future!')
+      }
       return responseJson;
     })
     .catch((error) => {

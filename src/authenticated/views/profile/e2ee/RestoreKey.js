@@ -23,7 +23,8 @@ function RestoreKey(props) {
   const isInvalid =
       password === '';
       
-  const restoreKey = () => {
+  const restoreKey = (e) => {
+    if(e) e.preventDefault();
     props.setComponent("restore-key");
     props.restoreKey(password);
   }
@@ -34,40 +35,42 @@ function RestoreKey(props) {
       <div className="d-flex flex-column justify-content-center w-100">
         <div className={`${s.rounded}`}></div>
         <GridContainer justify="center" className={`${s.gridContainer}`}>
-          <GridItem xs={12} sm={12}  md={6} lg={5} className={`my-2 ${s.instructionContainer}`}>
+          <GridItem xs={12} sm={12} md={6} lg={5} className={`my-2 ${s.instructionContainer}`}>
             <div className={`${s.instructionText}`}>
               Retrieve backed up private key from the cloud.  Enter the correct
               password you used to backup your private key initially.
             </div>
           </GridItem>
-          <GridItem xs={12} sm={12}  md={6} lg={7} className="my-2">
+          <GridItem xs={12} sm={12} md={6} lg={7} className="my-2">
             <GridContainer justify="center" className={`${s.internalGridContainer}`}>
-              <GridItem xs={12} sm={12}  md={6} lg={8}>
-                <AuthCustomInput
-                  id="restore-password"
-                  labelText="Backup Password"
-                  value={password}
-                  white
-                  onChange={(e) => setPassword(e.target.value)}
-                  fullWidth
-                  inputProps={{
-                    color: "secondary",
-                    type: showPassword ? 'text' : 'password',
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          aria-label="Toggle password visibility"
-                          onClick={() => setShowPassword(!showPassword)}
-                          color="secondary"
-                        >
-                          {showPassword ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
+                <GridItem xs={12} sm={12} md={12} lg={8} className={`ml-3 ml-lg-0`}>
+                  <form onSubmit={restoreKey} className={`${s.internalGridContainer}`}>
+                    <AuthCustomInput
+                      id="restore-password"
+                      labelText="Backup Password"
+                      value={password}
+                      white
+                      onChange={(e) => setPassword(e.target.value)}
+                      fullWidth
+                      inputProps={{
+                        color: "secondary",
+                        type: showPassword ? 'text' : 'password',
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              aria-label="Toggle password visibility"
+                              onClick={() => setShowPassword(!showPassword)}
+                              color="secondary"
+                            >
+                              {showPassword ? <VisibilityOff /> : <Visibility />}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                </form>
               </GridItem>
-              <GridItem xs={12} sm={12} lg={4} className={`${s.instructionContainer}`}>
+              <GridItem xs={12} sm={12} md={12} lg={4} className={`${s.instructionContainer}`}>
                 <Button 
                   color="primary" 
                   size="lg" 

@@ -29,17 +29,20 @@ const SimpleButton = withStyles({
 function DeleteAccountModal(props) {
   const [cardAnimaton, setCardAnimation] = React.useState("cardHidden");
   const message = `Are you sure you would like to delete your ${props.account.displayName} account?`;
+  const [tempInvalid, setTempInvalid] = React.useState(false);
   setTimeout(function() {
     setCardAnimation("");
   }, 300);
 
   const classes = useStyles();
 
-  const isInvalid = (props.alertVisible && props.alertType === "alert-pending");
+  const isInvalid = (props.alertVisible && props.alertType === "alert-pending") || tempInvalid;
 
   const deleteAccount = (e) => {
     e.preventDefault();
     if(props.alertType === "alert-success") {
+      setTempInvalid(true);
+      props.clear();
       window.location.reload(false);
     }
     else {

@@ -7,10 +7,15 @@ export const alertActions = {
   clear,
   pending,
   component,
+  progressSuccess,
 };
 
 function success(message) {
   return { type: alertConstants.SUCCESS, message };
+}
+
+function progressSuccess(message) {
+  return { type: alertConstants.PROGRESS_SUCCESS, message };
 }
 
 function pending(show) {

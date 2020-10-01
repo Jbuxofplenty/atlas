@@ -14,7 +14,7 @@ import 'echarts/lib/chart/candlestick';
 import 'echarts/lib/component/tooltip';
 import 'echarts/lib/component/legend';
 
-import { candlestickOptions } from 'atlasEcharts';
+import { candlestickOptions } from 'charts';
 
 import { dataActions, alertActions } from 'actions';
 

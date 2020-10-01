@@ -123,8 +123,7 @@ class Layout extends React.Component {
     }
     else {
       if(this.props.userData.e2ee) {
-        // const hasLocalPrivateKey = await this.props.localKeyPresent();
-        const hasLocalPrivateKey = true;
+        const hasLocalPrivateKey = await this.props.localKeyPresent();
         if(!hasLocalPrivateKey) {
           toast.error(`You do not have a private key stored locally 
               on your device to decrypt you financial data! You will 

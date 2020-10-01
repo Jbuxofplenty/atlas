@@ -5,4 +5,5 @@ export const alertConstants = {
     CLEAR: 'ALERT_CLEAR',
     PENDING: 'ALERT_PENDING',
     COMPONENT: 'ALERT_COMPONENT',
+    PROGRESS_SUCCESS: 'ALERT_PROGRESS_SUCCESS',
 };

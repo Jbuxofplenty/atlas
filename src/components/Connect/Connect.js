@@ -69,7 +69,7 @@ function Connect(props) {
   }, [e2ee, privateKeyPresent])
 
   useEffect(() => {
-    if(props.alertType === 'alert-success' && props.alertMessage !== '') {
+    if(props.alertType === 'alert-progress-success' && props.alertMessage !== '') {
       setMessage(props.alertMessage);
     }
   }, [props.alertMessage, props.alertType])
@@ -141,6 +141,7 @@ function Connect(props) {
           method: 'POST',
         }).then(response => response.json()).then(async data => { 
           data.institution = props.institution.displayName;
+          setMessage('Successfully validated your credentials! Setting up your account in Atlas One...')
           await props.storeFinancialDataFirestore(props.institution.displayName, "accessTokens", data);
           await oAuth.pullAccountData();
           setMessage(`You successfully connected your ${props.institution.displayName} account!`);
@@ -191,7 +192,7 @@ function Connect(props) {
           <div className={classes[messageAnimation]}>
             <hr className={classes.rounded} />
             <i className={`fas fa-spinner fa-spin ${classes.message}`} style={{fontSize: 40}}/>
-            <div className={classes.message}>Successfully validated your credentials! Setting up your account in Atlas One...</div> 
+            <div className={classes.message}>{message}</div> 
           </div>
         )
       }

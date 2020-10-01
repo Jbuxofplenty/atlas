@@ -262,10 +262,11 @@ function Wallets(props) {
 
   return (
     <ThemeProvider theme={theme}>
-      {props.account.wallets.length === 0 ? <div className={s.noAccounts}>No wallets are attached to your {props.account.displayName} account!</div> :
+      {props.account.wallets && props.account.wallets.length !== 0 ? 
         <div className={s.tableContainer}>
           <ReactTable columns={columns} data={props.account.wallets} />
         </div>
+        : <div className={s.noAccounts}>No wallets are attached to your {props.account.displayName} account!</div>
       }
     </ThemeProvider>
   )

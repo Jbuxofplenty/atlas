@@ -16,6 +16,13 @@ export function alert(state = initialState, action) {
         message: action.message,
         visible: true,
       };
+    case alertConstants.PROGRESS_SUCCESS:
+      return {
+        ...state,
+        type: 'alert-progress-success',
+        message: action.message,
+        visible: true,
+      };
     case alertConstants.PENDING:
       return {
         ...state,

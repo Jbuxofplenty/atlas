@@ -54,6 +54,7 @@ class Profile extends React.Component {
     }
     if(nextProps.userData.e2ee !== this.props.userData.e2ee) {
       this.setState({ e2ee: this.props.userData.e2ee });
+      this.checkLocalKeyPresent();
     }
   }
 
