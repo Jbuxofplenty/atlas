@@ -28,6 +28,9 @@ exports.v1 = functions.https.onRequest(v1);
 // Functions requiring firebase context
 exports.getVirgilJwt = getVirgilJwt;
 
+// Scheduled functions
+// exports.retrieveCryptoData = retrieveCryptoData;
+
 // Firebase triggers
 // const {
 //   sendGoodbyeEmail,

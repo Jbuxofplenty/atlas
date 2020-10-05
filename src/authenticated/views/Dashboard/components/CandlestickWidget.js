@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 
@@ -6,6 +6,8 @@ import { withRouter } from 'react-router-dom';
 import GridContainer from "components/Grid/GridContainer.js";
 import GridItem from "components/Grid/GridItem.js";
 import Widget from 'components/Widget/Widget';
+import MultiSelect from 'components/MultiSelect/MultiSelect';
+import { cryptoCurrencies } from 'components/MultiSelect/data';
 
 // Echarts
 import ReactEchartsCore from 'echarts-for-react/lib/core';
@@ -14,7 +16,7 @@ import 'echarts/lib/chart/candlestick';
 import 'echarts/lib/component/tooltip';
 import 'echarts/lib/component/legend';
 
-import { candlestickOptions } from 'charts';
+import { candlestickOptions, defaultXAxis, defaultSeries } from 'charts';
 
 import { dataActions, alertActions } from 'actions';
 
@@ -26,42 +28,58 @@ const initEchartsOptions = {
 
 function CandlestickWidget(props) {
   const [options, setOptions] = useState(null);
-  const [ticker, setTicker] = useState("BTC-USD");
+  const [tickers, setTickers] = useState([['BINANCE:BTCUSDT', 'Bitcoin (BTC)']]);
+  const defaultValues = [cryptoCurrencies[0]];
+  const eChartsRef = React.useRef(null);
 
   useEffect(() => {
     props.clear();
     props.setComponent('candlestick-widget')
-    if(!props.stockData || !props.stockData[ticker] || !props.stockData[ticker]["candlestick"]){
-      var now = new Date().getTime();
-      var tempDate = new Date();
-      tempDate.setMonth(tempDate.getMonth() - 1);
-      var oneMonthAgo = tempDate.getTime();
-      props.retrieveStockData(ticker, oneMonthAgo, now, "candlestick");
-    }
-    else {
-      updateOptions();
-    }
+    tickers.forEach(ticker => {
+      if(!props.stockData || !props.stockData[ticker[0]] || !props.stockData[ticker[0]]["candlestick"]){
+        pullCryptoData(ticker[0]);
+      }
+    });
     // eslint-disable-next-line
   }, []);
 
+  const pullCryptoData = (ticker) => {
+    var now = new Date().getTime();
+    var tempDate = new Date();
+    tempDate.setMonth(tempDate.getMonth() - 1);
+    var oneMonthAgo = tempDate.getTime();
+    props.retrieveStockData(ticker, oneMonthAgo, now, "candlestick");
+  }
+
   useEffect(() => {
-    if(props.stockData && props.stockData[ticker] && props.stockData[ticker]["candlestick"]){
-      updateOptions();
+    var tempOptions = JSON.parse(JSON.stringify(candlestickOptions));
+    tickers.forEach(ticker => {
+      if(props.stockData && props.stockData[ticker[0]] && props.stockData[ticker[0]]["candlestick"]){
+        tempOptions = updateOptions(ticker, tempOptions);
+      }
+      else {
+        pullCryptoData(ticker[0]);
+      }
+    });
+    if(tickers.length === 0) {
+      setOptions(null)
     }
     // eslint-disable-next-line
-  }, [props.stockData, ticker]);
+  }, [props.stockData, tickers]);
 
-  const updateOptions = () => {
-    var tempOptions = {};
-    Object.assign(tempOptions, candlestickOptions);
-    tempOptions.legend.data = [ticker];
+  const updateOptions = (ticker, options) => {
+    var tempOptions = JSON.parse(JSON.stringify(candlestickOptions));
+    if(options) tempOptions = JSON.parse(JSON.stringify(options));
+    tempOptions.legend.data.push(ticker[1]);
     var timeStamps = [];
-    props.stockData[ticker]["candlestick"].t.forEach(timeStamp => {
+    props.stockData[ticker[0]]["candlestick"].t.forEach(timeStamp => {
       timeStamps.push(new Date(timeStamp*1000).toLocaleString('en-US'));
     })
-    tempOptions.xAxis[0].data = timeStamps;
+    tempOptions.xAxis.push(defaultXAxis);
+    var lastItemIndex = tempOptions.xAxis.length-1;
+    tempOptions.xAxis[lastItemIndex].data = timeStamps;
     var data = [];
-    var candlestickData = props.stockData[ticker]["candlestick"];
+    var candlestickData = props.stockData[ticker[0]]["candlestick"];
     for(var i=0; i < candlestickData.o.length; i++) {
       var datum = [];
       datum.push(candlestickData.o[i]);
@@ -70,10 +88,25 @@ function CandlestickWidget(props) {
       datum.push(candlestickData.h[i]);
       data.push(datum);
     }
-    tempOptions.series[0].data = data;
-    tempOptions.series[0].name = ticker;
-    tempOptions.series[0].type = 'candlestick';
+    tempOptions.series.push(defaultSeries);
+    tempOptions.series[lastItemIndex].data = data;
+    tempOptions.series[lastItemIndex].name = ticker[1];
+    tempOptions.series[lastItemIndex].type = 'candlestick';
     setOptions(tempOptions);
+    if (eChartsRef && eChartsRef.current) {
+      eChartsRef.current.getEchartsInstance().setOption(tempOptions, true);
+    }
+    return tempOptions;
+  }
+
+  const onSelectChange = (selectedValues) => {
+    let updatedTickers = [];
+    if(selectedValues) {
+      selectedValues.forEach(ticker => {
+        updatedTickers.push([ticker.value, ticker.label]);
+      })
+    }
+    setTickers(updatedTickers);
   }
 
   return (
@@ -81,14 +114,19 @@ function CandlestickWidget(props) {
       className="w-100 align-self-center" 
       close 
       collapse
-      title={<h5><span className='fw-semi-bold'>Bitcoin</span> Price Chart</h5>}
+      title={<h5><span className='fw-semi-bold'>Crypto Currency</span> Price Chart</h5>}
     >
+      <MultiSelect 
+        onSelectChange={onSelectChange}
+        defaultValues={defaultValues}
+      />
       {options &&
         <ReactEchartsCore
           echarts={echarts}
           option={options}
           opts={initEchartsOptions}
           style={{ height: "365px" }}
+          ref={eChartsRef}
         />
       }
       {!options && !props.alertVisible && !props.alertType === "alert-error" && 

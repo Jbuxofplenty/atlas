@@ -215,7 +215,7 @@ const finnhubTypes = {
 function retrieveStockData(ticker, timeStart, timeEnd, dataType) {
   return async dispatch => {
     // Finnhub expects seconds since UTC epoch rather than milliseconds
-    finnhubClient.stockCandles(ticker, finnhubTypes[dataType], parseInt(timeStart.toString().slice(0, -3)), parseInt(timeEnd.toString().slice(0, -3)), {}, (error, data, response) => {
+    finnhubClient.cryptoCandles(ticker, finnhubTypes[dataType], parseInt(timeStart.toString().slice(0, -3)), parseInt(timeEnd.toString().slice(0, -3)), (error, data, response) => {
       console.log(error)
       if(!data && error.statusCode === 429) dispatch(alertActions.error("We've hit our free-tier limit for our financial data provider!  It should open back up in another minute."))
       dispatch(updateStockData(ticker, data, dataType));

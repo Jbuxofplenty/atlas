@@ -27,7 +27,7 @@ const candlestickOptions = {
     }
   },
   legend: {
-    data: ['2015 Precipitation', '2016 Precipitation'],
+    data: [],
     textStyle: {
       color: colors.textColor
     }
@@ -36,21 +36,7 @@ const candlestickOptions = {
     top: 70,
     bottom: 50,
   },
-  xAxis: [
-    {
-      type: 'category',
-      axisTick: {
-        alignWithLabel: true
-      },
-      axisLine: {
-        onZero: false,
-        lineStyle: {
-          color: colors.gray
-        }
-      },
-      data: ["2020-1", "2020-2", "2020-3", "2020-4", "2020-5", "2020-6", "2020-7", "2020-8", "2020-9", "2020-10", "2020-11", "2020-12"]
-    }
-  ],
+  xAxis: [],
   yAxis: [
     {
       scale: true,
@@ -75,20 +61,39 @@ const candlestickOptions = {
       }
     }
   ],
-  series: [
-    {
-      name: '2015 Precipitation',
-      type: 'line',
-      xAxisIndex: 0,
-      smooth: true,
-      data: [2.6, 5.9, 9.0, 26.4, 28.7, 70.7, 175.6, 182.2, 48.7, 18.8, 6.0, 2.3],
-      itemStyle: {
-        color: colors.green,
-        color0: colors.red,
-        borderColor: null,
-        borderColor0: null
-    },
-    }
-  ]
+  series: []
 }
-export default candlestickOptions;
+
+const defaultXAxis = {
+  type: 'category',
+  axisTick: {
+    alignWithLabel: true
+  },
+  axisLine: {
+    onZero: false,
+    lineStyle: {
+      color: colors.gray
+    }
+  },
+  data: []
+};
+
+const defaultSeries = {
+  name: '',
+  type: 'line',
+  xAxisIndex: 0,
+  smooth: true,
+  data: [],
+  itemStyle: {
+    color: colors.green,
+    color0: colors.red,
+    borderColor: null,
+    borderColor0: null
+  },
+}
+
+export {
+  candlestickOptions,
+  defaultXAxis,
+  defaultSeries,
+};

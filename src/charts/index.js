@@ -1,5 +1,7 @@
-import candlestickOptions from './candlestick';
+import { candlestickOptions, defaultXAxis, defaultSeries } from './candlestick';
 
 export {
   candlestickOptions,
+  defaultXAxis,
+  defaultSeries,
 }
