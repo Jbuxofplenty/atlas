@@ -1,5 +1,3 @@
-import finnhubClient from './finnhub';
-
 export * from './history';
 export { submitIssue } from './errors';
 export { finnhubClient } from './finnhub';

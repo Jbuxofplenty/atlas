@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { connect } from 'react-redux';
-import { TabPane, Button } from 'reactstrap';
-import classnames from 'classnames';
+import { TabPane } from 'reactstrap';
 
 // core components
 import GridContainer from "components/Grid/GridContainer.js";
+import SyncAccount from "components/SyncAccount/SyncAccount.js";
 import DeleteAccount from "./DeleteAccount.js";
 
 import OAuthObject from 'oauth2';
@@ -14,24 +14,13 @@ import { eThreeActions, alertActions } from "actions";
 
 function Account(props) {
   const [accountObject, setAccountObject] = useState(null);
-  const [isLoad, setIsLoad] = useState(false);
   const [more, setMore] = useState(false);
-  const [updated, setUpdated] = useState(new Date(props.account.lastSynced));
 
   useEffect(() => {
     props.visible(false);
     setAccountObject(OAuthObject[props.account.displayName])
     // eslint-disable-next-line
   }, []);
-
-  const retrieveAccountData = async () => {
-    setIsLoad(true);
-    var success = await accountObject.pullAccountData();
-    if(success) {
-      setIsLoad(false);
-      setUpdated(new Date());
-    }
-  }
 
   const handleMore = async () => {
     setMore(!more);
@@ -54,17 +43,7 @@ function Account(props) {
           {more ? <i className={`la la-angle-up mt-1`} style={{ fontSize: "2vw" }}/> : <i className={`la la-angle-down mt-1`} style={{ fontSize: "2em" }} /> } 
         </div>
       </div>
-      <footer className={[s.cardFooter, 'text-sm', 'card-footer', 'text-right'].join(' ')}>
-          <Button
-            color="link"
-            className={classnames({ disabled: isLoad }, s.btnNotificationsReload, 'btn-sm', 'float-right', 'py-0', 'ml-2')}
-            onClick={retrieveAccountData}
-            id="load-notifications-btn"
-          >
-            {isLoad ? <span><i className="la la-refresh la-spin" /> Loading...</span> : <i className="la la-refresh" />}
-          </Button>
-          <span className="fs-mini text-right">Synced at: {updated.toLocaleString("en-US")}</span>
-        </footer>
+      <SyncAccount account={props.account} />
     </TabPane>
   );
 }

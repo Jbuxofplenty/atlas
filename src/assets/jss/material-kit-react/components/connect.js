@@ -29,6 +29,14 @@ const connectStyle = {
     width: "75%",
     color: "grey"
   },
+  animation: {
+    alignSelf: 'center',
+    textAlign: 'center',
+    marginTop: '1em',
+    fontSize: '18px',
+    width: "75%",
+    color: "grey"
+  },
   icon: {
     alignSelf: 'center',
     textAlign: 'center',

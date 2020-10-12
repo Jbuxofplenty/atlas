@@ -183,7 +183,7 @@ function Connect(props) {
         return (
           <div className={classes[messageAnimation]}>
             <hr className={classes.rounded} />
-            <i className={`fas fa-spinner fa-spin ${classes.message}`} style={{fontSize: 40}}/>
+            <i className={`fas fa-spinner fa-spin ${classes.animation}`} style={{fontSize: 40}}/>
           </div>
         )
       }
@@ -191,7 +191,7 @@ function Connect(props) {
         return (
           <div className={classes[messageAnimation]}>
             <hr className={classes.rounded} />
-            <i className={`fas fa-spinner fa-spin ${classes.message}`} style={{fontSize: 40}}/>
+            <i className={`fas fa-spinner fa-spin ${classes.animation}`} style={{fontSize: 40}}/>
             <div className={classes.message}>{message}</div> 
           </div>
         )

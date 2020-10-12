@@ -8,12 +8,10 @@ const candlestickOptions = {
   color: lineColors,
   dataZoom: [
     {
-      type: 'slider',
-      show: true,
-      xAxisIndex: [0],
-      start: '8/28/2020, 7:00:00 PM',
-      end: '9/28/2020, 8:00:00 PM'
-    }
+      type: 'inside',
+      start: 0,
+      end: 100
+    },
   ],
   tooltip: {
     trigger: 'axis',

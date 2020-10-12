@@ -1,7 +1,6 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { UncontrolledTooltip } from 'reactstrap';
-import s from './Widget.module.scss';
 import classNames from 'classnames';
 import Loader from 'components/Loader'; 
 import AnimateHeight from 'react-animate-height';
@@ -15,7 +14,12 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
+  UncontrolledTooltip,
 } from 'reactstrap';
+
+import { widgetActions } from 'actions';
+
+import s from './Widget.module.scss';
 
 class Widget extends React.Component {
   static propTypes = {
@@ -37,6 +41,8 @@ class Widget extends React.Component {
     customControls: PropTypes.bool,
     options: PropTypes.object, //eslint-disable-line,
     fetchingData: PropTypes.bool,
+    widgetId: PropTypes.string,
+    view: PropTypes.string,
   };
 
   static defaultProps = {
@@ -64,42 +70,63 @@ class Widget extends React.Component {
     options: {},
     fetchingData: false,
     widgetType: "",
+    widgetId: "-1",
+    view: '',
   };
 
   constructor(props) {
     super(props);
-
+    let widget = null;
+    if(props.widgets[props.view])
+      widget = props.widgets[props.view][props.widgetId];
     this.state = {
       randomId: 2,
       hideWidget: false,
-      collapseWidget: !!props.collapsed,
-      height:  props.collapsed ? 0 : 'auto',
+      collapseWidget: (widget && widget.collapsed) || !!props.collapsed,
+      height: (widget && widget.collapsed) ? 0 : props.collapsed ? 0 : 'auto',
       fullscreened: false,
       reloading: false,
       modal: false,
-      apiData: ''
+      apiData: '',
     }
-
+    // console.log(props.widgets[props.widgetId])
   }
-
-
 
   toggleModal = () => {
     this.setState({ modal: !this.state.modal });
   }
 
-  handleClose = () => {
-    this.setState({ hideWidget: !this.state.hideWidget})
+  handleClose = async () => {
+    var { widgetId, view } = this.props;
+    let widgets = JSON.parse(JSON.stringify(this.props.widgets[view]));
+    if(widgets) {
+      delete widgets[widgetId];
+      await this.props.updateWidgets(widgets, view);
+      await widgetActions.updateFirebaseWidgets('dashboard');
+    }
   }
 
-  handleCollapse = () => {
+  handleCollapse = async () => {
+    if(this.state.collapseWidget) return this.handleExpand();
+    var { widgetId, view } = this.props;
+    let tempWidget = this.props.widgets[view][widgetId];
+    if(tempWidget) {
+      let widget = JSON.parse(JSON.stringify(tempWidget));
+      var savedH = widget.dataGrid.h;
+      var savedMinH = widget.dataGrid.minH;
+      widget.savedH = savedH;
+      widget.savedMinH = savedMinH;
+      widget.dataGrid.h = 3;
+      widget.dataGrid.minH = 3;
+      widget.collapsed = true;
+      await this.props.updateWidget(widgetId, widget, view);
+    }
     let heightValue = this.state.collapseWidget ? 'auto' : 0
     this.setState({
       height: heightValue,
       collapseWidget: !this.state.collapseWidget,
       reloading: false
     });
-
   };
 
   closeWithModal = () => {
@@ -107,13 +134,22 @@ class Widget extends React.Component {
     this.handleClose();
   }
 
-  handleExpand = () => {
-
+  handleExpand = async () => {
+    var { widgetId, view } = this.props;
+    let tempWidget = this.props.widgets[view][widgetId];
+    if(tempWidget) {
+      let widget = JSON.parse(JSON.stringify(tempWidget));
+      widget.dataGrid.h = widget.savedH;
+      widget.dataGrid.minH = widget.savedMinH;
+      delete widget.savedH;
+      delete widget.savedMinH;
+      widget.collapsed = false;
+      await this.props.updateWidget(widgetId, widget, view);
+    }
     this.setState({
       height: 'auto',
       collapseWidget: false
     });
-
   };
 
   handleReload = () => {
@@ -169,6 +205,10 @@ class Widget extends React.Component {
       widgetType,
       updateWidgetData,
       options, //eslint-disable-line
+      widgetId,
+      resetWidgets,
+      updateWidget,
+      updateWidgets,
       ...attributes
     } = this.props;
     const mainControls = !!(close || fullscreen || collapse || refresh || settings || settingsInverse);
@@ -186,7 +226,7 @@ class Widget extends React.Component {
 
 
     return (
-    <div className="w-100">
+    <div className="w-100 h-100">
       <section
         style={{display: hideWidget ? 'none' : ''}}
         className={
@@ -264,19 +304,7 @@ class Widget extends React.Component {
                     >Close</UncontrolledTooltip>
                   )}
                 </button>
-              ) : (
-                <button onClick={this.toggleModal} id={`closeId-${randomId}`}>
-                {typeof close === 'string' ?
-                  <strong className="text-gray-light">{close}</strong> :
-                  <i className="la la-remove" />}
-                {showTooltip && (
-                  <UncontrolledTooltip
-                    placement={tooltipPlacement}
-                    target={`closeId-${randomId}`}
-                  >Modal</UncontrolledTooltip>
-                )}
-              </button>
-              ))}
+              ) : null)}
             </div>
           )}
           {customDropDown && (
@@ -376,4 +404,18 @@ class Widget extends React.Component {
   }
 }
 
-export default Widget;
+const mapStateToProps = (state) => {
+  return {
+    widgets: state.widget,
+  };
+}
+
+const mapDispatchToProps = (dispatch, history) => {
+  return {
+    resetWidgets: () => dispatch(widgetActions.resetWidgets()),
+    updateWidgets: (widgets, view) => dispatch(widgetActions.updateWidgets(widgets, view)),
+    updateWidget: (key, widget, view) => dispatch(widgetActions.updateWidget(key, widget, view)),
+  };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Widget);

@@ -70,10 +70,14 @@
 .gridContainer {
   width: 95% !important;
   align-self: center;
+  overflow: hidden;
 }
 
-.instructionContainer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.addWidgetIcon {
+  font-size: 2rem !important;
+}
+
+.addText {
+  margin-left: 1rem;  
+  font-size: 1.2rem !important;
 }

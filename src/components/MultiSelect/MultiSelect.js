@@ -5,8 +5,12 @@ import { cryptoCurrencies } from './data';
 import Select from 'react-select';
 
 const colourStyles = {
-  control: styles => ({ ...styles, backgroundColor: 'rgba(0,0,0,.24)', marginTop: 0 }),
-  menu: styles => ({...styles, zIndex: '100000 !important',}),
+  control: styles => ({ ...styles, backgroundColor: 'rgba(0,0,0,.24)', marginTop: 0, marginBottom: '2rem', borderColor: 'transparent', }),
+  menu: styles => ({
+    ...styles, 
+    zIndex: '100000 !important',
+    backgroundColor: 'rgba(0,0,0,.24)',
+  }),
   option: (styles, { data, isDisabled, isFocused, isSelected }) => {
     const color = chroma(data.color);
     return {

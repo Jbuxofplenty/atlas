@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 import {
   Row, Col
@@ -26,6 +26,8 @@ import HighchartsReact from 'highcharts-react-official'
 import exporting from 'highcharts/modules/exporting';
 import exportData from 'highcharts/modules/export-data';
 
+import { widgetActions } from 'actions';
+
 exporting(Highcharts);
 exportData(Highcharts);
 
@@ -40,9 +42,19 @@ exportData(Highcharts);
 </Col> */}
 
 
-class Charts extends React.Component {
+function Charts(props) {
+  const [gridWidth, setGridWidth] = useState(null);
 
-  state = {
+  useEffect(() => {
+    // var tempGridWidth = document.getElementById('dashboardContainer').clientWidth;
+    // setGridWidth(tempGridWidth);
+    return function cleanup() {
+      widgetActions.updateFirebaseWidgets('charts');
+    };
+    // eslint-disable-next-line
+  }, []);
+
+  const state = {
     cd: chartData,
     ld: liveChart,
     initEchartsOptions: {
@@ -68,134 +80,131 @@ class Charts extends React.Component {
       }
     }
   }
+  const { cd, ld, initEchartsOptions, sparklineData } = state;
 
-  render() {
-    const { cd, ld, initEchartsOptions, sparklineData } = this.state
-    return (
-      <div className={s.root}>
-        <h1 className="page-title"><span className="fw-semi-bold">Charts</span></h1>
-        <div>
-          <Row>
-            <Col lg={7} xs={12}>
-              <Widget
-                title={<h5>Apex <span className='fw-semi-bold'>Column Chart</span></h5>}
-                close collapse
-              >
-                <ApexChart 
-                  className="sparkline-chart" 
-                  height={350} 
-                  series={cd.apex.column.series}
-                  options={cd.apex.column.options}
-                  type={"bar"}
-                />
-              </Widget>
-            </Col>
-            <Col lg={5} xs={12}>
-              <Widget
-                title={<h5>Echarts <span className='fw-semi-bold'>Line Chart</span></h5>}
-                close collapse
-              >
-                <ReactEchartsCore
-                  echarts={echarts}
-                  option={cd.echarts.line}
-                  opts={initEchartsOptions}
-                  style={{height: "365px"}}
-                />
-              </Widget>
-            </Col>
-            <Col lg={5} xs={12}>
-              <Widget
-                title={<h5>Highcharts <span className='fw-semi-bold'>Line Chart</span></h5>}
-                close collapse
-              >
-                <HighchartsReact options={cd.highcharts.mixed}/>
-                <h5 className="mt">Interactive <span className="fw-semi-bold">Sparklines</span></h5>
-                <Row className="mt">
-                  <Col md={6} xs={12}>
-                    <div className="stats-row">
-                      <div className="stat-item">
-                        <p className="value5 fw-thin">34 567</p>
-                        <h6 className="name text-muted m0 fs-mini">Overall Values</h6>
-                      </div>
-                      <div className="stat-item stat-item-mini-chart">
-                        <Sparklines 
-                          options={sparklineData.options2}
-                          width={80}
-                          height={25}
-                          data={sparklineData.series}
-                        />
-                      </div>
+  return (
+    <div className={s.root}>
+      <h1 className="page-title"><span className="fw-semi-bold">Charts</span></h1>
+      <div>
+        <Row>
+          <Col lg={7} xs={12}>
+            <Widget
+              title={<h5>Apex <span className='fw-semi-bold'>Column Chart</span></h5>}
+              close collapse
+            >
+              <ApexChart 
+                className="sparkline-chart" 
+                height={350} 
+                series={cd.apex.column.series}
+                options={cd.apex.column.options}
+                type={"bar"}
+              />
+            </Widget>
+          </Col>
+          <Col lg={5} xs={12}>
+            <Widget
+              title={<h5>Echarts <span className='fw-semi-bold'>Line Chart</span></h5>}
+              close collapse
+            >
+              <ReactEchartsCore
+                echarts={echarts}
+                option={cd.echarts.line}
+                opts={initEchartsOptions}
+                style={{height: "365px"}}
+              />
+            </Widget>
+          </Col>
+          <Col lg={5} xs={12}>
+            <Widget
+              title={<h5>Highcharts <span className='fw-semi-bold'>Line Chart</span></h5>}
+              close collapse
+            >
+              <HighchartsReact options={cd.highcharts.mixed}/>
+              <h5 className="mt">Interactive <span className="fw-semi-bold">Sparklines</span></h5>
+              <Row className="mt">
+                <Col md={6} xs={12}>
+                  <div className="stats-row">
+                    <div className="stat-item">
+                      <p className="value5 fw-thin">34 567</p>
+                      <h6 className="name text-muted m0 fs-mini">Overall Values</h6>
                     </div>
-                  </Col>
-                  <Col md={6} xs={12}>
-                    <div className="stats-row">
-                      <div className="stat-item">
-                        <p className="value5 fw-thin">34 567</p>
-                        <h6 className="name text-muted m0 fs-mini">Overall Values</h6>
-                      </div>
-                      <div className="stat-item stat-item-mini-chart">
-                        <Sparklines 
-                          options={sparklineData.options1}
-                          width={80}
-                          height={25}
-                          data={sparklineData.series}
-                        />
-                      </div>
+                    <div className="stat-item stat-item-mini-chart">
+                      <Sparklines 
+                        options={sparklineData.options2}
+                        width={80}
+                        height={25}
+                        data={sparklineData.series}
+                      />
                     </div>
-                  </Col>
-                </Row>
-              </Widget>
-            </Col>
-            <Col lg={7} xs={12}>
-              <Row>
-                <Col lg={6} xs={12}>
-                  <Widget
-                    title={<h5>Apex <span className="fw-semi-bold">Monochrome Pie</span></h5>}
-                    close collapse
-                  >
-                    <ApexChart 
-                      className="sparkline-chart"
-                      type={"pie"} 
-                      height={200} 
-                      series={cd.apex.pie.series}
-                      options={cd.apex.pie.options}
-                    />
-                  </Widget>
+                  </div>
                 </Col>
-                <Col lg={6} xs={12}>
-                  <Widget
-                    title={<h5>Chart <span className="fw-semi-bold">Donut Chart</span></h5>}
-                    close collapse
-                  >
-                    <ReactEchartsCore
-                      echarts={echarts}
-                      option={cd.echarts.donut}
-                      opts={initEchartsOptions}
-                      style={{height: "170px"}}
-                    />
-                  </Widget>
+                <Col md={6} xs={12}>
+                  <div className="stats-row">
+                    <div className="stat-item">
+                      <p className="value5 fw-thin">34 567</p>
+                      <h6 className="name text-muted m0 fs-mini">Overall Values</h6>
+                    </div>
+                    <div className="stat-item stat-item-mini-chart">
+                      <Sparklines 
+                        options={sparklineData.options1}
+                        width={80}
+                        height={25}
+                        data={sparklineData.series}
+                      />
+                    </div>
+                  </div>
                 </Col>
               </Row>
-            </Col>
-            <Col lg={12} xs={12}>
-              <Widget
-                title={<h5>Echarts <span className="fw-semi-bold">River Chart</span></h5>}
-                close collapse
-              >
-                <ReactEchartsCore
-                  echarts={echarts}
-                  option={cd.echarts.river}
-                  opts={initEchartsOptions}
-                  style={{height: "350px"}}
-                />
-              </Widget>
-            </Col>
-          </Row>
-        </div>
+            </Widget>
+          </Col>
+          <Col lg={7} xs={12}>
+            <Row>
+              <Col lg={6} xs={12}>
+                <Widget
+                  title={<h5>Apex <span className="fw-semi-bold">Monochrome Pie</span></h5>}
+                  close collapse
+                >
+                  <ApexChart 
+                    className="sparkline-chart"
+                    type={"pie"} 
+                    height={200} 
+                    series={cd.apex.pie.series}
+                    options={cd.apex.pie.options}
+                  />
+                </Widget>
+              </Col>
+              <Col lg={6} xs={12}>
+                <Widget
+                  title={<h5>Chart <span className="fw-semi-bold">Donut Chart</span></h5>}
+                  close collapse
+                >
+                  <ReactEchartsCore
+                    echarts={echarts}
+                    option={cd.echarts.donut}
+                    opts={initEchartsOptions}
+                    style={{height: "170px"}}
+                  />
+                </Widget>
+              </Col>
+            </Row>
+          </Col>
+          <Col lg={12} xs={12}>
+            <Widget
+              title={<h5>Echarts <span className="fw-semi-bold">River Chart</span></h5>}
+              close collapse
+            >
+              <ReactEchartsCore
+                echarts={echarts}
+                option={cd.echarts.river}
+                opts={initEchartsOptions}
+                style={{height: "350px"}}
+              />
+            </Widget>
+          </Col>
+        </Row>
       </div>
-    );
-  }
-
+    </div>
+  );
 }
 
 export default Charts;

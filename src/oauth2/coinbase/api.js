@@ -1,6 +1,6 @@
 import { apiRequest } from 'oauth2/helpers';
 import { dataActions, alertActions } from 'actions';
-import { store, asyncForEach, p } from 'helpers';
+import { store, asyncForEach } from 'helpers';
 
 const coin = "Coinbase";
 
@@ -11,19 +11,24 @@ async function getExchangeRates() {
 }
 
 async function getWalletsTotalBalance(exchangeRates) {
+  await store.dispatch(alertActions.clear());
   var accounts = await dataActions.getFinancialData("accounts");
   var account = accounts[coin];
   var enter = true;
-  var wallets = [];
+  var tempWallets = [];
   var nextUri = 'accounts';
   var response;
   while(enter || (response && response.pagination && response.pagination.next_uri)) {
     if(!enter) nextUri = response.pagination.next_uri.slice(4);
     response = await apiRequest(nextUri, coin);
     if(!response || !response.data) return false;
-    wallets = wallets.concat(response.data);
+    tempWallets = tempWallets.concat(response.data);
     enter = false;
   }
+  var wallets = [];
+  tempWallets.forEach(wallet => {
+    if(parseFloat(wallet.balance.amount) > 0) wallets.push(wallet);
+  })
   var financialData = {
     ...account,
     wallets,
@@ -33,6 +38,7 @@ async function getWalletsTotalBalance(exchangeRates) {
     financialData.totalBalance += parseFloat(wallet.balance.amount) / parseFloat(exchangeRates[wallet.currency.code]);
   })
   await store.dispatch(dataActions.storeFinancialData(coin, "accounts", financialData));
+  await store.dispatch(alertActions.progressSuccess(`Pulled in ${wallets.length} wallets with a balance from Coinbase!`));
   return financialData;
 }
 

@@ -9,7 +9,6 @@ import { toast, ToastContainer } from 'react-toastify';
 import Profile from 'authenticated/views/profile/Profile';
 import Settings from 'authenticated/views/settings/Settings';
 import Accounts from 'authenticated/views/accounts/Accounts';
-import UINotifications from 'authenticated/views/notifications';
 import Orders from 'authenticated/views/orders/Orders';
 import Charts from 'authenticated/views/charts/Charts';
 import Dashboard from 'authenticated/views/dashboard';
@@ -173,7 +172,6 @@ class Layout extends React.Component {
                         <Route path="/app/profile" exact component={Profile} />
                         <Route path="/app/settings" exact component={Settings} />
                         <Route path="/app/accounts" exact component={Accounts} />
-                        <Route path="/app/notifications" exact component={UINotifications} />
                         <Route path="/app/charts" exact component={Charts} />
                         <Route path="/app/orders" exact component={Orders} />
                         <Route path="/app/terms" exact component={TermsAndConditions} />

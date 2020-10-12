@@ -1,65 +1,147 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { connect } from 'react-redux';
 import {
-  Row,
-  Col,
   Container,
 } from 'reactstrap';
+import { Responsive, WidthProvider } from 'react-grid-layout';
+import _ from 'lodash';
 
+import AddWidget from 'components/AddWidget/AddWidget';
 import AccountsWidget from './components/AccountsWidget';
 import CandlestickWidget from './components/CandlestickWidget';
 
-import { dataActions } from 'actions';
+import { widgetActions } from 'actions';
 
 import s from './Dashboard.module.scss';
 
-class Dashboard extends React.Component {
-
-  constructor(props) {
-    super(props);
-    this.state = {
-      accounts: null,
-    };
-
-    this._isMounted = false;
-  }
-
-  async componentDidMount() {
-    this._isMounted = true;
-    var tempAccounts = this._isMounted && await dataActions.getFinancialData("accounts");
-    var accounts = [];
-    for (var key in tempAccounts){
-      accounts.push(tempAccounts[key]);
-    }
-    this._isMounted && this.setState({ accounts });
-  }
-
-  componentWillUnmount() {
-    this._isMounted = false;
-  }
-
-  render() {
-    return (
-      <div className={s.root}>
-        {this.state.accounts &&
-          <>
-            <h1 className="page-title">Dashboard &nbsp;</h1>
-            <Container className="w-100">
-              <Row>
-                <Col lg={12} xs={12}>
-                  <CandlestickWidget />
-                </Col>
-              </Row>
-              <Row>
-                <Col lg={6} md={12}>
-                  <AccountsWidget accounts={this.state.accounts} />
-                </Col>
-              </Row>
-            </Container>
-          </>
-        }
-      </div>
-    );
-  }
+const strComponentMap = {
+  'customize': AddWidget,
+  'accountSummary': AccountsWidget,
+  'candleStickPriceChart': CandlestickWidget,
 }
 
-export default Dashboard;
+const GridLayout = WidthProvider(Responsive);
+
+function Dashboard(props) {
+  const [gridWidth, setGridWidth] = useState(null);
+  const [layout, setLayout] = useState(null);
+  const [layouts, setLayouts] = useState(null);
+  const breakpoints = {lg: 1000, md: 750, sm: 500, xs: 300, xxs: 0};
+
+  useEffect(() => {
+    props.getFirebaseWidgets();
+    buildLayout(props.widgets)
+    var tempGridWidth = document.getElementById('dashboardContainer').clientWidth;
+    setGridWidth(tempGridWidth);
+    return function cleanup() {
+      widgetActions.updateFirebaseWidgets('dashboard');
+    };
+    // eslint-disable-next-line
+  }, []);
+
+  useEffect(() => {
+    buildLayout(props.widgets);
+    // eslint-disable-next-line
+  }, [props.widgets]);
+
+  const buildLayout = (widgets) => {
+    if(widgets && !_.isEmpty(widgets)) {
+      var newLayout = [];
+      Object.keys(widgets).forEach(key => {
+        newLayout.push(widgets[key].dataGrid);
+      })
+      var newLayouts = {};
+      Object.keys(breakpoints).forEach(key => {
+        newLayouts[key] = newLayout;
+        return;
+      })
+      setLayout(newLayout);
+      setLayouts(newLayouts);
+    }
+  }
+
+  const widgetResizeStop = async (layout, oldItem, newItem, placeholder, e, element) => {
+    var height = document.getElementById(newItem.i).clientHeight;
+    var widgetTitleElement = document.getElementById(newItem.i+'-widgetTitle');
+    if(widgetTitleElement) {
+      var widgetTitleHeight = widgetTitleElement.clientHeight;
+      var widgetObject = JSON.parse(JSON.stringify(props.widgets[newItem.i]));
+      widgetObject.height = height-widgetTitleHeight-100;
+      await props.updateWidget(newItem.i, widgetObject);
+      layout.forEach(data => {
+        if(data.i !== newItem.i) {
+          var widget = JSON.parse(JSON.stringify(props.widgets[data.i]));
+          widget.dataGrid.x = data.x;
+          widget.dataGrid.y = data.y;
+          widget.dataGrid.w = data.w;
+          widget.dataGrid.h = data.h;
+          props.updateWidget(data.i, widget);
+        }
+      })
+    }
+  }
+
+  const widgetDragStop = (layout, oldItem, newItem, placeholder, e, element) => {
+    layout.forEach(data => {
+      var widget = JSON.parse(JSON.stringify(props.widgets[data.i]));
+      widget.dataGrid.x = data.x;
+      widget.dataGrid.y = data.y;
+      widget.dataGrid.w = data.w;
+      widget.dataGrid.h = data.h;
+      props.updateWidget(data.i, widget);
+    })
+  }
+
+  const renderWidgets = () => {
+    return Object.keys(props.widgets).map(key => {
+      const widgetObject = props.widgets[key];
+      const ComponentInMap = strComponentMap[widgetObject.widgetType];
+      return (
+        <div key={key} data-grid={widgetObject.dataGrid} id={key} >
+          <ComponentInMap widget={widgetObject} widgetId={key} view={'dashboard'} />
+        </div>
+      )
+    })
+  }
+
+  return (
+    <div id="dashboardContainer" className={s.root}>
+      {gridWidth && props.widgets && layout &&
+        <>
+          <h1 className="page-title">Dashboard &nbsp;</h1>
+          <Container className="w-100">
+            <GridLayout 
+                className="layout mr-5"
+                rowHeight={30} 
+                width={gridWidth}
+                onResizeStop={widgetResizeStop}
+                onDragStop={widgetDragStop}
+                layout={layout}
+                layouts={layouts}
+                breakpoints={breakpoints}
+                cols={{lg: 12, md: 10, sm: 6, xs: 4, xxs: 2}}>
+              {renderWidgets()}
+            </GridLayout>
+          </Container>
+        </>
+      }
+    </div>
+  );
+}
+
+const mapStateToProps = (state) => {
+  return {
+    widgets: state.widget.dashboard,
+  };
+}
+
+const mapDispatchToProps = (dispatch, history) => {
+  return {
+    resetWidgets: () => dispatch(widgetActions.resetWidgets()),
+    updateWidgets: (widgets) => dispatch(widgetActions.updateWidgets(widgets, 'dashboard')),
+    updateWidget: (key, widget) => dispatch(widgetActions.updateWidget(key, widget, 'dashboard')),
+    getFirebaseWidgets: () => dispatch(widgetActions.getFirebaseWidgets('dashboard')),
+  };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Dashboard);

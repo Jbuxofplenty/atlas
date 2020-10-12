@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
 
 // @material-ui
 import { makeStyles, withStyles } from "@material-ui/core/styles";
@@ -17,6 +18,7 @@ import CustomInput from "components/CustomInput/CustomInput.js";
 import styles from "assets/jss/material-kit-react/components/logoutModal.js";
 
 import { userActions, eThreeActions } from 'actions';
+import { widgetActions } from "actions";
 
 const useStyles = makeStyles(styles);
 
@@ -39,9 +41,14 @@ function Logout(props) {
   const isInvalid = message === "" ||
       (!props.backedUp && input !== "LOGOUT");
 
-  const logout = (e) => {
+  const logout = async (e) => {
     e.preventDefault();
-    if(input === "LOGOUT" || props.backedUp) props.logout();
+    if(input === "LOGOUT" || props.backedUp) {
+      if(props.location.pathname === '/app/dashboard') {
+        await widgetActions.updateFirebaseWidgets('dashboard');
+      }
+      props.logout();
+    }
   }
 
   const updateInput = (e) => {
@@ -131,4 +138,4 @@ const mapDispatchToProps = (dispatch, history) => {
   };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Logout);
+export default connect(mapStateToProps, mapDispatchToProps)(withRouter(Logout));

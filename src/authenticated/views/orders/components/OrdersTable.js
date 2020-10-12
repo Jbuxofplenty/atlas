@@ -3,7 +3,6 @@ import { useTable, useGlobalFilter, useAsyncDebounce, useSortBy } from 'react-ta
 import matchSorter from 'match-sorter'
 import { connect } from 'react-redux';
 import { 
-  Button,
   InputGroup, 
   InputGroupAddon, 
   Input,
@@ -19,9 +18,9 @@ import TableHead from '@material-ui/core/TableHead';
 import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
 import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
-import classnames from 'classnames';
 
-import OAuthObject from 'oauth2';
+// core components
+import SyncAccount from "components/SyncAccount/SyncAccount.js";
 
 import s from '../Orders.module.scss';
 import { eThreeActions, alertActions } from "actions";
@@ -105,7 +104,7 @@ function GlobalFilter({
     <InputGroup className={`align-self-center w-100 my-2 ${s.navbarForm} ${focused ? s.navbarFormFocused : ''}`}>
       <InputGroupAddon addonType="prepend" className={s.inputAddon}><InputGroupText><i className="fa fa-search" /></InputGroupText></InputGroupAddon>
       <Input
-        placeholder={`${count} orders...`}
+        placeholder={`${count} ${count===1 ? 'order...' : 'orders...'}`}
         className="input-transparent"
         value={value || ""}
         onFocus={() => setFocused(true)}
@@ -283,16 +282,12 @@ function filterGreaterThan(rows, id, filterValue) {
 filterGreaterThan.autoRemove = val => typeof val !== 'number'
 
 function OrdersTable(props) {
-  const [accountObject, setAccountObject] = useState(null);
-  const [isLoad, setIsLoad] = useState(false);
-  const [updated, setUpdated] = useState(props.account && new Date(props.account.lastSynced));
   const [orders, setOrders] = useState([]);
 
   useEffect(() => {
     props.visible(false);
     var tempOrders = [];
     if(props.account) {
-      setAccountObject(OAuthObject[props.account.displayName]);
       if(props.account.orders && props.account.orders.buys && props.account.orders.sells)
         tempOrders = props.account.orders.buys.concat(props.account.orders.sells);
     }
@@ -305,15 +300,6 @@ function OrdersTable(props) {
     }
     setOrders(tempOrders);
   }, [props, props.account]);
-
-  const retrieveAccountData = async () => {
-    setIsLoad(true);
-    var success = await accountObject.pullAccountData();
-    if(success) {
-      setIsLoad(false);
-      setUpdated(new Date());
-    }
-  }
 
   const columns = React.useMemo(
     () => [
@@ -371,17 +357,7 @@ function OrdersTable(props) {
         </div>
       }
       {props.account &&
-        <footer className={[s.cardFooter, 'text-sm', 'card-footer', 'text-right'].join(' ')}>
-          <Button
-            color="link"
-            className={classnames({ disabled: isLoad }, s.btnNotificationsReload, 'btn-sm', 'float-right', 'py-0', 'ml-2')}
-            onClick={retrieveAccountData}
-            id="load-notifications-btn"
-          >
-            {isLoad ? <span><i className="la la-refresh la-spin" /> Loading...</span> : <i className="la la-refresh" />}
-          </Button>
-          <span className="fs-mini text-right">Synced at: {updated.toLocaleString("en-US")}</span>
-        </footer>
+        <SyncAccount account={props.account} />
       }
     </ThemeProvider>
   )

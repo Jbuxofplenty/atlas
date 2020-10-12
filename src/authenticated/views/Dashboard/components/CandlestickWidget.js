@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 
@@ -7,7 +7,9 @@ import GridContainer from "components/Grid/GridContainer.js";
 import GridItem from "components/Grid/GridItem.js";
 import Widget from 'components/Widget/Widget';
 import MultiSelect from 'components/MultiSelect/MultiSelect';
+import Select from 'components/Select/Select';
 import { cryptoCurrencies } from 'components/MultiSelect/data';
+import EditableHeader from 'components/EditableHeader/EditableHeader';
 
 // Echarts
 import ReactEchartsCore from 'echarts-for-react/lib/core';
@@ -15,6 +17,7 @@ import echarts from 'echarts/lib/echarts';
 import 'echarts/lib/chart/candlestick';
 import 'echarts/lib/component/tooltip';
 import 'echarts/lib/component/legend';
+import 'echarts/lib/component/dataZoom';
 
 import { candlestickOptions, defaultXAxis, defaultSeries } from 'charts';
 
@@ -23,14 +26,17 @@ import { dataActions, alertActions } from 'actions';
 import s from '../Dashboard.module.scss';
 
 const initEchartsOptions = {
-  renderer: 'canvas'
+  renderer: 'canvas',
+  height: 'auto'
 }
 
 function CandlestickWidget(props) {
   const [options, setOptions] = useState(null);
-  const [tickers, setTickers] = useState([['BINANCE:BTCUSDT', 'Bitcoin (BTC)']]);
+  const [tickers, setTickers] = useState([['BINANCE:BTCUSDT', 'Bitcoin (BTC)', '#00B8D9']]);
   const defaultValues = [cryptoCurrencies[0]];
   const eChartsRef = React.useRef(null);
+  const [more, setMore] = useState(false);
+  const [moreHeight, setMoreHeight] = useState(0);
 
   useEffect(() => {
     props.clear();
@@ -67,6 +73,15 @@ function CandlestickWidget(props) {
     // eslint-disable-next-line
   }, [props.stockData, tickers]);
 
+  useEffect(() => {
+    if (eChartsRef && eChartsRef.current) {
+      eChartsRef.current.getEchartsInstance().on('dataZoom', function() {
+        var option = eChartsRef.current.getEchartsInstance().getOption();
+        zoomCallback(option);
+      });
+    }
+  }, [eChartsRef, options]);
+
   const updateOptions = (ticker, options) => {
     var tempOptions = JSON.parse(JSON.stringify(candlestickOptions));
     if(options) tempOptions = JSON.parse(JSON.stringify(options));
@@ -89,6 +104,7 @@ function CandlestickWidget(props) {
       data.push(datum);
     }
     tempOptions.series.push(defaultSeries);
+    tempOptions.series[lastItemIndex].itemStyle.color = ticker[2];
     tempOptions.series[lastItemIndex].data = data;
     tempOptions.series[lastItemIndex].name = ticker[1];
     tempOptions.series[lastItemIndex].type = 'candlestick';
@@ -99,33 +115,50 @@ function CandlestickWidget(props) {
     return tempOptions;
   }
 
-  const onSelectChange = (selectedValues) => {
+  const zoomCallback = (option) => {
+    return;
+  }
+
+  const onDataSelectChange = (selectedValues) => {
     let updatedTickers = [];
     if(selectedValues) {
       selectedValues.forEach(ticker => {
-        updatedTickers.push([ticker.value, ticker.label]);
+        updatedTickers.push([ticker.value, ticker.label, ticker.color]);
       })
     }
     setTickers(updatedTickers);
   }
 
+  const onTypeSelectChange = (selectedValue) => {
+    console.log(selectedValue)
+  }
+
+  const handleMore = async () => {
+    await setMore(!more);
+    if(!more) {
+      var height = document.getElementById('more').clientHeight;
+      setMoreHeight(height);
+    }
+    else{
+      setMoreHeight(0);
+    }
+  }
+
   return (
     <Widget 
-      className="w-100 align-self-center" 
+      className="w-100 align-self-center h-100" 
       close 
       collapse
-      title={<h5><span className='fw-semi-bold'>Crypto Currency</span> Price Chart</h5>}
+      title={<EditableHeader title={'Crypto Currency Price Chart'} id={props.widgetId + '-widgetTitle'}/>}
+      view={props.view}
+      widgetId={props.widgetId}
     >
-      <MultiSelect 
-        onSelectChange={onSelectChange}
-        defaultValues={defaultValues}
-      />
       {options &&
         <ReactEchartsCore
           echarts={echarts}
           option={options}
+          style={{'height': props.widget.height-moreHeight}}
           opts={initEchartsOptions}
-          style={{ height: "365px" }}
           ref={eChartsRef}
         />
       }
@@ -141,6 +174,39 @@ function CandlestickWidget(props) {
           { props.alertVisible && props.alertType === "alert-error" && props.alertComponent === "candlestick-widget" && <div className="errorMessage">{props.alertMessage}</div> }
         </GridItem>
       </GridContainer>
+      { more &&
+        <GridContainer id="more" justify="center" className={`${s.gridContainer}`}>
+          <GridItem xs={12} sm={12} lg={12} className={`mt-5 ${s.instructionContainer}`} >
+            <h5 className={`${s.settingsTitle}`}>Settings</h5>
+          </GridItem>
+          <GridItem xs={12} sm={12} lg={6} >
+            <div className="mt-3 d-flex flex-column">
+              <p className={`${s.title}`}>Type</p>
+              <div className={`${s.inputContainer}`}>
+                <Select 
+                  onSelectChange={onTypeSelectChange}
+                />
+              </div>
+            </div>
+          </GridItem>
+          <GridItem xs={12} sm={12} lg={6} >
+            <div className="mt-3 d-flex flex-column">
+              <p className={`${s.title}`}>Data</p>
+              <div className={`${s.inputContainer}`}>
+                <MultiSelect 
+                  onSelectChange={onDataSelectChange}
+                  defaultValues={defaultValues}
+                />
+              </div>
+            </div>
+          </GridItem>
+        </GridContainer>
+      }
+      <div className="d-flex flex-column justify-content-center w-100">
+        <div className={`halfCircle d-flex flex-column justify-content-center align-items-center`} onClick={handleMore}>
+          {more ? <i className={`la la-angle-up mt-1`} style={{ fontSize: "2vw" }}/> : <i className={`la la-angle-down mt-1`} style={{ fontSize: "2em" }} /> } 
+        </div>
+      </div>
     </Widget>
   );
 }
@@ -161,6 +227,7 @@ const mapDispatchToProps = (dispatch, history) => {
     visible: (show) => dispatch(alertActions.visible(show)),
     clear: () => dispatch(alertActions.clear()),
     setComponent: (component) => dispatch(alertActions.component(component)),
+
   };
 }
 

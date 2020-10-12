@@ -1,5 +1,5 @@
 import { dataConstants } from '../constants';
-import { db, auth } from '../helpers/firebase';
+import { db, auth } from 'helpers/firebase';
 import { eThreeActions, alertActions } from 'actions';
 import { store, finnhubClient, p } from 'helpers';
 import OAuthObject from 'oauth2';

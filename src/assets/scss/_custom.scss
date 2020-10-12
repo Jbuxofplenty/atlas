@@ -134,6 +134,10 @@ input:focus ~ label, input.used ~ label {
   color: #28a745;
 }
 
+.clickable {
+  cursor: pointer;
+}
+
 .center-screen {
   margin: auto;
   position: absolute;
@@ -233,4 +237,26 @@ div::-webkit-scrollbar-track {
 
 div::-webkit-scrollbar-thumb {
   background-color: rgb(49, 48, 48);
+} 
+
+.halfCircle {
+  width: 5em;
+  height: 2.5em; /* as the half of the width */
+  background-color: #262b4d;
+  border-top-left-radius: 110px;  /* 100px of height + 10px of border */
+  border-top-right-radius: 110px; /* 100px of height + 10px of border */
+  margin-top: 20px;
+  align-self: center;
+  top: 1rem !important;
+  position: relative;
+  cursor: pointer;
+}
+
+.bg-atlas-input {
+  background-color: 'rgba(0,0,0,.24)';
+}
+
+.draggableHandle {
+  background-color: white;
+  color: white;
 }
