@@ -246,7 +246,10 @@ function retrieveStockData(ticker, dataType, timeScale) {
     finnhubClient.cryptoCandles(ticker, finnhubTypes[dataType][timeScale], parseInt(timeStart.toString().slice(0, -3)), parseInt(timeEnd.toString().slice(0, -3)), (error, data, response) => {
       p(error)
       if(!data && error.statusCode === 429) dispatch(alertActions.error("We've hit our free-tier limit for our financial data provider!  It should open back up in another minute."))
-      if(data) {
+      if(data && data.s === 'no_data') {
+        return;
+      }
+      else if(data) {
         dispatch(updateStockData(ticker, data, dataType+"Price", timeScale));
         var firstPrice = data.o[0];
         var percentData = {};

@@ -1,6 +1,7 @@
 import { apiRequest } from 'oauth2/helpers';
 import { dataActions, alertActions } from 'actions';
 import { store, asyncForEach } from 'helpers';
+import { cryptoCurrencies } from 'components/MultiSelect/data';
 
 const coin = "Coinbase";
 
@@ -8,6 +9,37 @@ async function getExchangeRates() {
   var response = await apiRequest('exchange-rates', coin);
   if(!response || !response.data) return false;
   return response.data.rates;
+}
+
+async function getTotalBalancePercentDifference(financialData, exchangeRates) {
+  var finnhubTickers = await getFinnhubTickers(true);
+  var yesterdayTotalBalance = 0.;
+  var { stockData } = store.getState().data;
+  financialData.wallets.forEach(wallet => {
+    var code = wallet.currency.code;
+    if(finnhubTickers.map[code] && stockData[finnhubTickers.map[code].value]) {
+      var timeArray = stockData[finnhubTickers.map[code].value]["candlestickPrice"]['1D'].t;
+      var openPriceArray = stockData[finnhubTickers.map[code].value]["candlestickPrice"]['1D'].o;
+      var now = new Date();
+      var dayBefore = now.setDate(now.getDate() - 1);
+      for(var i in timeArray) {
+        var currentDate = new Date(timeArray[i]*1000);
+        if(currentDate >= dayBefore) {
+          yesterdayTotalBalance += parseFloat(openPriceArray[i]) * parseFloat(wallet.balance.amount);
+          break;
+        }
+      }
+    }
+    else {
+      yesterdayTotalBalance += parseFloat(wallet.balance.amount) / parseFloat(exchangeRates[code])
+    }
+  })
+  var percentDifference = (financialData.totalBalance - yesterdayTotalBalance) / yesterdayTotalBalance * 100.;
+  var newFinancialData = {
+    ...financialData,
+    percentDifference,
+  }
+  return newFinancialData;
 }
 
 async function getWalletsTotalBalance(exchangeRates) {
@@ -90,28 +122,13 @@ async function storeAccount() {
 }
 
 async function pullAccountData(minimal=true) {
-  if(minimal) return await pullMinimalAccountData();
-  else return await pullAllAccountData();
-}
-
-async function pullAllAccountData() {
   await storeAccount();
   var success = true;
   var exchangeRates = await getExchangeRates();
   var walletsTotalBalance = await getWalletsTotalBalance(exchangeRates);
   if(!walletsTotalBalance) return false;
-  success = await getOrders(walletsTotalBalance, false);
-  await storeAccount();
-  return success;
-}
-
-async function pullMinimalAccountData() {
-  await storeAccount();
-  var success = true;
-  var exchangeRates = await getExchangeRates();
-  var walletsTotalBalance = await getWalletsTotalBalance(exchangeRates);
-  if(!walletsTotalBalance) return false;
-  success = await getOrders(walletsTotalBalance);
+  var financialData = await getTotalBalancePercentDifference(walletsTotalBalance, exchangeRates);
+  success = await getOrders(financialData, minimal);
   await storeAccount();
   return success;
 }
@@ -124,6 +141,37 @@ async function connectAccount() {
   if(!walletsTotalBalance) return false;
   await storeAccount();
   return success;
+}
+
+async function getFinnhubTickers(minimal=true) {
+  var accounts = await dataActions.getFinancialData("accounts");
+  var { stockData } = store.getState().data;
+  var account = accounts[coin];
+  var wallets = account.wallets;
+  if(!minimal) {
+    wallets = account.allWallets;
+  }
+  var finnhubTickers = {array: [], map: {}};
+  wallets.forEach(wallet => {
+    var code = wallet.currency.code;
+    for(var i in cryptoCurrencies) {
+      if(cryptoCurrencies[i].value.includes(code)) {
+        if(stockData 
+            && stockData[cryptoCurrencies[i].value] 
+            && stockData[cryptoCurrencies[i].value]["candlestickPrice"] 
+            && stockData[cryptoCurrencies[i].value]["candlestickPrice"]['1D']) {
+            finnhubTickers.array.push(cryptoCurrencies[i]);
+            finnhubTickers.map[code] = cryptoCurrencies[i];
+        }
+        else {
+          store.dispatch(dataActions.retrieveStockData(cryptoCurrencies[i].value, 'candlestick', '1D'));
+          finnhubTickers.array.push(cryptoCurrencies[i]);
+          finnhubTickers.map[code] = cryptoCurrencies[i];
+        }
+      }
+    }
+  })
+  return finnhubTickers;
 }
 
 async function revokeToken(token) {
@@ -143,6 +191,8 @@ const coinbaseAPI = {
   getOrders: getOrders,
   getExchangeRates: getExchangeRates,
   connectAccount: connectAccount,
+  getFinnhubTickers: getFinnhubTickers,
+  getTotalBalancePercentDifference: getTotalBalancePercentDifference,
   apiBaseUrl: "https://api.coinbase.com/v2/",
   headers: {
     "CB-VERSION": "2020-08-23"

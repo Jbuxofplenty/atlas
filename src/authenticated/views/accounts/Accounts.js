@@ -42,18 +42,13 @@ class Accounts extends React.Component {
 
     this.handleOpen = this.handleOpen.bind(this);
     this.handleClose = this.handleClose.bind(this);
+    this.updateAccounts = this.updateAccounts.bind(this);
     this._isMounted = false;
   }
 
   async componentDidMount() {
     this._isMounted = true;
-    var tempAccounts = this._isMounted && await dataActions.getFinancialData("accounts");
-    var accounts = [];
-    for (var key in tempAccounts){
-      accounts.push(tempAccounts[key]);
-    }
-    console.log(accounts);
-    this._isMounted && this.setState({ accounts });
+    this.updateAccounts();
     this._isMounted && this.props.getInstitutions();
   }
 
@@ -63,9 +58,20 @@ class Accounts extends React.Component {
 
   componentDidUpdate(nextProps) {
     if(this.props.institutions !== nextProps.institutions ||
-        this.props.userData !== nextProps.userData) {
+        this.props.userData !== nextProps.userData ||
+        this.props.data !== nextProps.data) {
       this.populateInstitutions();
+      this.updateAccounts();
     }
+  }
+
+  async updateAccounts() {
+    var tempAccounts = this._isMounted && await dataActions.getFinancialData("accounts");
+    var accounts = [];
+    for (var key in tempAccounts){
+      accounts.push(tempAccounts[key]);
+    }
+    this._isMounted && this.setState({ accounts });
   }
 
   populateInstitutions() {
@@ -217,6 +223,7 @@ class Accounts extends React.Component {
 const mapStateToProps = (state) => {
   return {
     institutions: state.data.institutions,
+    data: state.data,
   };
 }
 

@@ -1,6 +1,11 @@
 import { widgetConstants } from '../constants';
 import { candlestickOptions } from 'charts';
 
+const dataSets = [
+  { value: 'crypto', label: 'Crypto Currencies' },
+  { value: 'heldTickers', label: 'Held Tickers' }
+]
+
 const initialState = {
   'dashboard': {
     "0": {
@@ -17,12 +22,13 @@ const initialState = {
       widgetType: 'Candle Stick (Price)',
       dataGrid: {x: 0, y: 0, w: 12, h: 16, minH: 14, minW: 6, i: "2"},
       collapsed: false,
-      height: 443,
+      height: 444,
       tickers: {1: ['BINANCE:BTCUSDT', 'Bitcoin (BTC)', '#00B8D9']},
       chartOptions: candlestickOptions,
       name: 'Crypto Currencies Candlestick Chart',
       timeScale: '1M',
-      yType: 'Price'
+      yType: 'Price',
+      dataSet: dataSets[0],
     },
   },
   'charts': {},
@@ -65,4 +71,5 @@ function widget(state = initialState, action) {
 export {
   widget,
   initialState,
+  dataSets,
 }

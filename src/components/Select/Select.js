@@ -23,17 +23,17 @@ const colourStyles = {
     return {
       ...styles,
       padding: '5px',
-      backgroundColor: !isDisabled && (isSelected ? 'rgba(0,0,0,.74)' : 'rgba(0,0,0,.14)'),
+      backgroundColor: !isDisabled && (isSelected ? '#10111A' : '#25262E'),
       color: isDisabled
         ? '#ccc'
         : 'white',
       cursor: isDisabled ? 'not-allowed' : 'default',
       ':active': {
         ...styles[':active'],
-        backgroundColor: !isDisabled && (isFocused ? 'rgba(0,0,0,.44)' : 'rgba(0,0,0,.74)'),
+        backgroundColor: !isDisabled && (isFocused ? '#10111A' : '#10111A'),
       },
       '&:hovered': {
-        backgroundColor: !isDisabled && 'rgba(0,0,0,.04)',
+        backgroundColor: !isDisabled && '#25262E',
       },
     };
   }

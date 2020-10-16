@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from 'reactstrap';
 
 import s from './CircleButton.module.scss';

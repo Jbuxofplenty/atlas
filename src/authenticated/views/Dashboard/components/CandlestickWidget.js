@@ -6,7 +6,7 @@ import { withRouter } from 'react-router-dom';
 import GridContainer from "components/Grid/GridContainer.js";
 import GridItem from "components/Grid/GridItem.js";
 import Widget from 'components/Widget/Widget';
-import MultiSelect from 'components/MultiSelect/MultiSelect';
+import ChartTickers from 'components/ChartTickers/ChartTickers';
 import Select from 'components/Select/Select';
 import EditableHeader from 'components/EditableHeader/EditableHeader';
 import TimeScale from 'components/TimeScale/TimeScale';
@@ -36,7 +36,6 @@ const initEchartsOptions = {
 function CandlestickWidget(props) {
   const [options, setOptions] = useState(null);
   const [tickers, setTickers] = useState(null);
-  const [defaultValues, setDefaultValues] = useState(null);
   const [timeScale, setTimeScale] = useState(props.widget.timeScale);
   const eChartsRef = React.useRef(null);
   const [more, setMore] = useState(false);
@@ -59,15 +58,6 @@ function CandlestickWidget(props) {
     if(!tickers)  {
       tempTickers = Object.values(JSON.parse(JSON.stringify(props.widget.tickers)));
       setTickers(tempTickers);
-      var tempDefaultValues = [];
-      tempTickers.forEach(ticker => {
-        var tempTicker = {};
-        tempTicker.value = ticker[0];
-        tempTicker.label = ticker[1];
-        tempTicker.color = ticker[2];
-        tempDefaultValues.push(tempTicker);
-      })
-      setDefaultValues(tempDefaultValues);
     }
     tempTickers.forEach(ticker => {
       if(props.stockData 
@@ -137,21 +127,6 @@ function CandlestickWidget(props) {
     return;
   }
 
-  const onDataSelectChange = (selectedValues) => {
-    let updatedTickers = [];
-    let tempTickers = {};
-    if(selectedValues) {
-      selectedValues.forEach((ticker, index) => {
-        tempTickers[index] = [ticker.value, ticker.label, ticker.color];
-        updatedTickers.push([ticker.value, ticker.label, ticker.color]);
-      })
-    }
-    setTickers(updatedTickers);
-    var tempWidget = JSON.parse(JSON.stringify(props.widget));
-    tempWidget.tickers = tempTickers;
-    props.updateWidget(props.widgetId, tempWidget, props.view);
-  }
-
   const onTimeScaleChange = (name) => {
     var tempWidget = JSON.parse(JSON.stringify(props.widget));
     tempWidget.timeScale = name;
@@ -192,7 +167,7 @@ function CandlestickWidget(props) {
       view={props.view}
       widgetId={props.widgetId}
     >
-      {options && tickers && defaultValues &&
+      {options && tickers ?
         <ReactEchartsCore
           echarts={echarts}
           option={options}
@@ -200,6 +175,8 @@ function CandlestickWidget(props) {
           opts={initEchartsOptions}
           ref={eChartsRef}
         />
+        :
+        <div style={{'height': props.widget.height-moreHeight}}></div>
       }
       {!options && !props.alertVisible && !props.alertType === "alert-error" && 
         <div className="d-flex w-100 justify-content-center align-items-center" style={{ height: "100px" }}>
@@ -237,17 +214,12 @@ function CandlestickWidget(props) {
               </div>
             </div>
           </GridItem>
-          <GridItem xs={12} sm={12} lg={6} >
-            <div className="mt-3 d-flex flex-column">
-              <p className={`${s.title}`}>Data</p>
-              <div className={`${s.inputContainer}`}>
-                <MultiSelect 
-                  onSelectChange={onDataSelectChange}
-                  defaultValues={defaultValues}
-                />
-              </div>
-            </div>
-          </GridItem>
+          <ChartTickers 
+            widget={props.widget} 
+            setTickers={setTickers}
+            widgetId={props.widgetId}
+            view={props.view}
+          />
         </GridContainer>
       }
       <div className="d-flex flex-column justify-content-center w-100">

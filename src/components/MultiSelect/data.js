@@ -2,7 +2,7 @@ export const cryptoCurrencies = [
   { value: 'COINBASE:BTC-USD', label: 'Bitcoin (BTC)', color: '#00B8D9' },
   { value: 'COINBASE:ETH-USD', label: 'Ethereum (ETH)', color: '#0052CC' },
   { value: 'COINBASE:ALGO-USD', label: 'Algorand (ALGO)', color: '#5243AA' },
-  { value: 'COINBASE:XTZ-USD', label: 'Tezos (XTZ)', color: '#FF5630' },
+  { value: 'COINBASE:XTZ-USD', label: 'Tezos (XTZ)', color: '#616802' },
   { value: 'COINBASE:ATOM-USD', label: 'Atom (ATOM)', color: '#FF8B00' },
   { value: 'COINBASE:NMR-USD', label: 'Numerai (NMR)', color: '#FFC400' },
   { value: 'COINBASE:MKR-USD', label: 'Maker (MKR)', color: '#36B37E' },
@@ -19,4 +19,5 @@ export const cryptoCurrencies = [
   { value: 'COINBASE:REP-USD', label: 'Augur (REP)', color: '#6d951f' },
   { value: 'COINBASE:OMG-USD', label: 'OMG Network (OMG)', color: '#e92dcd' },
   { value: 'COINBASE:UNI-USD', label: 'Uniswap (UNI)', color: '#df7e40' },
+  { value: 'BINANCE:BCHSVTUSD', label: 'Bitcoin SV (BSV)', color: '#2E6802' },
 ];

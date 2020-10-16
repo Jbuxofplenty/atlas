@@ -45,7 +45,7 @@ async function saveFirebaseWidgets(view) {
   var allWidgets = store.getState().widget;
   var widgets = allWidgets[view];
   const user = auth.currentUser;
-  if(user) {
+  if(user && widgets) {
     const uid = user.uid;
     await db.collection("users").doc(uid).update({
       [`widgets.${view}`]: widgets,

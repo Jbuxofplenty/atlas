@@ -1,7 +1,5 @@
 import React from 'react';
 import chroma from 'chroma-js';
-
-import { cryptoCurrencies } from './data';
 import Select from 'react-select';
 
 const colourStyles = {
@@ -57,7 +55,7 @@ export default function MultiSelect(props) {
       closeMenuOnSelect={true}
       defaultValue={props.defaultValues}
       isMulti
-      options={cryptoCurrencies}
+      options={props.options}
       styles={colourStyles}
       onChange={props.onSelectChange}
     />

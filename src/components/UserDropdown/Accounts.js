@@ -1,12 +1,13 @@
 import React from 'react';
 import {
-  Button,
   ListGroup,
   ListGroupItem,
 } from 'reactstrap';
 
-import classnames from 'classnames';
 import s from './ListGroup.module.scss';
+
+// core components
+import SyncAccount from "components/SyncAccount/SyncAccount.js";
 
 import OAuthObject from 'oauth2';
 
@@ -72,17 +73,7 @@ class Accounts extends React.Component {
                 )}
                 
               </ListGroup>
-              <footer className={[s.cardFooter, 'text-sm', 'card-footer'].join(' ')}>
-                <Button
-                  color="link"
-                  className={classnames({ disabled: this.state.isLoad }, s.btnNotificationsReload, 'btn-xs', 'float-right', 'py-0')}
-                  onClick={() => this.pullAccountData()}
-                  id="load-notifications-btn"
-                >
-                  {this.state.isLoad ? <span><i className="la la-refresh la-spin" /> Loading...</span> : <i className="la la-refresh" />}
-                </Button>
-                <span className="fs-mini">Synced at: {this.state.updated.toLocaleString("en-US")}</span>
-              </footer>
+              <SyncAccount accounts={this.state.accounts}/>
             </>
           }
           </>
