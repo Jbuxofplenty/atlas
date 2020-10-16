@@ -10,6 +10,8 @@
       height: unquote("min(3vw, 30px)");
       font-size: unquote("min(3vw, 30px)");
       line-height: unquote("min(3vw, 30px)");
+      background-color: rgba(0, 0, 0, 0.2);
+      color: $white;
       cursor: pointer;
 
       > a {

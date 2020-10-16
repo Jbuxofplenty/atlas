@@ -33,12 +33,8 @@ function AddWidget(props) {
   const addChart = async () => {
     let xy = widgetActions.getOpenSlot(initialState['dashboard']['2'].dataGrid.w, initialState['dashboard']['2'].dataGrid.h, props.view);
     var key = generateRandomId();
-    var newChart = {
-      widgetType: 'candleStickPriceChart',
-      dataGrid: {x: xy.x, y: xy.y, w: 12, h: 13, minH: 11, minW: 6, i: key},
-      collapsed: false,
-      height: 375,
-    }
+    var newChart = JSON.parse(JSON.stringify(initialState['dashboard']['2']));
+    newChart.dataGrid = {x: xy.x, y: xy.y, w: 12, h: 13, minH: 11, minW: 6, i: key};
     props.updateWidget(key, newChart, props.view);
   }
 

@@ -1,0 +1,70 @@
+@import 'assets/scss/app';
+
+.root {
+  :global {
+    .icon-list {
+      margin-top: $spacer;
+    }
+
+    .icon-list-item {
+      height: 32px;
+      font-size: 14px;
+      line-height: 32px;
+
+      > a {
+        color: $white;
+        text-decoration: none;
+      }
+
+      .glyphicon,
+      .fa,
+      .fi {
+        width: 32px;
+        margin-right: 10px;
+      }
+
+      &:hover {
+        .glyphicon,
+        .fa,
+        .fi {
+          font-size: 28px;
+          top: 2px;
+        }
+
+        .fa,
+        .fi {
+          vertical-align: -5px;
+        }
+
+        .glyphicon {
+          vertical-align: -6px;
+        }
+      }
+    }
+  }
+}
+
+span {
+  color: white;
+}
+
+i {
+  color: white;
+}
+
+.header {
+  margin-left: 1em;
+}
+
+.gridContainer {
+  width: 100% !important;
+  align-self: center;
+}
+
+.circleContainer {
+  width: 3vw;
+  height: 3vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

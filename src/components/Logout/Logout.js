@@ -45,7 +45,7 @@ function Logout(props) {
     e.preventDefault();
     if(input === "LOGOUT" || props.backedUp) {
       if(props.location.pathname === '/app/dashboard') {
-        await widgetActions.updateFirebaseWidgets('dashboard');
+        await widgetActions.saveFirebaseWidgets('dashboard');
       }
       props.logout();
     }

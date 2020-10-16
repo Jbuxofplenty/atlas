@@ -1,4 +1,5 @@
 import { widgetConstants } from '../constants';
+import { candlestickOptions } from 'charts';
 
 const initialState = {
   'dashboard': {
@@ -13,10 +14,15 @@ const initialState = {
       collapsed: false,
     },
     "2": {
-      widgetType: 'candleStickPriceChart',
-      dataGrid: {x: 0, y: 0, w: 12, h: 13, minH: 11, minW: 6, i: "2"},
+      widgetType: 'Candle Stick (Price)',
+      dataGrid: {x: 0, y: 0, w: 12, h: 16, minH: 14, minW: 6, i: "2"},
       collapsed: false,
-      height: 375,
+      height: 443,
+      tickers: {1: ['BINANCE:BTCUSDT', 'Bitcoin (BTC)', '#00B8D9']},
+      chartOptions: candlestickOptions,
+      name: 'Crypto Currencies Candlestick Chart',
+      timeScale: '1M',
+      yType: 'Price'
     },
   },
   'charts': {},

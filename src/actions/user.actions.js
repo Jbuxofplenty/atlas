@@ -1,5 +1,6 @@
 import { userConstants, eThreeConstants } from '../constants';
-import { alertActions, dataActions, eThreeActions } from './';
+import { alertActions, dataActions, eThreeActions, widgetActions } from './';
+import OAuthObject from 'oauth2';
 import { auth, db } from "../helpers/firebase";
 import { apiBaseUrl, generateRandomId, p } from 'helpers';
 
@@ -80,6 +81,24 @@ const defaultUser = {
   e2ee: false,
 }
 
+function commonLogin(user, backedUp) {
+  return async dispatch => {
+    var tempAccounts = await dataActions.getFinancialData("accounts");
+    Object.keys(tempAccounts).forEach(key => {
+      var accountName = tempAccounts[key].displayName;
+      var accountObject = OAuthObject[accountName];
+      accountObject.pullAccountData();
+    })
+    dispatch(widgetActions.getAllFirebaseWidgets());
+    dispatch(request(false));
+    dispatch(success(true, user));
+    dispatch(updateBackedUp(backedUp));
+  }
+}
+
+function request(isLoginPending) { return { type: userConstants.LOGIN_REQUEST, isLoginPending } }
+function success(isLoginSuccess, userData) { return { type: userConstants.LOGIN_SUCCESS, isLoginSuccess, userData } }
+
 function login(user) {
   return dispatch => {
     var tempUser = {};
@@ -93,9 +112,7 @@ function login(user) {
         if(tempUser.e2ee) {
           await eThreeActions.initializeEThree();
         }
-        dispatch(request(false));
-        dispatch(success(true, tempUser));
-        dispatch(updateBackedUp(backedUp));
+        dispatch(commonLogin(tempUser, backedUp));
       },
         error => {
           dispatch(request(false));
@@ -104,15 +121,12 @@ function login(user) {
         });
       }
       else{
-        dispatch(request(false, {}));
+        dispatch(request(false));
         dispatch(loginFailure(true, "Passed user is null!", {}, {}));
         dispatch(alertActions.error("Passed user is null!"));
       };
 
   };
-
-  function request(isLoginPending) { return { type: userConstants.LOGIN_REQUEST, isLoginPending } }
-  function success(isLoginSuccess, userData) { return { type: userConstants.LOGIN_SUCCESS, isLoginSuccess, userData } }
 }
 
 function facebookLogin(result) {
@@ -142,25 +156,20 @@ function facebookLogin(result) {
           await eThreeActions.initializeEThree();
         }
         await dispatch(scrubUser(tempUser));
-        dispatch(request(false));
-        dispatch(success(true, tempUser));
-        dispatch(updateBackedUp(backedUp));
+        dispatch(commonLogin(tempUser, backedUp));
       },
         error => {
-          dispatch(request(false, {}));
+          dispatch(request(false));
           dispatch(loginFailure(true, error.toString(), {}, {}));
           dispatch(alertActions.error(error.toString()));
         });
     }
     else {
-      dispatch(request(false, {}));
+      dispatch(request(false));
       dispatch(loginFailure(true, "Passed user is null!", {}, {}));
       dispatch(alertActions.error("Passed user is null!"));
     }
   };
-
-  function request(isLoginPending) { return { type: userConstants.LOGIN_REQUEST, isLoginPending } }
-  function success(isLoginSuccess, userData) { return { type: userConstants.LOGIN_SUCCESS, isLoginSuccess, userData } }
 }
 
 function googleLogin(result) {
@@ -192,26 +201,21 @@ function googleLogin(result) {
           await eThreeActions.initializeEThree();
         }
         await dispatch(scrubUser(tempUser));
-        dispatch(request(false));
-        dispatch(success(true, tempUser));
-        dispatch(updateBackedUp(backedUp));
+        dispatch(commonLogin(tempUser, backedUp));
       },
         error => {
-          dispatch(request(false, {}));
+          dispatch(request(false));
           dispatch(loginFailure(true, error.toString(), {}, {}));
           dispatch(alertActions.error(error.toString()));
         });
     }    
     else {
-      dispatch(request(false, {}));
+      dispatch(request(false));
       dispatch(loginFailure(true, "Passed user is null!", {}, {}));
       dispatch(alertActions.error("Passed user is null!"));
     }
 
   };
-
-  function request(isLoginPending) { return { type: userConstants.LOGIN_REQUEST, isLoginPending } }
-  function success(isLoginSuccess, userData) { return { type: userConstants.LOGIN_SUCCESS, isLoginSuccess, userData } }
 }
 
 function register(email, firstName, password) {
@@ -229,19 +233,13 @@ function register(email, firstName, password) {
         await db.collection("users").doc(user.uid).set(tempUser);
         let backedUp = tempUser.backedUp;
         await dispatch(scrubUser(tempUser));
-        dispatch(request(false));
-        dispatch(success(true, tempUser));
-        dispatch(updateBackedUp(backedUp));
-        dispatch(alertActions.visible(false));
+        dispatch(commonLogin(tempUser, backedUp));
         dispatch(alertActions.clear());
       }).catch(function(error) {
       dispatch(loginFailure(true, error.toString(), {}, {}));
       dispatch(alertActions.error(error.toString()));
     });
   };
-
-  function request(isLoginPending) { return { type: userConstants.LOGIN_REQUEST, isLoginPending } }
-  function success(isLoginSuccess, userData) { return { type: userConstants.LOGIN_SUCCESS, isLoginSuccess, userData } }
 }
 
 /////////////////////
@@ -346,6 +344,7 @@ function reCaptchaUpdate(human, signUp) {
 
 function logout() {
   return async (dispatch, getState) => {
+    await widgetActions.saveAllFirebaseWidgets();
     let eThreeLoggedOut = true;
     const { userData } = getState().user;
     if(userData.e2ee) {

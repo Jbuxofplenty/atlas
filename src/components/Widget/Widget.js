@@ -102,7 +102,7 @@ class Widget extends React.Component {
     if(widgets) {
       delete widgets[widgetId];
       await this.props.updateWidgets(widgets, view);
-      await widgetActions.updateFirebaseWidgets('dashboard');
+      await widgetActions.saveFirebaseWidgets('dashboard');
     }
   }
 

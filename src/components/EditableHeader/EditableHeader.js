@@ -1,15 +1,24 @@
 import React, { useState } from 'react';
+import { connect } from 'react-redux';
 
 import AuthCustomInput from "components/AuthCustomInput/AuthCustomInput.js";
 
 import s from 'components/Widget/Widget.module.scss';
+import { widgetActions } from 'actions';
 
-export default function EditableHeader(props) {
+ function EditableHeader(props) {
   const [title, setTitle] = useState(props.title);
   const [editing, setEditing] = useState(false);
   const submit = (e) => {
     e.preventDefault();
     setEditing(false);
+  }
+
+  const handleChange = (e) => {
+    setTitle(e.target.value);
+    var tempWidget = JSON.parse(JSON.stringify(props.widget));
+    tempWidget.name = e.target.value;
+    props.updateWidget(props.widgetId, tempWidget, props.view);
   }
 
   return (
@@ -22,7 +31,7 @@ export default function EditableHeader(props) {
                 value={title}
                 white
                 onBlur={() => setEditing(false)}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={handleChange}
                 fullWidth
                 inputProps={{
                   color: "secondary",
@@ -35,3 +44,20 @@ export default function EditableHeader(props) {
     </div>
   )
 }
+function mapStateToProps(store) {
+  return {
+    stockData: store.data.stockData,
+    alertType: store.alert.type,
+    alertMessage: store.alert.message,
+    alertVisible: store.alert.visible,
+    alertComponent: store.alert.component,
+  };
+}
+
+const mapDispatchToProps = (dispatch, history) => {
+  return {
+    updateWidget: (key, widget, view) => dispatch(widgetActions.updateWidget(key, widget, view)),
+  };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(EditableHeader);

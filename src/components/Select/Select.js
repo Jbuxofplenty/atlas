@@ -2,8 +2,6 @@ import React from 'react';
 
 import Select from 'react-select';
 
-import { chartTypes } from './data';
-
 const colourStyles = {
   control: styles => ({ 
     ...styles, 
@@ -45,8 +43,8 @@ export default function CustomSelect(props) {
   return (
     <Select
       closeMenuOnSelect={true}
-      defaultValue={chartTypes[0]}
-      options={chartTypes}
+      defaultValue={props.defaultValue}
+      options={props.options}
       styles={colourStyles}
       onChange={props.onSelectChange}
     />

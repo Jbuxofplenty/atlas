@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
-import {
-  Container,
-} from 'reactstrap';
 import { Responsive, WidthProvider } from 'react-grid-layout';
 import _ from 'lodash';
 
@@ -17,7 +14,8 @@ import s from './Dashboard.module.scss';
 const strComponentMap = {
   'customize': AddWidget,
   'accountSummary': AccountsWidget,
-  'candleStickPriceChart': CandlestickWidget,
+  'Candle Stick (Price)': CandlestickWidget,
+  'Candle Stick (Percentage)': CandlestickWidget,
 }
 
 const GridLayout = WidthProvider(Responsive);
@@ -29,12 +27,11 @@ function Dashboard(props) {
   const breakpoints = {lg: 1000, md: 750, sm: 500, xs: 300, xxs: 0};
 
   useEffect(() => {
-    props.getFirebaseWidgets();
     buildLayout(props.widgets)
     var tempGridWidth = document.getElementById('dashboardContainer').clientWidth;
     setGridWidth(tempGridWidth);
     return function cleanup() {
-      widgetActions.updateFirebaseWidgets('dashboard');
+      widgetActions.saveFirebaseWidgets('dashboard');
     };
     // eslint-disable-next-line
   }, []);
@@ -63,20 +60,21 @@ function Dashboard(props) {
   const widgetResizeStop = async (layout, oldItem, newItem, placeholder, e, element) => {
     var height = document.getElementById(newItem.i).clientHeight;
     var widgetTitleElement = document.getElementById(newItem.i+'-widgetTitle');
-    if(widgetTitleElement) {
+    var timeScaleElement = document.getElementById(newItem.i+'-timeScale');
+    if(widgetTitleElement && timeScaleElement) {
       var widgetTitleHeight = widgetTitleElement.clientHeight;
-      var widgetObject = JSON.parse(JSON.stringify(props.widgets[newItem.i]));
-      widgetObject.height = height-widgetTitleHeight-100;
-      await props.updateWidget(newItem.i, widgetObject);
+      var timeScaleHeight = timeScaleElement.clientHeight;
       layout.forEach(data => {
-        if(data.i !== newItem.i) {
-          var widget = JSON.parse(JSON.stringify(props.widgets[data.i]));
-          widget.dataGrid.x = data.x;
-          widget.dataGrid.y = data.y;
-          widget.dataGrid.w = data.w;
-          widget.dataGrid.h = data.h;
-          props.updateWidget(data.i, widget);
+        var widget = JSON.parse(JSON.stringify(props.widgets[data.i]));
+        widget.dataGrid.x = data.x;
+        widget.dataGrid.y = data.y;
+        widget.dataGrid.w = data.w;
+        widget.dataGrid.h = data.h;
+        console.log(height-widgetTitleHeight-100-timeScaleHeight)
+        if(data.i === newItem.i) {
+          widget.height = height-widgetTitleHeight-100-timeScaleHeight;
         }
+        props.updateWidget(data.i, widget);
       })
     }
   }
@@ -109,20 +107,18 @@ function Dashboard(props) {
       {gridWidth && props.widgets && layout &&
         <>
           <h1 className="page-title">Dashboard &nbsp;</h1>
-          <Container className="w-100">
-            <GridLayout 
-                className="layout mr-5"
-                rowHeight={30} 
-                width={gridWidth}
-                onResizeStop={widgetResizeStop}
-                onDragStop={widgetDragStop}
-                layout={layout}
-                layouts={layouts}
-                breakpoints={breakpoints}
-                cols={{lg: 12, md: 10, sm: 6, xs: 4, xxs: 2}}>
-              {renderWidgets()}
-            </GridLayout>
-          </Container>
+          <GridLayout 
+              className="w-100"
+              rowHeight={30} 
+              width={gridWidth}
+              onResizeStop={widgetResizeStop}
+              onDragStop={widgetDragStop}
+              layout={layout}
+              layouts={layouts}
+              breakpoints={breakpoints}
+              cols={{lg: 12, md: 10, sm: 6, xs: 4, xxs: 2}}>
+            {renderWidgets()}
+          </GridLayout>
         </>
       }
     </div>

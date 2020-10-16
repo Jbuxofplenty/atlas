@@ -15,6 +15,7 @@ import {
   Col,
   Table,
 } from 'reactstrap';
+import { Card } from '@material-ui/core';
 import classnames from 'classnames';
 
 import Modal from '@material-ui/core/Modal';
@@ -176,11 +177,13 @@ class Accounts extends React.Component {
                     {this.state.searchFilter === '' ?
                       <Row className="icon-list d-flex justify-content-center align-items-center my-5">
                         {this.state.popularInstitutions.map((institution, index) => (
-                          <Col lg={4} md={6} xs={12}  onClick={() => this.handleOpen(institution)} 
-                              className={`icon-list-item d-flex justify-content-center align-items-center my-3 ${s.iconListItem}`} key={index}>
-                            <img className={`${s.avatar} rounded-circle thumb-sm float-left mx-4`} alt="bs" src={institution.icon}/>
-                            {institution.displayName}
-                          </Col>
+                            <Col lg={6} md={12} xs={12}  onClick={() => this.handleOpen(institution)} 
+                                 key={index}>
+                              <Card className={`p-5 icon-list-item d-flex justify-content-center align-items-center my-3 ${s.iconListItem}`} raised>
+                                <img className={`${s.avatar} rounded-circle thumb-sm float-left mr-4`} alt="bs" src={institution.icon}/>
+                                {institution.displayName}
+                              </Card>
+                            </Col>
                           ))
                         }
                       </Row> :

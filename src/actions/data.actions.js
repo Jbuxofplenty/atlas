@@ -209,18 +209,65 @@ function getInstitutions() {
 /////////////////////////////
 
 const finnhubTypes = {
-  "candlestick": "D",
+  "candlestick": {
+    "1D": "5",
+    "1W": "30",
+    "1M": "60",
+    "YTD": "D",
+    "6M": "D",
+    "1Y": "D",
+  }
 }
 
-function retrieveStockData(ticker, timeStart, timeEnd, dataType) {
+function retrieveStockData(ticker, dataType, timeScale) {
   return async dispatch => {
+    var timeEnd = new Date().getTime();
+    var tempDate = new Date();
+    if(timeScale === '1D') {
+      tempDate.setDate(tempDate.getDate() - 1);
+    }
+    if(timeScale === '1W') {
+      tempDate.setDate(tempDate.getDate() - 7);
+    }
+    if(timeScale === '1M') {
+      tempDate.setMonth(tempDate.getMonth() - 1);
+    }
+    if(timeScale === 'YTD') {
+      tempDate = new Date(new Date().getFullYear(), 0, 1);
+    }
+    if(timeScale === '6M') {
+      tempDate.setMonth(tempDate.getMonth() - 6);
+    }
+    if(timeScale === '1Y') {
+      tempDate.setMonth(tempDate.getMonth() - 12);
+    }
+    var timeStart = tempDate.getTime();
     // Finnhub expects seconds since UTC epoch rather than milliseconds
-    finnhubClient.cryptoCandles(ticker, finnhubTypes[dataType], parseInt(timeStart.toString().slice(0, -3)), parseInt(timeEnd.toString().slice(0, -3)), (error, data, response) => {
-      console.log(error)
+    finnhubClient.cryptoCandles(ticker, finnhubTypes[dataType][timeScale], parseInt(timeStart.toString().slice(0, -3)), parseInt(timeEnd.toString().slice(0, -3)), (error, data, response) => {
+      p(error)
       if(!data && error.statusCode === 429) dispatch(alertActions.error("We've hit our free-tier limit for our financial data provider!  It should open back up in another minute."))
-      dispatch(updateStockData(ticker, data, dataType));
-      p(response, data, dataType)
+      if(data) {
+        dispatch(updateStockData(ticker, data, dataType+"Price", timeScale));
+        var firstPrice = data.o[0];
+        var percentData = {};
+        percentData.t = data.t;
+        percentData.v = data.v;
+        percentData.o = data.o.map(datum => {
+          return (datum - firstPrice) / firstPrice * 100.;
+        })
+        percentData.c = data.c.map(datum => {
+          return (datum - firstPrice) / firstPrice * 100.;
+        })
+        percentData.h = data.h.map(datum => {
+          return (datum - firstPrice) / firstPrice * 100.;
+        })
+        percentData.l = data.l.map(datum => {
+          return (datum - firstPrice) / firstPrice * 100.;
+        })
+        dispatch(updateStockData(ticker, percentData, dataType+"Percent", timeScale));
+      }
+      p(response, data, dataType+"Price", timeScale)
     });
   }
-  function updateStockData(ticker, data, dataType) { return { type: dataConstants.UPDATE_STOCK_DATA, ticker, data, dataType } }
+  function updateStockData(ticker, data, dataType, timeScale) { return { type: dataConstants.UPDATE_STOCK_DATA, ticker, data, dataType, timeScale } }
 }

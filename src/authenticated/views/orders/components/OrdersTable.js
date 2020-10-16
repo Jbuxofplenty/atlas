@@ -357,7 +357,7 @@ function OrdersTable(props) {
         </div>
       }
       {props.account &&
-        <SyncAccount account={props.account} />
+        <SyncAccount account={props.account} orders />
       }
     </ThemeProvider>
   )

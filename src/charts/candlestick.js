@@ -18,11 +18,6 @@ const candlestickOptions = {
     axisPointer: {
       type: 'cross'
     },
-    position: function (pos, params, el, elRect, size) {
-      var obj = {top: 10};
-      obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 30;
-      return obj;
-    }
   },
   legend: {
     data: [],
@@ -90,8 +85,17 @@ const defaultSeries = {
   },
 }
 
+const positionFunction = {
+  position: function (pos, params, el, elRect, size) {
+    var obj = {top: 10};
+    obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 30;
+    return obj;
+  }
+}
+
 export {
   candlestickOptions,
   defaultXAxis,
   defaultSeries,
+  positionFunction,
 };

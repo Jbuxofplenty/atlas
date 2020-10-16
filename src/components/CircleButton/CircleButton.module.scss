@@ -1,0 +1,58 @@
+@import 'assets/scss/app';
+
+.circle {
+  background-color: rgba(0,0,0,0.3) !important;
+  border-color: rgba(0,0,0,0.3) !important;
+  width: 100% !important;
+  height: 100% !important;
+  &:hover {
+    border-color: white !important;
+    .text {
+      color: white !important;
+    }
+  }
+  &:active {
+    background-color: white !important;
+    border-color: white !important;
+    .text {
+      color: black !important;
+    }
+  }
+}
+
+.selected {
+  background-color: white !important;
+  border-color: white !important;
+  .text {
+    color: black !important;
+  }
+  &:hover {
+    background-color: rgba(0,0,0,0.3) !important;
+    border-color: white !important;
+    .text {
+      color: white !important;
+    }
+  }
+  &:active {
+    background-color: white !important;
+    border-color: white !important;
+    .text {
+      color: black !important;
+    }
+  }
+}
+
+.text {
+  font-size: 0.75vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  color: grey;
+}
+
+.circleContainer {
+  width: 3vw;
+  height: 3vw;
+}

@@ -15,22 +15,23 @@ async function getWalletsTotalBalance(exchangeRates) {
   var accounts = await dataActions.getFinancialData("accounts");
   var account = accounts[coin];
   var enter = true;
-  var tempWallets = [];
+  var allWallets = [];
   var nextUri = 'accounts';
   var response;
   while(enter || (response && response.pagination && response.pagination.next_uri)) {
     if(!enter) nextUri = response.pagination.next_uri.slice(4);
     response = await apiRequest(nextUri, coin);
     if(!response || !response.data) return false;
-    tempWallets = tempWallets.concat(response.data);
+    allWallets = allWallets.concat(response.data);
     enter = false;
   }
   var wallets = [];
-  tempWallets.forEach(wallet => {
+  allWallets.forEach(wallet => {
     if(parseFloat(wallet.balance.amount) > 0) wallets.push(wallet);
   })
   var financialData = {
     ...account,
+    allWallets,
     wallets,
     totalBalance: 0
   };
@@ -42,8 +43,9 @@ async function getWalletsTotalBalance(exchangeRates) {
   return financialData;
 }
 
-async function getOrders(walletsTotalBalance) {
+async function getOrders(walletsTotalBalance, minimal=true) {
   var wallets = walletsTotalBalance.wallets;
+  if(!minimal) wallets = walletsTotalBalance.allWallets;
   var orders = {
     buys: [],
     sells: [],
@@ -56,13 +58,13 @@ async function getOrders(walletsTotalBalance) {
     var buys = response.data;
     buys.forEach(buy => {
       orders.buys.push(buy);
-    })
+    });
     response = await apiRequest('accounts/' + walletId + '/sells', coin);
     if(!response || !response.data) return false;
     var sells = response.data;
     sells.forEach(sell => {
       orders.sells.push(sell);
-    })
+    });
     await store.dispatch(alertActions.clear());
     await store.dispatch(alertActions.progressSuccess(`Pulled in order data for your ${wallet.name} (${i}/${wallets.length})!`));
     i += 1;
@@ -87,7 +89,23 @@ async function storeAccount() {
   await store.dispatch(dataActions.storeFinancialDataFirestore(coin, "accounts", account));
 }
 
-async function pullAccountData() {
+async function pullAccountData(minimal=true) {
+  if(minimal) return await pullMinimalAccountData();
+  else return await pullAllAccountData();
+}
+
+async function pullAllAccountData() {
+  await storeAccount();
+  var success = true;
+  var exchangeRates = await getExchangeRates();
+  var walletsTotalBalance = await getWalletsTotalBalance(exchangeRates);
+  if(!walletsTotalBalance) return false;
+  success = await getOrders(walletsTotalBalance, false);
+  await storeAccount();
+  return success;
+}
+
+async function pullMinimalAccountData() {
   await storeAccount();
   var success = true;
   var exchangeRates = await getExchangeRates();

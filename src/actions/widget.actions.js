@@ -1,17 +1,19 @@
 import { widgetConstants } from '../constants';
 import { initialState } from '../reducers/widget.reducer';
 import { db, auth } from 'helpers/firebase';
-import { store } from 'helpers';
+import { store, asyncForEach } from 'helpers';
 
 export const widgetActions = {
   addWidget,
   deleteWidget,
-  updateFirebaseWidgets,
+  saveFirebaseWidgets,
   resetWidgets,
   updateWidgets,
   updateWidget,
   getFirebaseWidgets,
   getOpenSlot,
+  getAllFirebaseWidgets,
+  saveAllFirebaseWidgets,
 };
 
 function addWidget(key, widget, view) {
@@ -30,7 +32,16 @@ function deleteWidget(key, view) {
   return { type: widgetConstants.DELETE_WIDGET, key, view };
 }
 
-async function updateFirebaseWidgets(view) {
+// Firebase
+const views = ['dashboard', 'charts'];
+
+async function saveAllFirebaseWidgets() {
+  await asyncForEach(views, async view => {
+    await saveFirebaseWidgets(view);
+  })
+}
+
+async function saveFirebaseWidgets(view) {
   var allWidgets = store.getState().widget;
   var widgets = allWidgets[view];
   const user = auth.currentUser;
@@ -39,6 +50,14 @@ async function updateFirebaseWidgets(view) {
     await db.collection("users").doc(uid).update({
       [`widgets.${view}`]: widgets,
     });
+  }
+}
+
+function getAllFirebaseWidgets() {
+  return async dispatch => {
+    views.forEach(view => {
+      dispatch(getFirebaseWidgets(view));
+    })
   }
 }
 
@@ -61,11 +80,21 @@ function getFirebaseWidgets(view) {
 function getOpenSlot(w, h, view) {
   // TODO: make more efficient
   // This will work for now
-  // var allWidgets = store.getState().widget;
-  // var widgets = allWidgets[view];
-  // Object.keys(widgets).map(key => {
-  // })
-  return {x: 0, y: 1000};
+  var allWidgets = store.getState().widget;
+  var widgets = allWidgets[view];
+  var maxY = 0;
+  var maxYMaxH = 0;
+  Object.keys(widgets).forEach(key => {
+    var y = widgets[key].dataGrid.y;
+    if(y > maxY) {
+      maxY = y;
+      var h = widgets[key].dataGrid.h;
+      if(h > maxYMaxH) {
+        maxYMaxH = h;
+      }
+    }
+  })
+  return {x: 0, y: maxY+maxYMaxH};
 }
 
 function resetWidgets() {

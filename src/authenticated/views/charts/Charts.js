@@ -49,7 +49,7 @@ function Charts(props) {
     // var tempGridWidth = document.getElementById('dashboardContainer').clientWidth;
     // setGridWidth(tempGridWidth);
     return function cleanup() {
-      widgetActions.updateFirebaseWidgets('charts');
+      widgetActions.saveFirebaseWidgets('charts');
     };
     // eslint-disable-next-line
   }, []);
