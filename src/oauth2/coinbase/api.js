@@ -11,21 +11,36 @@ async function getExchangeRates() {
   return response.data.rates;
 }
 
-async function getTotalBalancePercentDifference(financialData, exchangeRates) {
+async function getPercentDifference() {
+  var accounts = await dataActions.getFinancialData("accounts");
+  var account = accounts[coin];
+  var newFinancialData = await getTotalBalancePercentDifference(account);
+  if(newFinancialData) await store.dispatch(dataActions.storeFinancialData(coin, "accounts", newFinancialData));
+  return newFinancialData;
+}
+
+async function getTotalBalancePercentDifference(financialData) {
   var finnhubTickers = await getFinnhubTickers(true);
+  var exchangeRates = financialData.exchangeRates;
+  if(!exchangeRates) return null;
   var yesterdayTotalBalance = 0.;
   var { stockData } = store.getState().data;
+  var dataAvailable = false;
   financialData.wallets.forEach(wallet => {
     var code = wallet.currency.code;
-    if(finnhubTickers.map[code] && stockData[finnhubTickers.map[code].value]) {
+    if(finnhubTickers.map[code] && stockData[finnhubTickers.map[code].value]
+          && stockData[finnhubTickers.map[code].value]["candlestickPrice"]
+          && stockData[finnhubTickers.map[code].value]["candlestickPrice"]['1D']) {
       var timeArray = stockData[finnhubTickers.map[code].value]["candlestickPrice"]['1D'].t;
       var openPriceArray = stockData[finnhubTickers.map[code].value]["candlestickPrice"]['1D'].o;
       var now = new Date();
       var dayBefore = now.setDate(now.getDate() - 1);
       for(var i in timeArray) {
         var currentDate = new Date(timeArray[i]*1000);
+        dayBefore = new Date(dayBefore);
         if(currentDate >= dayBefore) {
           yesterdayTotalBalance += parseFloat(openPriceArray[i]) * parseFloat(wallet.balance.amount);
+          dataAvailable = true;
           break;
         }
       }
@@ -34,6 +49,9 @@ async function getTotalBalancePercentDifference(financialData, exchangeRates) {
       yesterdayTotalBalance += parseFloat(wallet.balance.amount) / parseFloat(exchangeRates[code])
     }
   })
+  if(!dataAvailable) {
+    yesterdayTotalBalance = financialData.totalBalance;
+  }
   var percentDifference = (financialData.totalBalance - yesterdayTotalBalance) / yesterdayTotalBalance * 100.;
   var newFinancialData = {
     ...financialData,
@@ -65,7 +83,8 @@ async function getWalletsTotalBalance(exchangeRates) {
     ...account,
     allWallets,
     wallets,
-    totalBalance: 0
+    totalBalance: 0,
+    exchangeRates,
   };
   wallets.forEach(wallet => {
     financialData.totalBalance += parseFloat(wallet.balance.amount) / parseFloat(exchangeRates[wallet.currency.code]);
@@ -148,6 +167,8 @@ async function getFinnhubTickers(minimal=true) {
   var { stockData } = store.getState().data;
   var account = accounts[coin];
   var wallets = account.wallets;
+  var tickersToPull = [];
+  var timeScales = [];
   if(!minimal) {
     wallets = account.allWallets;
   }
@@ -156,21 +177,41 @@ async function getFinnhubTickers(minimal=true) {
     var code = wallet.currency.code;
     for(var i in cryptoCurrencies) {
       if(cryptoCurrencies[i].value.includes(code)) {
+        var staleOrNoData = true;
         if(stockData 
             && stockData[cryptoCurrencies[i].value] 
             && stockData[cryptoCurrencies[i].value]["candlestickPrice"] 
             && stockData[cryptoCurrencies[i].value]["candlestickPrice"]['1D']) {
-            finnhubTickers.array.push(cryptoCurrencies[i]);
-            finnhubTickers.map[code] = cryptoCurrencies[i];
+          staleOrNoData = false;
+          // Check for stale data
+          var timeArray = stockData[cryptoCurrencies[i].value]["candlestickPrice"]['1D'].t;
+          var now = new Date();
+          var dayBefore = now.setDate(now.getDate() - 1);
+          var lastDateInTimeArray = new Date(timeArray[timeArray.length-1]*1000);
+          dayBefore = new Date(dayBefore);
+          if(lastDateInTimeArray < dayBefore) staleOrNoData = true;
         }
-        else {
-          store.dispatch(dataActions.retrieveStockData(cryptoCurrencies[i].value, 'candlestick', '1D'));
-          finnhubTickers.array.push(cryptoCurrencies[i]);
-          finnhubTickers.map[code] = cryptoCurrencies[i];
+        if(staleOrNoData) {
+          var unique = true;
+          for(var j in tickersToPull) { 
+            if(tickersToPull[j][0].includes(cryptoCurrencies[i].value) && timeScales[j] === '1D') {
+              unique = false;
+              break;
+            }
+          }
+          if(unique) {
+            var newTicker = [cryptoCurrencies[i].value, cryptoCurrencies[i].label, cryptoCurrencies[i].color];
+            tickersToPull.push(newTicker);
+            timeScales.push('1D');
+          }
         }
+        finnhubTickers.array.push(cryptoCurrencies[i]);
+        finnhubTickers.map[code] = cryptoCurrencies[i];
       }
     }
   })
+  console.log(tickersToPull)
+  await store.dispatch(dataActions.retrieveBatchStockData(tickersToPull, 'candlestick', timeScales));
   return finnhubTickers;
 }
 
@@ -192,7 +233,7 @@ const coinbaseAPI = {
   getExchangeRates: getExchangeRates,
   connectAccount: connectAccount,
   getFinnhubTickers: getFinnhubTickers,
-  getTotalBalancePercentDifference: getTotalBalancePercentDifference,
+  getPercentDifference: getPercentDifference,
   apiBaseUrl: "https://api.coinbase.com/v2/",
   headers: {
     "CB-VERSION": "2020-08-23"

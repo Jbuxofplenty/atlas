@@ -19,14 +19,13 @@ import 'echarts/lib/component/tooltip';
 import 'echarts/lib/component/legend';
 import 'echarts/lib/component/dataZoom';
 
-import { candlestickOptions, defaultXAxis, defaultSeries, positionFunction } from 'charts';
+import { positionFunction } from 'charts';
 
 import { chartTypes, chartTypesMap } from 'components/Select/data';
 
-import { dataActions, alertActions } from 'actions';
+import { alertActions, widgetActions } from 'actions';
 
 import s from '../Dashboard.module.scss';
-import { widgetActions } from 'actions';
 
 const initEchartsOptions = {
   renderer: 'canvas',
@@ -36,45 +35,19 @@ const initEchartsOptions = {
 function CandlestickWidget(props) {
   const [options, setOptions] = useState(null);
   const [tickers, setTickers] = useState(null);
-  const [timeScale, setTimeScale] = useState(props.widget.timeScale);
   const eChartsRef = React.useRef(null);
   const [more, setMore] = useState(false);
   const [moreHeight, setMoreHeight] = useState(0);
 
   useEffect(() => {
-    props.clear();
-    props.setComponent('candlestick-widget')
+    updateOptions(props.widget.chartOptions);
     // eslint-disable-next-line
   }, []);
 
-  const pullCryptoData = (ticker) => {
-    props.retrieveStockData(ticker, "candlestick", timeScale);
-  }
-
   useEffect(() => {
-    // props.resetWidgets();
-    var tempOptions = JSON.parse(JSON.stringify(candlestickOptions));
-    var tempTickers = tickers;
-    if(!tickers)  {
-      tempTickers = Object.values(JSON.parse(JSON.stringify(props.widget.tickers)));
-      setTickers(tempTickers);
-    }
-    tempTickers.forEach(ticker => {
-      if(props.stockData 
-          && props.stockData[ticker[0]] 
-          && props.stockData[ticker[0]]["candlestick"+props.widget.yType] 
-          && props.stockData[ticker[0]]["candlestick"+props.widget.yType][timeScale]){
-        tempOptions = updateOptions(ticker, tempOptions);
-      }
-      else {
-        pullCryptoData(ticker[0]);
-      }
-    });
-    if(tempTickers.length === 0) {
-      setOptions(null)
-    }
-    // eslint-disable-next-line
-  }, [props.stockData, tickers, timeScale, props.widget.yType]);
+    updateOptions(props.widget.chartOptions);
+    setTickers(props.widget.tickers);
+  }, [props.widget]);
 
   useEffect(() => {
     if (eChartsRef && eChartsRef.current) {
@@ -85,42 +58,12 @@ function CandlestickWidget(props) {
     }
   }, [eChartsRef, options]);
 
-  const updateOptions = (ticker, options) => {
-    var tempOptions = JSON.parse(JSON.stringify(candlestickOptions));
-    if(options) tempOptions = JSON.parse(JSON.stringify(options));
-    tempOptions.legend.data.push(ticker[1]);
-    var timeStamps = [];
-    props.stockData[ticker[0]]["candlestick"+props.widget.yType][timeScale].t.forEach(timeStamp => {
-      timeStamps.push(new Date(timeStamp*1000).toLocaleString('en-US'));
-    })
-    tempOptions.xAxis.push(defaultXAxis);
-    var lastItemIndex = tempOptions.xAxis.length-1;
-    tempOptions.xAxis[lastItemIndex].data = timeStamps;
-    var data = [];
-    var candlestickData = props.stockData[ticker[0]]["candlestick"+props.widget.yType][timeScale];
-    for(var i=0; i < candlestickData.o.length; i++) {
-      var datum = [];
-      datum.push(candlestickData.o[i]);
-      datum.push(candlestickData.c[i]);
-      datum.push(candlestickData.l[i]);
-      datum.push(candlestickData.h[i]);
-      data.push(datum);
-    }
-    tempOptions.series.push(defaultSeries);
-    tempOptions.series[lastItemIndex].itemStyle.color = ticker[2];
-    tempOptions.series[lastItemIndex].data = data;
-    tempOptions.series[lastItemIndex].name = ticker[1];
-    tempOptions.series[lastItemIndex].type = 'candlestick';
+  const updateOptions = (tempOptions) => {
     tempOptions.tooltip.position = positionFunction;
     setOptions(tempOptions);
-    // delete tempOptions.tooltip.position;
-    // var tempWidget = JSON.parse(JSON.stringify(props.widget));
-    // tempWidget.chartOptions = tempOptions;
-    // props.updateWidget(props.widgetId, tempWidget, props.view);
     if (eChartsRef && eChartsRef.current) {
       eChartsRef.current.getEchartsInstance().setOption(tempOptions, true);
     }
-    return tempOptions;
   }
 
   const zoomCallback = (option) => {
@@ -130,15 +73,14 @@ function CandlestickWidget(props) {
   const onTimeScaleChange = (name) => {
     var tempWidget = JSON.parse(JSON.stringify(props.widget));
     tempWidget.timeScale = name;
-    props.updateWidget(props.widgetId, tempWidget, props.view);
-    setTimeScale(name);
+    props.updateCandleStickWidget(props.widgetId, tempWidget, props.view);
   }
 
   const onTypeSelectChange = (selectedValue) => {
     var tempWidget = JSON.parse(JSON.stringify(props.widget));
-    tempWidget.widgetType = selectedValue.label;
+    tempWidget.widgetName = selectedValue.label;
     tempWidget.yType = selectedValue.yType;
-    props.updateWidget(props.widgetId, tempWidget, props.view);
+    props.updateCandleStickWidget(props.widgetId, tempWidget, props.view);
   }
 
   const handleMore = async () => {
@@ -174,6 +116,7 @@ function CandlestickWidget(props) {
           style={{'height': props.widget.height-moreHeight}}
           opts={initEchartsOptions}
           ref={eChartsRef}
+          id={props.widgetId}
         />
         :
         <div style={{'height': props.widget.height-moreHeight}}></div>
@@ -208,7 +151,7 @@ function CandlestickWidget(props) {
               <div className={`${s.inputContainer}`}>
                 <Select 
                   onSelectChange={onTypeSelectChange}
-                  defaultValue={chartTypes[chartTypesMap[props.widget.widgetType]]}
+                  defaultValue={chartTypes[chartTypesMap[props.widget.widgetName]]}
                   options={chartTypes}
                 />
               </div>
@@ -222,7 +165,7 @@ function CandlestickWidget(props) {
           />
         </GridContainer>
       }
-      <div className="d-flex flex-column justify-content-center w-100">
+      <div className="d-flex flex-column justify-content-center w-100 sticky-bottom">
         <div className={`halfCircle d-flex flex-column justify-content-center align-items-center`} onClick={handleMore}>
           {more ? <i className={`la la-angle-up mt-1`} style={{ fontSize: "2vw" }}/> : <i className={`la la-angle-down mt-1`} style={{ fontSize: "2em" }} /> } 
         </div>
@@ -243,12 +186,13 @@ function mapStateToProps(store) {
 
 const mapDispatchToProps = (dispatch, history) => {
   return {
-    retrieveStockData: (ticker, dataType, timeScale) => dispatch(dataActions.retrieveStockData(ticker, dataType, timeScale)),
     visible: (show) => dispatch(alertActions.visible(show)),
+    pending: (show) => dispatch(alertActions.pending(show)),
+    success: (message) => dispatch(alertActions.success(message)),
     clear: () => dispatch(alertActions.clear()),
     setComponent: (component) => dispatch(alertActions.component(component)),
     resetWidgets: () => dispatch(widgetActions.resetWidgets()),
-    updateWidget: (key, widget, view) => dispatch(widgetActions.updateWidget(key, widget, view)),
+    updateCandleStickWidget: (key, widget, view) => dispatch(widgetActions.updateCandleStickWidget(key, widget, view)),
   };
 }
 

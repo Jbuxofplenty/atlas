@@ -52,6 +52,11 @@ export function data(state = initialState, action) {
             },
           }
         };
+      case dataConstants.UPDATE_BATCH_STOCK_DATA:
+        return {
+          ...state,
+          stockData: action.stockData
+        };
     default:
       return state
   }

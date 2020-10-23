@@ -22,12 +22,19 @@ function ChartTickers(props) {
 
   useEffect(() => {
     props.clear();
-    props.setComponent('chart-tickers')
-    updateOptions(props.widget.dataSet.value)
+    updateOptions(props.widget.dataSet.value);
+    checkTickers();
     // eslint-disable-next-line
   }, []);
 
   useEffect(() => {
+    if(props.alertComponent === props.widgetId) {
+      checkTickers();
+    }
+    // eslint-disable-next-line
+  }, [tickers, props.widget.yType]);
+
+  const checkTickers = () => {
     var tempTickers = tickers;
     if(!tickers)  {
       tempTickers = Object.values(JSON.parse(JSON.stringify(props.widget.tickers)));
@@ -43,8 +50,7 @@ function ChartTickers(props) {
       })
       setDefaultValues(tempDefaultValues);
     }
-    // eslint-disable-next-line
-  }, [tickers, props.widget.yType]);
+  }
 
   const onDataSelectChange = (selectedValues) => {
     let updatedTickers = [];
@@ -59,11 +65,10 @@ function ChartTickers(props) {
     props.setTickers(updatedTickers);
     var tempWidget = JSON.parse(JSON.stringify(props.widget));
     tempWidget.tickers = tempTickers;
-    props.updateWidget(props.widgetId, tempWidget, props.view);
+    props.updateCandleStickWidget(props.widgetId, tempWidget, props.view);
   }
 
   const updateOptions = async (dataSet) => {
-    console.log(dataSet)
     if(dataSet === 'heldTickers') {
       if(!heldTickers) {
         var accounts = await dataActions.getFinancialData("accounts");
@@ -87,7 +92,7 @@ function ChartTickers(props) {
     updateOptions(selectedValue.value);
     var tempWidget = JSON.parse(JSON.stringify(props.widget));
     tempWidget.dataSet = selectedValue;
-    props.updateWidget(props.widgetId, tempWidget, props.view);
+    props.updateCandleStickWidget(props.widgetId, tempWidget, props.view);
   } 
 
   return (
@@ -136,7 +141,7 @@ const mapDispatchToProps = (dispatch, history) => {
     clear: () => dispatch(alertActions.clear()),
     setComponent: (component) => dispatch(alertActions.component(component)),
     resetWidgets: () => dispatch(widgetActions.resetWidgets()),
-    updateWidget: (key, widget, view) => dispatch(widgetActions.updateWidget(key, widget, view)),
+    updateCandleStickWidget: (key, widget, view) => dispatch(widgetActions.updateCandleStickWidget(key, widget, view)),
   };
 }
 

@@ -1,7 +1,9 @@
 import { widgetConstants } from '../constants';
 import { initialState } from '../reducers/widget.reducer';
 import { db, auth } from 'helpers/firebase';
-import { store, asyncForEach } from 'helpers';
+import { store, asyncForEach, p } from 'helpers';
+import { candlestickOptions, defaultXAxis, defaultSeries, positionFunction } from 'charts';
+import { dataActions } from './';
 
 export const widgetActions = {
   addWidget,
@@ -14,6 +16,7 @@ export const widgetActions = {
   getOpenSlot,
   getAllFirebaseWidgets,
   saveAllFirebaseWidgets,
+  updateCandleStickWidget,
 };
 
 function addWidget(key, widget, view) {
@@ -32,6 +35,126 @@ function deleteWidget(key, view) {
   return { type: widgetConstants.DELETE_WIDGET, key, view };
 }
 
+function updateCandleStickWidget(key, widget, view) {
+  return async dispatch => {
+    var timeScale = widget.timeScale;
+    var tickers = widget.tickers;
+    var yType = widget.yType;
+    var stockData = await candleStickStockData(tickers, timeScale, yType);
+    var chartOptions = JSON.parse(JSON.stringify(candlestickOptions));
+    if(stockData.length > 0) {
+      var timeStamps = [];
+      stockData[0].t.forEach(timeStamp => {
+        timeStamps.push(new Date(timeStamp*1000).toLocaleString('en-US'));
+      })
+      chartOptions.xAxis.push(defaultXAxis);
+      chartOptions.xAxis[0].data = timeStamps;
+    }
+    Object.keys(tickers).forEach((tickerKey, index) => {
+      var ticker = tickers[tickerKey];
+      chartOptions.legend.data.push(ticker[1]);
+      var data = [];
+      var candlestickData = stockData[index];
+      if(candlestickData) {
+        for(var i=0; i < candlestickData.o.length; i++) {
+          var datum = [];
+          datum.push(candlestickData.o[i]);
+          datum.push(candlestickData.c[i]);
+          datum.push(candlestickData.l[i]);
+          datum.push(candlestickData.h[i]);
+          data.push(datum);
+        }
+      }
+      chartOptions.series.push(JSON.parse(JSON.stringify(defaultSeries)));
+      chartOptions.series[index].itemStyle.color = ticker[2];
+      chartOptions.series[index].data = data;
+      chartOptions.series[index].name = ticker[1];
+      chartOptions.series[index].type = 'candlestick';
+    });
+    widget.chartOptions = chartOptions;
+    dispatch(updateWidget(key, widget, view));
+  }
+}
+
+async function candleStickStockData(tickers, timeScale, yType) {
+  var { stockData } = store.getState().data;
+  var tickersToPull = [];
+  var timeScales = [];
+  if(tickers) {
+    Object.keys(tickers).forEach(tickerKey => {
+      var ticker = tickers[tickerKey];
+      if(stockData 
+          && stockData[ticker[0]] 
+          && stockData[ticker[0]]["candlestickPrice"] 
+          && stockData[ticker[0]]["candlestickPrice"][timeScale]) {
+      }
+      else {
+        var unique = true;
+        for(var i in tickersToPull) { 
+          if(tickersToPull[i][0].includes(ticker[0]) && timeScales[i] === timeScale) {
+            unique = false;
+            break;
+          }
+        }
+        if(unique) {
+          tickersToPull.push(ticker);
+          timeScales.push(timeScale);
+        }
+      }
+    });
+  }
+  stockData = await store.dispatch(dataActions.retrieveBatchStockData(tickersToPull, 'candlestick', timeScales));
+  var series = [];
+  Object.keys(tickers).forEach(tickerKey => {
+    var ticker = tickers[tickerKey];
+    series.push(stockData[ticker[0]]['candlestick'+yType][timeScale])
+  });
+  return cleanStockData(series)
+}
+
+function cleanStockData(series) {
+  if(series.length > 0) {
+    let newSeries = [];
+    var firstSharedTime = 0;
+    var lastSharedTime = series[0].t[series[0].t.length-1];
+    series.forEach(stock => {
+      if(stock && firstSharedTime < stock.t[0]) {
+        firstSharedTime = stock.t[0];
+      }
+      if(stock && lastSharedTime > stock.t[stock.t.length-1]) {
+        lastSharedTime = stock.t[stock.t.length-1];
+      }
+    })
+    series.forEach((stock, index) => {
+      if(stock) {
+        newSeries.push({
+          t: [],
+          c: [],
+          h: [],
+          l: [],
+          o: [],
+          v: []
+        })
+        for(var i in stock.t) {
+          if(firstSharedTime <= stock.t[i] && lastSharedTime >= stock.t[i]) {
+            newSeries[index].t.push(stock.t[i]);
+            newSeries[index].c.push(stock.c[i]);
+            newSeries[index].h.push(stock.h[i]);
+            newSeries[index].l.push(stock.l[i]);
+            newSeries[index].o.push(stock.o[i]);
+            newSeries[index].v.push(stock.v[i]);
+          }
+        }
+      }
+      // FIXME: There is a bug where finnhub does not return all elements with equal time step
+      // This causes series to be offset slightly.  Will fix in the future.
+      // console.log(newSeries[index].t[newSeries[index].t.length-1], stock.t[stock.t.length-1])
+    })
+    return newSeries;
+  }
+  return series;
+}
+
 // Firebase
 const views = ['dashboard', 'charts'];
 
@@ -41,9 +164,22 @@ async function saveAllFirebaseWidgets() {
   })
 }
 
+function purgeWidgets(widgets) {
+  var newWidgets = JSON.parse(JSON.stringify(widgets));
+  Object.keys(newWidgets).forEach(widgetKey => {
+    if(newWidgets[widgetKey].widgetType === 'candleStick') {
+      newWidgets[widgetKey].chartOptions.xAxis = [];
+      newWidgets[widgetKey].chartOptions.series = [];
+      newWidgets[widgetKey].chartOptions.legend.data = [];
+      delete newWidgets[widgetKey].chartOptions.tooltip.position;
+    }
+  })
+  return newWidgets;
+}
+
 async function saveFirebaseWidgets(view) {
   var allWidgets = store.getState().widget;
-  var widgets = allWidgets[view];
+  var widgets = purgeWidgets(allWidgets[view], view);
   const user = auth.currentUser;
   if(user && widgets) {
     const uid = user.uid;
@@ -71,7 +207,11 @@ function getFirebaseWidgets(view) {
         if(!widgets) widgets = initialState;
         return widgets[view];
       });
-      dispatch(updateWidgets(widgets, view))
+      Object.keys(widgets).forEach(widgetKey => {
+        var widget = widgets[widgetKey];
+        if(widget.widgetType === 'candleStick') dispatch(updateCandleStickWidget(widgetKey, widget, view))
+        else dispatch(updateWidget(widgetKey, widget, view))
+      })
     }
   }
 }

@@ -19,5 +19,5 @@ export const cryptoCurrencies = [
   { value: 'COINBASE:REP-USD', label: 'Augur (REP)', color: '#6d951f' },
   { value: 'COINBASE:OMG-USD', label: 'OMG Network (OMG)', color: '#e92dcd' },
   { value: 'COINBASE:UNI-USD', label: 'Uniswap (UNI)', color: '#df7e40' },
-  { value: 'BINANCE:BCHSVTUSD', label: 'Bitcoin SV (BSV)', color: '#2E6802' },
+  { value: 'BINANCE:BSVTUSD', label: 'Bitcoin SV (BSV)', color: '#2E6802' },
 ];

@@ -247,8 +247,6 @@ div::-webkit-scrollbar-thumb {
   border-top-right-radius: 110px; /* 100px of height + 10px of border */
   margin-top: 20px;
   align-self: center;
-  top: 1rem !important;
-  position: relative;
   cursor: pointer;
 }
 
@@ -259,4 +257,9 @@ div::-webkit-scrollbar-thumb {
 .draggableHandle {
   background-color: white;
   color: white;
+}
+
+.sticky-bottom {
+  position: fixed !important;
+  bottom: 0;
 }

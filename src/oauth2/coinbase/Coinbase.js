@@ -12,40 +12,47 @@ import Wallets from "components/Wallets/Wallets.js";
 
 // import s from './Coinbase.module.scss';
 import { eThreeActions, alertActions } from "actions";
+import OAuthObject from 'oauth2';
+
 import s from './Coinbase.module.scss'
 
 function Coinbase(props) {
-
   useEffect(() => {
     props.visible(false);
+    var accountObject = OAuthObject[props.account.displayName];
+    accountObject.getPercentDifference();
     // eslint-disable-next-line
   }, []);
 
   return (
-    <div className="w-100 d-flex flex-column justify-content-center">
-      <div className="w-100 d-flex flex-row justify-content-center">
-        <Col lg={6} md={12} xs={12}>
-          <Card className={`p-5 icon-list-item d-flex justify-content-center align-items-center my-3`} raised>
-            <span className={`${s.headerText}`}>Account Balance: ${props.account.totalBalance.toFixed(2)}</span>
-          </Card>
-        </Col>
-        <Col lg={6} md={12} xs={12}>
-          <Card className={`p-5 icon-list-item d-flex justify-content-center align-items-center my-3`} raised>
-            <span className={`${s.headerText}`}>
-              Yesterday Percent Change: 
-            </span>
-            <span className={`${s.headerText} ${props.account.percentDifference < 0 ? 'errorMessage' : 'successMessage'} ml-3`}>
-              {props.account.percentDifference.toFixed(2)}%
-            </span>
-          </Card>
-        </Col>
-      </div>
-      <h5 className={`${s.walletsTitle}`}>Wallets</h5>
-      <div className="d-flex flex-column justify-content-center w-100">
-        <div className={`${s.rounded}`}></div>
-        <Wallets account={props.account} />
-      </div>
-    </div>
+    <>
+      {props.account.totalBalance !== undefined && props.account.percentDifference !== undefined &&
+        <div className="w-100 d-flex flex-column justify-content-center">
+          <div className="w-100 d-flex flex-row justify-content-center">
+            <Col lg={6} md={12} xs={12}>
+              <Card className={`p-5 icon-list-item d-flex justify-content-center align-items-center my-3`} raised>
+                <span className={`${s.headerText}`}>Account Balance: ${props.account.totalBalance.toFixed(2)}</span>
+              </Card>
+            </Col>
+            <Col lg={6} md={12} xs={12}>
+              <Card className={`p-5 icon-list-item d-flex justify-content-center align-items-center my-3`} raised>
+                <span className={`${s.headerText}`}>
+                  Yesterday Percent Change: 
+                </span>
+                <span className={`${s.headerText} ${props.account.percentDifference < 0 ? 'errorMessage' : 'successMessage'} ml-3`}>
+                  {props.account.percentDifference.toFixed(2)}%
+                </span>
+              </Card>
+            </Col>
+          </div>
+          <h5 className={`${s.walletsTitle}`}>Wallets</h5>
+          <div className="d-flex flex-column justify-content-center w-100">
+            <div className={`${s.rounded}`}></div>
+            <Wallets account={props.account} />
+          </div>
+        </div>
+      }
+    </>
   );
 }
 

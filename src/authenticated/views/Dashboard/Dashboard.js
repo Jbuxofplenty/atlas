@@ -7,15 +7,14 @@ import AddWidget from 'components/AddWidget/AddWidget';
 import AccountsWidget from './components/AccountsWidget';
 import CandlestickWidget from './components/CandlestickWidget';
 
-import { widgetActions } from 'actions';
+import { widgetActions, dataActions } from 'actions';
 
 import s from './Dashboard.module.scss';
 
 const strComponentMap = {
   'customize': AddWidget,
   'accountSummary': AccountsWidget,
-  'Candle Stick (Price)': CandlestickWidget,
-  'Candle Stick (Percentage)': CandlestickWidget,
+  'candleStick': CandlestickWidget,
 }
 
 const GridLayout = WidthProvider(Responsive);
@@ -35,11 +34,6 @@ function Dashboard(props) {
     };
     // eslint-disable-next-line
   }, []);
-
-  useEffect(() => {
-    buildLayout(props.widgets);
-    // eslint-disable-next-line
-  }, [props.widgets]);
 
   const buildLayout = (widgets) => {
     if(widgets && !_.isEmpty(widgets)) {
@@ -70,7 +64,6 @@ function Dashboard(props) {
         widget.dataGrid.y = data.y;
         widget.dataGrid.w = data.w;
         widget.dataGrid.h = data.h;
-        console.log(height-widgetTitleHeight-100-timeScaleHeight)
         if(data.i === newItem.i) {
           widget.height = height-widgetTitleHeight-100-timeScaleHeight;
         }
@@ -125,9 +118,10 @@ function Dashboard(props) {
   );
 }
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (store) => {
   return {
-    widgets: state.widget.dashboard,
+    widgets: store.widget.dashboard,
+    stockData: store.data.stockData,
   };
 }
 

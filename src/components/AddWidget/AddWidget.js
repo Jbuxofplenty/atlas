@@ -37,7 +37,7 @@ function AddWidget(props) {
     newChart.dataGrid.x = xy.x;
     newChart.dataGrid.y = xy.y;
     newChart.dataGrid.i = key;
-    props.updateWidget(key, newChart, props.view);
+    props.updateCandleStickWidget(key, newChart, props.view);
   }
 
   const addAccountWidget = async () => {
@@ -106,6 +106,7 @@ const mapDispatchToProps = (dispatch, history) => {
     resetWidgets: () => dispatch(widgetActions.resetWidgets()),
     updateWidgets: (widgets) => dispatch(widgetActions.updateWidgets(widgets, 'dashboard')),
     updateWidget: (key, widget) => dispatch(widgetActions.updateWidget(key, widget, 'dashboard')),
+    updateCandleStickWidget: (key, widget) => dispatch(widgetActions.updateCandleStickWidget(key, widget, 'dashboard')),
     getFirebaseWidgets: () => dispatch(widgetActions.getFirebaseWidgets('dashboard')),
   };
 }

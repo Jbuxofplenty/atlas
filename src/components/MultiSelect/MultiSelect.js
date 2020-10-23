@@ -6,13 +6,14 @@ const colourStyles = {
   control: styles => ({ ...styles, backgroundColor: 'rgba(0,0,0,.24)', marginTop: 0, marginBottom: '2rem', borderColor: 'transparent', }),
   menu: styles => ({
     ...styles, 
-    zIndex: '100000 !important',
-    backgroundColor: 'rgba(0,0,0,.24)',
+    zIndex: 999,
+    backgroundColor: 'transparent !important',
   }),
   option: (styles, { data, isDisabled, isFocused, isSelected }) => {
     const color = chroma(data.color);
     return {
       ...styles,
+      zIndex: 999,
       backgroundColor: data.color,
       color: isDisabled
         ? '#ccc'
@@ -24,7 +25,7 @@ const colourStyles = {
       cursor: isDisabled ? 'not-allowed' : 'default',
       ':active': {
         ...styles[':active'],
-        backgroundColor: !isDisabled && (isSelected ? data.color : color.alpha(0.3).css()),
+        backgroundColor: data.color,
       },
     };
   },
@@ -52,6 +53,7 @@ const colourStyles = {
 export default function MultiSelect(props) {
   return (
     <Select
+    menuContainerStyle={{ zIndex: 99999 }}
       closeMenuOnSelect={true}
       defaultValue={props.defaultValues}
       isMulti

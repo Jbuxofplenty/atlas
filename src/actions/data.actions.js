@@ -3,6 +3,7 @@ import { db, auth } from 'helpers/firebase';
 import { eThreeActions, alertActions } from 'actions';
 import { store, finnhubClient, p } from 'helpers';
 import OAuthObject from 'oauth2';
+import { asyncForEach } from 'helpers';
 
 const financialDataTypeMap = {
   "accessTokens": {
@@ -22,7 +23,7 @@ export const dataActions = {
   storeFinancialData,
   deleteAccount,
   financialDataTypeMap,
-  retrieveStockData,
+  retrieveBatchStockData,
 };
 
 function dataReset() {
@@ -219,58 +220,88 @@ const finnhubTypes = {
   }
 }
 
-function retrieveStockData(ticker, dataType, timeScale) {
+function timeScaleForDate(timeScale) {
+  var tempDate = new Date();
+  if(timeScale === '1D') {
+    tempDate.setDate(tempDate.getDate() - 1);
+  }
+  if(timeScale === '1W') {
+    tempDate.setDate(tempDate.getDate() - 7);
+  }
+  if(timeScale === '1M') {
+    tempDate.setMonth(tempDate.getMonth() - 1);
+  }
+  if(timeScale === 'YTD') {
+    tempDate = new Date(new Date().getFullYear(), 0, 1);
+  }
+  if(timeScale === '6M') {
+    tempDate.setMonth(tempDate.getMonth() - 6);
+  }
+  if(timeScale === '1Y') {
+    tempDate.setMonth(tempDate.getMonth() - 12);
+  }
+  return tempDate.getTime();
+}
+
+
+function retrieveBatchStockData(tickers, dataType, timeScales) {
   return async dispatch => {
-    var timeEnd = new Date().getTime();
-    var tempDate = new Date();
-    if(timeScale === '1D') {
-      tempDate.setDate(tempDate.getDate() - 1);
-    }
-    if(timeScale === '1W') {
-      tempDate.setDate(tempDate.getDate() - 7);
-    }
-    if(timeScale === '1M') {
-      tempDate.setMonth(tempDate.getMonth() - 1);
-    }
-    if(timeScale === 'YTD') {
-      tempDate = new Date(new Date().getFullYear(), 0, 1);
-    }
-    if(timeScale === '6M') {
-      tempDate.setMonth(tempDate.getMonth() - 6);
-    }
-    if(timeScale === '1Y') {
-      tempDate.setMonth(tempDate.getMonth() - 12);
-    }
-    var timeStart = tempDate.getTime();
-    // Finnhub expects seconds since UTC epoch rather than milliseconds
-    finnhubClient.cryptoCandles(ticker, finnhubTypes[dataType][timeScale], parseInt(timeStart.toString().slice(0, -3)), parseInt(timeEnd.toString().slice(0, -3)), (error, data, response) => {
-      p(error)
-      if(!data && error.statusCode === 429) dispatch(alertActions.error("We've hit our free-tier limit for our financial data provider!  It should open back up in another minute."))
-      if(data && data.s === 'no_data') {
-        return;
+    var stockData = JSON.parse(JSON.stringify(store.getState().data.stockData));
+    let promises = [];
+    var i = 0;
+    await asyncForEach(tickers, async _ => {
+      var ticker = tickers[i][0];
+      var timeScale = timeScales[i];
+      var timeEnd = new Date().getTime();
+      var timeStart = timeScaleForDate(timeScale);
+      if(!stockData[ticker]) {
+        stockData[ticker] = {};
       }
-      else if(data) {
-        dispatch(updateStockData(ticker, data, dataType+"Price", timeScale));
-        var firstPrice = data.o[0];
-        var percentData = {};
-        percentData.t = data.t;
-        percentData.v = data.v;
-        percentData.o = data.o.map(datum => {
-          return (datum - firstPrice) / firstPrice * 100.;
-        })
-        percentData.c = data.c.map(datum => {
-          return (datum - firstPrice) / firstPrice * 100.;
-        })
-        percentData.h = data.h.map(datum => {
-          return (datum - firstPrice) / firstPrice * 100.;
-        })
-        percentData.l = data.l.map(datum => {
-          return (datum - firstPrice) / firstPrice * 100.;
-        })
-        dispatch(updateStockData(ticker, percentData, dataType+"Percent", timeScale));
-      }
-      p(response, data, dataType+"Price", timeScale)
-    });
+      // Finnhub expects seconds since UTC epoch rather than milliseconds
+      promises.push(new Promise(async function(resolve) {
+        finnhubClient.cryptoCandles(ticker, finnhubTypes[dataType][timeScale], parseInt(timeStart.toString().slice(0, -3)), parseInt(timeEnd.toString().slice(0, -3)), (error, data, response) => {
+          p(error, data, response)
+          if(!data && error.statusCode === 429) {
+            dispatch(alertActions.error("We've hit our free-tier limit for our financial data provider!  It should open back up in another minute."))
+            resolve();
+          }
+          if(data && data.s === 'no_data') {
+            resolve();
+          }
+          else if(data && data.o) {
+            if(!stockData[ticker][dataType+"Price"]) {
+              stockData[ticker][dataType+"Price"] = {};
+              stockData[ticker][dataType+"Percent"] = {};
+            }
+            stockData[ticker][dataType+"Price"][timeScale] = data;
+            dispatch(updateStockData(ticker, data, dataType+"Price", timeScale));
+            var firstPrice = data.o[0];
+            var percentData = {};
+            percentData.t = data.t;
+            percentData.v = data.v;
+            percentData.o = data.o.map(datum => {
+              return (datum - firstPrice) / firstPrice * 100.;
+            })
+            percentData.c = data.c.map(datum => {
+              return (datum - firstPrice) / firstPrice * 100.;
+            })
+            percentData.h = data.h.map(datum => {
+              return (datum - firstPrice) / firstPrice * 100.;
+            })
+            percentData.l = data.l.map(datum => {
+              return (datum - firstPrice) / firstPrice * 100.;
+            })
+            stockData[ticker][dataType+"Percent"][timeScale] = percentData;
+          }
+          p(response, data, dataType+"Price", timeScale)
+          dispatch(updateStockData(ticker, percentData, dataType+"Percent", timeScale));
+          resolve();
+        });
+      }));
+      i+=1;
+    })
+    await Promise.allSettled(promises);
+    return stockData;
   }
   function updateStockData(ticker, data, dataType, timeScale) { return { type: dataConstants.UPDATE_STOCK_DATA, ticker, data, dataType, timeScale } }
 }

@@ -19,7 +19,8 @@ const initialState = {
       collapsed: false,
     },
     "2": {
-      widgetType: 'Candle Stick (Price)',
+      widgetType: 'candleStick',
+      widgetName: 'Candle Stick (Price)',
       dataGrid: {x: 0, y: 0, w: 12, h: 16, minH: 14, minW: 6, i: "2"},
       collapsed: false,
       height: 444,
