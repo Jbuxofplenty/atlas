@@ -4,7 +4,7 @@ const colors = config.chartColors;
 
 let lineColors = [colors.blue, colors.green, colors.orange];
 
-const candlestickOptions = {
+const candleStickOptions = {
   color: lineColors,
   dataZoom: [
     {
@@ -94,7 +94,7 @@ const positionFunction = {
 }
 
 export {
-  candlestickOptions,
+  candleStickOptions,
   defaultXAxis,
   defaultSeries,
   positionFunction,

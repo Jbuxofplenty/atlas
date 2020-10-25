@@ -1,25 +1,19 @@
 import OAuthObject from './index';
 import { dataActions } from 'actions';
-import { store, p } from 'helpers';
+import { p } from 'helpers';
 
 // Function ensures API request will be made with a valid access token
-export async function apiRequest(endpoint, institution, data) {
+export async function apiRequest(endpoint, institution, accessToken=null, data=null) {
   const apiBaseUrl = OAuthObject[institution].apiBaseUrl;
   var url = endpoint.startsWith("https://") ? endpoint : apiBaseUrl + endpoint;
   const headers = OAuthObject[institution].headers;
   const method = data ? 'POST' : 'GET';
-  var accessTokens = await dataActions.getFinancialData('accessTokens');
-  var accessToken = accessTokens[institution];
-  const now = new Date().getTime();
-  const buffer = 200;
-  var authHeader = 'Bearer ' + accessToken.access_token;
-  // Assumes created_at field in seconds from UTC epoch
-  if(now < parseFloat(accessToken.created_at)*1000 + parseFloat(accessToken.expires_in) + buffer) {
-    await refreshToken(accessToken.refresh_token, institution);
-    accessTokens = await dataActions.getFinancialData('accessTokens');
+  if(!accessToken) {
+    var accessTokens = await dataActions.getFinancialData('accessTokens');
     accessToken = accessTokens[institution];
-    authHeader = 'Bearer ' + accessToken.access_token;
+    if(!accessToken) return false;
   }
+  var authHeader = 'Bearer ' + accessToken.access_token;
   var responseData;
   if(method === 'GET') {
     responseData = await fetch(url, {
@@ -35,7 +29,7 @@ export async function apiRequest(endpoint, institution, data) {
       // Very specific to coinbase
       if(responseJson.errors && responseJson.errors[0].id === "expired_token") {
         await refreshToken(accessToken.refresh_token, institution);
-        return apiRequest(endpoint, institution, data);
+        return apiRequest(endpoint, institution, accessToken, data);
       }
       if(responseJson.errors && responseJson.errors[0].id === "revoked_token") {
         p('need to handle revoked token in the future!')
@@ -62,7 +56,7 @@ export async function apiRequest(endpoint, institution, data) {
       // Very specific to coinbase
       if(responseJson.errors && responseJson.errors[0].id === "expired_token") {
         await refreshToken(accessToken.refresh_token, institution);
-        return apiRequest(endpoint, institution, data);
+        return apiRequest(endpoint, institution, accessToken, data);
       }
       return responseJson;
     })
@@ -92,5 +86,6 @@ export async function refreshToken(refreshToken, institution) {
     p(error)
     return false;
   });
-  await store.dispatch(dataActions.storeFinancialDataFirestore(institution, "accessTokens", responseData))
+  await dataActions.storeFinancialDataFirestore(institution, "accessTokens", responseData)
+  return responseData;
 }

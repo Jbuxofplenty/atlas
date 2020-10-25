@@ -72,7 +72,8 @@ const authCustomInputStyle = {
     },
     "&::placeholder": {
       color: "#AAAAAA"
-    }
+    },
+    paddingLeft: '20px',
   },
   whiteInput: {
     "&,&::placeholder": {

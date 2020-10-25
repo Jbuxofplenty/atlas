@@ -7,3 +7,12 @@ export const chartTypesMap = {
   'Candle Stick (Price)': 0,
   'Candle Stick (Percentage)': 1,
 }
+export const calculatorTypes = [
+  { value: 'compoundInterestCalculator', label: 'Compound Interest Calculator' },
+  { value: 'loanInterestCalculator', label: 'Loan Interest Calculator' },
+];
+
+export const calculatorTypesMap = {
+  'Compound Interest Calculator': 0,
+  'Loan Interest Calculator': 1,
+}

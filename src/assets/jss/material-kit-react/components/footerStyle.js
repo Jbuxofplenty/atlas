@@ -62,6 +62,14 @@ const footerStyle = {
     height: "18px",
     position: "relative",
     top: "3px"
+  },
+  gridContainer: {
+    display: 'flex',
+    justifyContent: 'center',
+    width: '100%'
+  },
+  footerContainer: {
+    width: '95%'
   }
 };
 export default footerStyle;

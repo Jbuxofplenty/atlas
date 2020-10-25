@@ -18,9 +18,13 @@ function Account(props) {
 
   useEffect(() => {
     props.visible(false);
-    setAccountObject(OAuthObject[props.account.displayName])
     // eslint-disable-next-line
   }, []);
+
+  useEffect(() => {
+    setAccountObject(OAuthObject[props.account.displayName])
+    // eslint-disable-next-line
+  }, [props.account.displayName]);
 
   const handleMore = async () => {
     setMore(!more);

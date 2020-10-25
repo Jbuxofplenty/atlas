@@ -87,7 +87,7 @@ function BackupKey(props) {
                     color="primary" 
                     size="lg" 
                     className="mb-lg-3 ml-lg-5"
-                    onClick={()=> backupKey()}
+                    onClick={backupKey}
                     disabled={isInvalid}
                   >
                     Backup key

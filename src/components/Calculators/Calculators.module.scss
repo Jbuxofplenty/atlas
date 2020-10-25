@@ -1,0 +1,38 @@
+@import 'assets/scss/app';
+
+.gridContainer {
+  width: 95% !important;
+  align-self: center;
+  display: flex;
+  flex-direction: row;
+  margin-top: -2rem;
+}
+
+.buttonContainer {
+  width: 95% !important;
+  align-self: center;
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 1rem;
+}
+
+.instructionContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.inputContainer {
+  align-self: flex-end;
+}
+
+.instructionText {
+  vertical-align: middle;
+  width: 95% !important;
+  align-self: center;
+}
+
+.addText {
+  margin-left: 1rem;  
+  font-size: 1.2rem !important;
+}

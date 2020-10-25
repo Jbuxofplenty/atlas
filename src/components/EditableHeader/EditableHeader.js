@@ -15,6 +15,7 @@ import { widgetActions } from 'actions';
   }
 
   const handleChange = (e) => {
+    e.stopPropagation();
     setTitle(e.target.value);
     var tempWidget = JSON.parse(JSON.stringify(props.widget));
     tempWidget.name = e.target.value;

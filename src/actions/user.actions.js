@@ -83,12 +83,20 @@ const defaultUser = {
 
 function commonLogin(user, backedUp) {
   return async dispatch => {
-    var tempAccounts = await dataActions.getFinancialData("accounts");
-    Object.keys(tempAccounts).forEach(key => {
-      var accountName = tempAccounts[key].displayName;
-      var accountObject = OAuthObject[accountName];
-      accountObject.pullAccountData();
-    })
+    await dispatch(dataActions.getFinancialDataFirestore("accessTokens", user.e2ee));
+    await dispatch(dataActions.getFinancialDataFirestore("accounts", user.e2ee));
+    var localKeyPresent = true;
+    if(user.e2ee) {
+      localKeyPresent = await eThreeActions.instantLocalKeyPresent();
+    }
+    if(localKeyPresent) {
+      var tempAccounts = await dataActions.getFinancialData("accounts");
+      Object.keys(tempAccounts).forEach(key => {
+        var accountName = tempAccounts[key].displayName;
+        var accountObject = OAuthObject[accountName];
+        accountObject.pullAccountData();
+      })
+    }
     dispatch(widgetActions.getAllFirebaseWidgets());
     dispatch(request(false));
     dispatch(success(true, user));
@@ -355,6 +363,7 @@ function logout() {
       dispatch(userLogout());
       dispatch(ethreeReset());
       dispatch(dataActions.dataReset());
+      dispatch(widgetActions.resetWidgets());
     }
     else {
       p("EThree unable to log out the user!");
@@ -389,7 +398,7 @@ function deleteAccount(uid) {
         db.collection("users").doc(uid).delete().then(function() {
             p("User data successfully deleted from our databases!");
         }).catch(function(error) {
-            console.error("Error removing user data from database: ", error.toString());
+            p("Error removing user data from database: ", error.toString());
         });
         var user = auth.currentUser;
         user.delete().then(function() {

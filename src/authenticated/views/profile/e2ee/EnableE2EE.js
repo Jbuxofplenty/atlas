@@ -69,6 +69,7 @@ function EnableE2EE(props) {
         return;
       }
       await props.convertE2EE(false);
+      await props.deleteBackup(auth.currentUser.uid);
       let eThreeUnregistered = await eThreeActions.unregister();
       if(!eThreeUnregistered) {
         props.error("Unable to unregister your EThree account!")
@@ -130,6 +131,7 @@ function mapStateToProps(store) {
 }
 const mapDispatchToProps = (dispatch, history) => {
   return {
+    deleteBackup: (uid) => dispatch(eThreeActions.deleteBackup(uid)),
     updateUserData: (userData) => dispatch(userActions.updateUserData(userData)),
     visible: (show) => dispatch(alertActions.visible(show)),
     clear: () => dispatch(alertActions.clear()),

@@ -56,12 +56,12 @@ class Accounts extends React.Component {
     this._isMounted = false;
   }
 
-  componentDidUpdate(nextProps) {
+  async componentWillUpdate(nextProps) {
     if(this.props.institutions !== nextProps.institutions ||
         this.props.userData !== nextProps.userData ||
         this.props.data !== nextProps.data) {
-      this.populateInstitutions();
-      this.updateAccounts();
+      await this.updateAccounts();
+      this.populateInstitutions(nextProps);
     }
   }
 
@@ -71,25 +71,25 @@ class Accounts extends React.Component {
     for (var key in tempAccounts){
       accounts.push(tempAccounts[key]);
     }
-    this._isMounted && this.setState({ accounts });
+    await this.setState({ accounts });
   }
 
-  populateInstitutions() {
+  populateInstitutions(props) {
     var popularInstitutions = [];
     var filteredInstitutions = [];
     var allInstitutions = [];
-    for (var key in this.props.institutions) {
+    for (var key in props.institutions) {
       // Filter out previously added accounts
-      const displayName = this.props.institutions[key].displayName;
+      const displayName = props.institutions[key].displayName;
       var checkAccounts = this.state.accounts.filter(account => (
         account.displayName === displayName
       ));
       if(checkAccounts.length === 0) {
-        filteredInstitutions.push(this.props.institutions[key]);
-        allInstitutions.push(this.props.institutions[key]);
+        filteredInstitutions.push(props.institutions[key]);
+        allInstitutions.push(props.institutions[key]);
         // Popular institutions
-        if(popularInstitutions.length < 12 && this.props.institutions[key].popular)  {
-          popularInstitutions.push(this.props.institutions[key]);
+        if(popularInstitutions.length < 12 && props.institutions[key].popular)  {
+          popularInstitutions.push(props.institutions[key]);
         }
       }
     }

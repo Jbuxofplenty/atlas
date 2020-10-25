@@ -23,7 +23,7 @@ import { positionFunction } from 'charts';
 
 import { chartTypes, chartTypesMap } from 'components/Select/data';
 
-import { alertActions, widgetActions } from 'actions';
+import { alertActions, widgetActions, dataActions } from 'actions';
 
 import s from '../Dashboard.module.scss';
 
@@ -59,10 +59,15 @@ function CandlestickWidget(props) {
   }, [eChartsRef, options]);
 
   const updateOptions = (tempOptions) => {
-    tempOptions.tooltip.position = positionFunction;
-    setOptions(tempOptions);
-    if (eChartsRef && eChartsRef.current) {
-      eChartsRef.current.getEchartsInstance().setOption(tempOptions, true);
+    if(tempOptions && tempOptions.xAxis.length !== 0) {
+      tempOptions.tooltip.position = positionFunction;
+      setOptions(JSON.parse(JSON.stringify(tempOptions)));
+      if (eChartsRef && eChartsRef.current) {
+        eChartsRef.current.getEchartsInstance().setOption(tempOptions, true);
+      }
+    }
+    else {
+      setOptions(null);
     }
   }
 
@@ -73,14 +78,23 @@ function CandlestickWidget(props) {
   const onTimeScaleChange = (name) => {
     var tempWidget = JSON.parse(JSON.stringify(props.widget));
     tempWidget.timeScale = name;
-    props.updateCandleStickWidget(props.widgetId, tempWidget, props.view);
+    if(tickers) {
+      var timeScales = Object.keys(tickers).map(_ => {
+        return name;
+      })
+      var tickersArray = Object.keys(tickers).map(tickerKey => {
+        return tickers[tickerKey];
+      })
+      props.retrieveBatchStockData(tickersArray, 'candleStick', timeScales)
+    }
+    widgetActions.updateCandleStickWidget(props.widgetId, tempWidget, props.view);
   }
 
   const onTypeSelectChange = (selectedValue) => {
     var tempWidget = JSON.parse(JSON.stringify(props.widget));
     tempWidget.widgetName = selectedValue.label;
     tempWidget.yType = selectedValue.yType;
-    props.updateCandleStickWidget(props.widgetId, tempWidget, props.view);
+    widgetActions.updateCandleStickWidget(props.widgetId, tempWidget, props.view);
   }
 
   const handleMore = async () => {
@@ -92,6 +106,10 @@ function CandlestickWidget(props) {
     else{
       setMoreHeight(0);
     }
+  }
+
+  const handleOnMouseDown = async (e) => {
+    e.stopPropagation();
   }
 
   return (
@@ -110,14 +128,17 @@ function CandlestickWidget(props) {
       widgetId={props.widgetId}
     >
       {options && tickers ?
-        <ReactEchartsCore
-          echarts={echarts}
-          option={options}
-          style={{'height': props.widget.height-moreHeight}}
-          opts={initEchartsOptions}
-          ref={eChartsRef}
-          id={props.widgetId}
-        />
+        <div onMouseDown={handleOnMouseDown}>
+          <ReactEchartsCore
+            echarts={echarts}
+            option={options}
+            style={{'height': props.widget.height-moreHeight}}
+            opts={initEchartsOptions}
+            ref={eChartsRef}
+            id={props.widgetId}
+            onMouseDown={handleOnMouseDown}
+          />
+        </div>
         :
         <div style={{'height': props.widget.height-moreHeight}}></div>
       }
@@ -135,9 +156,9 @@ function CandlestickWidget(props) {
       />
       <GridContainer justify="center" className={`${s.gridContainer}`}>
         <GridItem xs={12} sm={12} lg={12} className={`${s.instructionContainer}`}>
-          { props.alertVisible && props.alertType === "alert-pending" && props.alertComponent === "candlestick-widget" && <i className="fas fa-spinner fa-spin" style={{fontSize: 20}}/> }
-          { props.alertVisible && props.alertType === "alert-success" &&  props.alertComponent === "candlestick-widget" && <div className="successMessage">{props.alertMessage}</div> }
-          { props.alertVisible && props.alertType === "alert-error" && props.alertComponent === "candlestick-widget" && <div className="errorMessage">{props.alertMessage}</div> }
+          { props.alertVisible && props.alertType === "alert-pending" && props.alertComponent === "candleStick-widget" && <i className="fas fa-spinner fa-spin" style={{fontSize: 20}}/> }
+          { props.alertVisible && props.alertType === "alert-success" &&  props.alertComponent === "candleStick-widget" && <div className="successMessage">{props.alertMessage}</div> }
+          { props.alertVisible && props.alertType === "alert-error" && props.alertComponent === "candleStick-widget" && <div className="errorMessage">{props.alertMessage}</div> }
         </GridItem>
       </GridContainer>
       { more &&
@@ -148,10 +169,10 @@ function CandlestickWidget(props) {
           <GridItem xs={12} sm={12} lg={6} >
             <div className="mt-3 d-flex flex-column">
               <p className={`${s.title}`}>Type</p>
-              <div className={`${s.inputContainer}`}>
+              <div className={`${s.inputContainer}`} onMouseDown={handleOnMouseDown}>
                 <Select 
                   onSelectChange={onTypeSelectChange}
-                  defaultValue={chartTypes[chartTypesMap[props.widget.widgetName]]}
+                  defaultValue={chartTypes[chartTypesMap[props.widget.chartName]]}
                   options={chartTypes}
                 />
               </div>
@@ -166,7 +187,7 @@ function CandlestickWidget(props) {
         </GridContainer>
       }
       <div className="d-flex flex-column justify-content-center w-100 sticky-bottom">
-        <div className={`halfCircle d-flex flex-column justify-content-center align-items-center`} onClick={handleMore}>
+        <div className={`halfCircle d-flex flex-column justify-content-center align-items-center`} onClick={handleMore} onMouseDown={handleOnMouseDown}>
           {more ? <i className={`la la-angle-up mt-1`} style={{ fontSize: "2vw" }}/> : <i className={`la la-angle-down mt-1`} style={{ fontSize: "2em" }} /> } 
         </div>
       </div>
@@ -192,7 +213,7 @@ const mapDispatchToProps = (dispatch, history) => {
     clear: () => dispatch(alertActions.clear()),
     setComponent: (component) => dispatch(alertActions.component(component)),
     resetWidgets: () => dispatch(widgetActions.resetWidgets()),
-    updateCandleStickWidget: (key, widget, view) => dispatch(widgetActions.updateCandleStickWidget(key, widget, view)),
+    retrieveBatchStockData: (tickers, dataType, timeScales) => dispatch(dataActions.retrieveBatchStockData(tickers, dataType, timeScales)),
   };
 }
 

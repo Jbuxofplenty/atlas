@@ -24,6 +24,7 @@ export const dataActions = {
   deleteAccount,
   financialDataTypeMap,
   retrieveBatchStockData,
+  storeAllFinancialDataFirestore,
 };
 
 function dataReset() {
@@ -37,14 +38,49 @@ function dataReset() {
 //// User Financial Data ////
 /////////////////////////////
 
-function storeFinancialDataFirestore(institution, type, data) {
+async function storeAllFinancialDataFirestore() {
+  var accounts = await getFinancialData('accounts');
+  var accessTokens = await getFinancialData('accessTokens');
+  await asyncForEach(Object.keys(accounts), async accountName => {
+    await storeFinancialDataFirestore(accountName, 'accounts', accounts[accountName], false)
+  })
+  await asyncForEach(Object.keys(accessTokens), async accountName => {
+    await storeFinancialDataFirestore(accountName, 'accessTokens', accessTokens[accountName], false)
+  })
+}
+
+async function storeFinancialDataFirestore(institution, dataType, data, redux=true) {
+  const { userData } = store.getState().user;
+  var encryptedObject;
+  var uid = auth.currentUser.uid;
+  var password = await eThreeActions.cryptoPassword();
+  var encryptedFinancialDataString = await eThreeActions.cryptoEncrypt(dataType, password);
+  var financialData = await store.dispatch(getFinancialDataFirestore(dataType, userData.e2ee));
+  if(userData.e2ee) {
+    financialData[institution] = data;
+    encryptedObject = await eThreeActions.eThreeEncrypt(financialData);
+  }
+  else {
+    financialData[institution] = data;
+    encryptedObject = await eThreeActions.cryptoEncrypt(financialData, password);
+  }
+  var encryptedFinancialData = {
+    [encryptedFinancialDataString]: encryptedObject
+  };
+  if(redux) await store.dispatch(financialDataTypeMap[dataType].storeUpdateFunction(encryptedFinancialDataString, encryptedObject));
+  await db.collection("users").doc(uid).set({
+    "financialData" : encryptedFinancialData
+  }, { merge: true });
+  await getFinancialDataFirestore(dataType, userData.e2ee)
+}
+
+function storeFinancialData(institution, dataType, data) {
   return async (dispatch, getState) => {
     const { userData } = getState().user;
     var encryptedObject;
-    var uid = auth.currentUser.uid;
     var password = await eThreeActions.cryptoPassword();
-    var encryptedFinancialDataString = await eThreeActions.cryptoEncrypt(type, password);
-    var financialData = await dispatch(getFinancialDataFirestore(type, userData.e2ee));
+    var encryptedFinancialDataString = await eThreeActions.cryptoEncrypt(dataType, password);
+    var financialData = await getFinancialData(dataType, userData.e2ee);
     if(userData.e2ee) {
       financialData[institution] = data;
       encryptedObject = await eThreeActions.eThreeEncrypt(financialData);
@@ -53,40 +89,15 @@ function storeFinancialDataFirestore(institution, type, data) {
       financialData[institution] = data;
       encryptedObject = await eThreeActions.cryptoEncrypt(financialData, password);
     }
-    var encryptedFinancialData = {
-      [encryptedFinancialDataString]: encryptedObject
-    };
-    await db.collection("users").doc(uid).set({
-      "financialData" : encryptedFinancialData
-    }, { merge: true });
-    dispatch(financialDataTypeMap[type].storeUpdateFunction(encryptedFinancialDataString, encryptedObject));
+    dispatch(financialDataTypeMap[dataType].storeUpdateFunction(encryptedFinancialDataString, encryptedObject));
   }
 }
 
-function storeFinancialData(institution, type, data) {
-  return async (dispatch, getState) => {
-    const { userData } = getState().user;
-    var encryptedObject;
-    var password = await eThreeActions.cryptoPassword();
-    var encryptedFinancialDataString = await eThreeActions.cryptoEncrypt(type, password);
-    var financialData = await getFinancialData(type, userData.e2ee);
-    if(userData.e2ee) {
-      financialData[institution] = data;
-      encryptedObject = await eThreeActions.eThreeEncrypt(financialData);
-    }
-    else {
-      financialData[institution] = data;
-      encryptedObject = await eThreeActions.cryptoEncrypt(financialData, password);
-    }
-    dispatch(financialDataTypeMap[type].storeUpdateFunction(encryptedFinancialDataString, encryptedObject));
-  }
-}
-
-function getFinancialDataFirestore(type, e2ee) {
+function getFinancialDataFirestore(dataType, e2ee) {
   return async (dispatch) => {
     var uid = auth.currentUser.uid;
     var password = await eThreeActions.cryptoPassword();
-    var encryptedFinancialDataKey = await eThreeActions.cryptoEncrypt(type, password);
+    var encryptedFinancialDataKey = await eThreeActions.cryptoEncrypt(dataType, password);
     return db.collection("users").doc(uid).get().then(async function(snapshot) {
       var allFinancialData = snapshot.data().financialData;
       var encryptedFinancialData = allFinancialData[encryptedFinancialDataKey];
@@ -97,14 +108,15 @@ function getFinancialDataFirestore(type, e2ee) {
       }
       else if(e2ee) {
         unEncryptedFinancialData = await eThreeActions.eThreeDecrypt(encryptedFinancialData).catch(error => {
+          p(error);
           return {};
         });
-        dispatch(financialDataTypeMap[type].storeUpdateFunction(encryptedFinancialDataKey, encryptedFinancialData));
+        dispatch(financialDataTypeMap[dataType].storeUpdateFunction(encryptedFinancialDataKey, encryptedFinancialData));
         return unEncryptedFinancialData;
       }
       else {
         unEncryptedFinancialData = await eThreeActions.cryptoDecrypt(encryptedFinancialData, password);
-        dispatch(financialDataTypeMap[type].storeUpdateFunction(encryptedFinancialDataKey, encryptedFinancialData));
+        dispatch(financialDataTypeMap[dataType].storeUpdateFunction(encryptedFinancialDataKey, encryptedFinancialData));
         return unEncryptedFinancialData;
       }
     })
@@ -210,7 +222,7 @@ function getInstitutions() {
 /////////////////////////////
 
 const finnhubTypes = {
-  "candlestick": {
+  "candleStick": {
     "1D": "5",
     "1W": "30",
     "1M": "60",
@@ -251,57 +263,87 @@ function retrieveBatchStockData(tickers, dataType, timeScales) {
     var i = 0;
     await asyncForEach(tickers, async _ => {
       var ticker = tickers[i][0];
+      var tickerType = tickers[i][3];
       var timeScale = timeScales[i];
       var timeEnd = new Date().getTime();
       var timeStart = timeScaleForDate(timeScale);
       if(!stockData[ticker]) {
         stockData[ticker] = {};
       }
-      // Finnhub expects seconds since UTC epoch rather than milliseconds
       promises.push(new Promise(async function(resolve) {
-        finnhubClient.cryptoCandles(ticker, finnhubTypes[dataType][timeScale], parseInt(timeStart.toString().slice(0, -3)), parseInt(timeEnd.toString().slice(0, -3)), (error, data, response) => {
-          p(error, data, response)
-          if(!data && error.statusCode === 429) {
-            dispatch(alertActions.error("We've hit our free-tier limit for our financial data provider!  It should open back up in another minute."))
-            resolve();
-          }
-          if(data && data.s === 'no_data') {
-            resolve();
-          }
-          else if(data && data.o) {
-            if(!stockData[ticker][dataType+"Price"]) {
-              stockData[ticker][dataType+"Price"] = {};
-              stockData[ticker][dataType+"Percent"] = {};
-            }
-            stockData[ticker][dataType+"Price"][timeScale] = data;
-            dispatch(updateStockData(ticker, data, dataType+"Price", timeScale));
-            var firstPrice = data.o[0];
-            var percentData = {};
-            percentData.t = data.t;
-            percentData.v = data.v;
-            percentData.o = data.o.map(datum => {
-              return (datum - firstPrice) / firstPrice * 100.;
-            })
-            percentData.c = data.c.map(datum => {
-              return (datum - firstPrice) / firstPrice * 100.;
-            })
-            percentData.h = data.h.map(datum => {
-              return (datum - firstPrice) / firstPrice * 100.;
-            })
-            percentData.l = data.l.map(datum => {
-              return (datum - firstPrice) / firstPrice * 100.;
-            })
-            stockData[ticker][dataType+"Percent"][timeScale] = percentData;
-          }
-          p(response, data, dataType+"Price", timeScale)
-          dispatch(updateStockData(ticker, percentData, dataType+"Percent", timeScale));
-          resolve();
-        });
+        if(tickerType === 'crypto' && dataType === 'candleStick') cryptoCandles(ticker, finnhubTypes, timeStart, timeEnd, dataType, timeScale, stockData, dispatch, resolve);
+        else if(dataType === 'candleStick') stockCandles(ticker, finnhubTypes, timeStart, timeEnd, dataType, timeScale, stockData, dispatch, resolve);
+        else resolve();
       }));
       i+=1;
     })
     await Promise.allSettled(promises);
     return stockData;
   }
-  function updateStockData(ticker, data, dataType, timeScale) { return { type: dataConstants.UPDATE_STOCK_DATA, ticker, data, dataType, timeScale } }
+}
+
+function updateStockData(ticker, data, dataType, timeScale) { return { type: dataConstants.UPDATE_STOCK_DATA, ticker, data, dataType, timeScale } }
+
+function stockCandles(ticker, finnhubTypes, timeStart, timeEnd, dataType, timeScale, stockData, dispatch, resolve) {
+  // Finnhub expects seconds since UTC epoch rather than milliseconds
+  finnhubClient.stockCandles(
+    ticker, 
+    finnhubTypes[dataType][timeScale], 
+    parseInt(timeStart.toString().slice(0, -3)), 
+    parseInt(timeEnd.toString().slice(0, -3)), 
+    (error, data, response) => handleFinnhubResponse(error, data, response, ticker, dataType, timeScale, stockData, dispatch, resolve));
+}
+
+function cryptoCandles(ticker, finnhubTypes, timeStart, timeEnd, dataType, timeScale, stockData, dispatch, resolve) {
+  // Finnhub expects seconds since UTC epoch rather than milliseconds
+  finnhubClient.cryptoCandles(
+    ticker, 
+    finnhubTypes[dataType][timeScale], 
+    parseInt(timeStart.toString().slice(0, -3)), 
+    parseInt(timeEnd.toString().slice(0, -3)), 
+    (error, data, response) => handleFinnhubResponse(error, data, response, ticker, dataType, timeScale, stockData, dispatch, resolve));
+}
+
+function handleFinnhubResponse(error, data, response, ticker, dataType, timeScale, stockData, dispatch, resolve) {
+  p(error, data, response)
+  if(!data && error.statusCode === 429) {
+    dispatch(alertActions.error("We've hit our free-tier limit for our financial data provider!  It should open back up in another minute."))
+    resolve();
+  }
+  if(data && data.s === 'no_data') {
+    resolve();
+  }
+  else if(data && data.o) {
+    if(!stockData[ticker][dataType+"Price"]) {
+      stockData[ticker][dataType+"Price"] = {};
+      stockData[ticker][dataType+"Percent"] = {};
+    }
+    stockData[ticker][dataType+"Price"][timeScale] = data;
+    dispatch(updateStockData(ticker, data, dataType+"Price", timeScale));
+    var percentData = computePercent(data);
+    stockData[ticker][dataType+"Percent"][timeScale] = percentData;
+  }
+  p(response, data, dataType+"Price", timeScale)
+  dispatch(updateStockData(ticker, percentData, dataType+"Percent", timeScale));
+  resolve();
+}
+
+function computePercent(data) {
+  var firstPrice = data.o[0];
+  var percentData = {};
+  percentData.t = data.t;
+  percentData.v = data.v;
+  percentData.o = data.o.map(datum => {
+    return (datum - firstPrice) / firstPrice * 100.;
+  })
+  percentData.c = data.c.map(datum => {
+    return (datum - firstPrice) / firstPrice * 100.;
+  })
+  percentData.h = data.h.map(datum => {
+    return (datum - firstPrice) / firstPrice * 100.;
+  })
+  percentData.l = data.l.map(datum => {
+    return (datum - firstPrice) / firstPrice * 100.;
+  })
+  return percentData;
 }

@@ -15,20 +15,32 @@ import { widgetActions } from 'actions';
 import { initialState } from 'reducers/widget.reducer';
 import { generateRandomId } from 'helpers';
 
+import { compoundInterestCalculator } from "components/Calculators/CompoundInterestCalculator"
+
 
 function AddWidget(props) {
   const [accountSummaryVisible, setAccountSummaryVisible] = useState(null);
 
   useEffect(() => {
-  var isVisible = false;
-  Object.keys(props.widgets).forEach(key => {
-    if(props.widgets[key].widgetType === 'accountSummary') {
-      isVisible = true;
-    }
-  })
-  setAccountSummaryVisible(isVisible);
+    var isVisible = false;
+    Object.keys(props.widgets).forEach(key => {
+      if(props.widgets[key].widgetType === 'accountSummary') {
+        isVisible = true;
+      }
+    })
+    setAccountSummaryVisible(isVisible);
     // eslint-disable-next-line
   }, [props.widgets]);
+
+
+  useEffect(() => {
+    var customizeWidget = JSON.parse(JSON.stringify(initialState['dashboard']['0']));
+    if(!accountSummaryVisible) {
+      customizeWidget.dataGrid = {x: 6, y: 13, w: 6, h: 9, minW: 5, minH: 9, isBounded: true, i: "0"};
+    }
+    props.updateWidget(props.widgetId, customizeWidget, props.view);
+    // eslint-disable-next-line
+  }, [accountSummaryVisible]);
 
   const addChart = async () => {
     let xy = widgetActions.getOpenSlot(initialState['dashboard']['2'].dataGrid.w, initialState['dashboard']['2'].dataGrid.h, props.view);
@@ -37,7 +49,17 @@ function AddWidget(props) {
     newChart.dataGrid.x = xy.x;
     newChart.dataGrid.y = xy.y;
     newChart.dataGrid.i = key;
-    props.updateCandleStickWidget(key, newChart, props.view);
+    widgetActions.updateCandleStickWidget(key, newChart, props.view);
+  }
+
+  const addCalculator = async () => {
+    let xy = widgetActions.getOpenSlot(compoundInterestCalculator.dataGrid.w, compoundInterestCalculator.dataGrid.h, props.view);
+    var key = generateRandomId();
+    var newCalculator = JSON.parse(JSON.stringify(compoundInterestCalculator));
+    newCalculator.dataGrid.x = xy.x;
+    newCalculator.dataGrid.y = xy.y;
+    newCalculator.dataGrid.i = key;
+    props.updateWidget(key, newCalculator, props.view);
   }
 
   const addAccountWidget = async () => {
@@ -49,6 +71,10 @@ function AddWidget(props) {
       collapsed: false,
     }
     props.updateWidget(key, accountSummaryWidget, props.view);
+  }
+
+  const handleOnMouseDown = async (e) => {
+    e.stopPropagation();
   }
 
   return (
@@ -65,11 +91,27 @@ function AddWidget(props) {
             key={1}
             className="my-2 bg-atlas-input text-white clickable"
             onClick={addChart}
+            onMouseDown={handleOnMouseDown}
           >
             <Card.Body>
               <Card.Text className="d-flex flex-row align-items-center justify-content-center">
-                <i className={`${s.addWidgetIcon} text-white fa fa-plus`}/>
+                <i className={`${s.addWidgetIcon} text-white fa fa-chart-bar`}/>
                 <span className={`${s.addText} text-white`}>Add Chart</span>
+              </Card.Text>
+            </Card.Body>
+          </Card>
+        </GridItem>
+        <GridItem xs={12} sm={12} lg={12}>      
+          <Card
+            key={1}
+            className="my-2 bg-atlas-input text-white clickable"
+            onClick={addCalculator}
+            onMouseDown={handleOnMouseDown}
+          >
+            <Card.Body>
+              <Card.Text className="d-flex flex-row align-items-center justify-content-center">
+                <i className={`${s.addWidgetIcon} text-white fa fa-calculator`}/>
+                <span className={`${s.addText} text-white`}>Add Calculator</span>
               </Card.Text>
             </Card.Body>
           </Card>
@@ -80,6 +122,7 @@ function AddWidget(props) {
               key={2}
               className="my-2 bg-atlas-input text-white clickable"
               onClick={addAccountWidget}
+              onMouseDown={handleOnMouseDown}
             >
               <Card.Body>
                 <Card.Text className="d-flex flex-row align-items-center justify-content-center">
@@ -106,8 +149,6 @@ const mapDispatchToProps = (dispatch, history) => {
     resetWidgets: () => dispatch(widgetActions.resetWidgets()),
     updateWidgets: (widgets) => dispatch(widgetActions.updateWidgets(widgets, 'dashboard')),
     updateWidget: (key, widget) => dispatch(widgetActions.updateWidget(key, widget, 'dashboard')),
-    updateCandleStickWidget: (key, widget) => dispatch(widgetActions.updateCandleStickWidget(key, widget, 'dashboard')),
-    getFirebaseWidgets: () => dispatch(widgetActions.getFirebaseWidgets('dashboard')),
   };
 }
 

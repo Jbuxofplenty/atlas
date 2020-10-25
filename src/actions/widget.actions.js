@@ -1,8 +1,8 @@
 import { widgetConstants } from '../constants';
 import { initialState } from '../reducers/widget.reducer';
 import { db, auth } from 'helpers/firebase';
-import { store, asyncForEach, p } from 'helpers';
-import { candlestickOptions, defaultXAxis, defaultSeries, positionFunction } from 'charts';
+import { store, asyncForEach } from 'helpers';
+import { candleStickOptions, defaultXAxis, defaultSeries } from 'charts';
 import { dataActions } from './';
 
 export const widgetActions = {
@@ -35,45 +35,43 @@ function deleteWidget(key, view) {
   return { type: widgetConstants.DELETE_WIDGET, key, view };
 }
 
-function updateCandleStickWidget(key, widget, view) {
-  return async dispatch => {
-    var timeScale = widget.timeScale;
-    var tickers = widget.tickers;
-    var yType = widget.yType;
-    var stockData = await candleStickStockData(tickers, timeScale, yType);
-    var chartOptions = JSON.parse(JSON.stringify(candlestickOptions));
-    if(stockData.length > 0) {
-      var timeStamps = [];
-      stockData[0].t.forEach(timeStamp => {
-        timeStamps.push(new Date(timeStamp*1000).toLocaleString('en-US'));
-      })
-      chartOptions.xAxis.push(defaultXAxis);
-      chartOptions.xAxis[0].data = timeStamps;
-    }
-    Object.keys(tickers).forEach((tickerKey, index) => {
-      var ticker = tickers[tickerKey];
-      chartOptions.legend.data.push(ticker[1]);
-      var data = [];
-      var candlestickData = stockData[index];
-      if(candlestickData) {
-        for(var i=0; i < candlestickData.o.length; i++) {
-          var datum = [];
-          datum.push(candlestickData.o[i]);
-          datum.push(candlestickData.c[i]);
-          datum.push(candlestickData.l[i]);
-          datum.push(candlestickData.h[i]);
-          data.push(datum);
-        }
-      }
-      chartOptions.series.push(JSON.parse(JSON.stringify(defaultSeries)));
-      chartOptions.series[index].itemStyle.color = ticker[2];
-      chartOptions.series[index].data = data;
-      chartOptions.series[index].name = ticker[1];
-      chartOptions.series[index].type = 'candlestick';
-    });
-    widget.chartOptions = chartOptions;
-    dispatch(updateWidget(key, widget, view));
+async function updateCandleStickWidget(key, widget, view) {
+  var timeScale = widget.timeScale;
+  var tickers = widget.tickers;
+  var yType = widget.yType;
+  var stockData = await candleStickStockData(tickers, timeScale, yType);
+  var chartOptions = JSON.parse(JSON.stringify(candleStickOptions));
+  if(stockData.length > 0) {
+    var timeStamps = [];
+    stockData[0].t.forEach(timeStamp => {
+      timeStamps.push(new Date(timeStamp*1000).toLocaleString('en-US'));
+    })
+    chartOptions.xAxis.push(defaultXAxis);
+    chartOptions.xAxis[0].data = timeStamps;
   }
+  Object.keys(tickers).forEach((tickerKey, index) => {
+    var ticker = tickers[tickerKey];
+    chartOptions.legend.data.push(ticker[1]);
+    var data = [];
+    var candleStickData = stockData[index];
+    if(candleStickData) {
+      for(var i=0; i < candleStickData.o.length; i++) {
+        var datum = [];
+        datum.push(candleStickData.o[i]);
+        datum.push(candleStickData.c[i]);
+        datum.push(candleStickData.l[i]);
+        datum.push(candleStickData.h[i]);
+        data.push(datum);
+      }
+    }
+    chartOptions.series.push(JSON.parse(JSON.stringify(defaultSeries)));
+    chartOptions.series[index].itemStyle.color = ticker[2];
+    chartOptions.series[index].data = data;
+    chartOptions.series[index].name = ticker[1];
+    chartOptions.series[index].type = 'candlestick';
+  });
+  widget.chartOptions = chartOptions;
+  store.dispatch(updateWidget(key, widget, view));
 }
 
 async function candleStickStockData(tickers, timeScale, yType) {
@@ -85,8 +83,8 @@ async function candleStickStockData(tickers, timeScale, yType) {
       var ticker = tickers[tickerKey];
       if(stockData 
           && stockData[ticker[0]] 
-          && stockData[ticker[0]]["candlestickPrice"] 
-          && stockData[ticker[0]]["candlestickPrice"][timeScale]) {
+          && stockData[ticker[0]]["candleStickPrice"] 
+          && stockData[ticker[0]]["candleStickPrice"][timeScale]) {
       }
       else {
         var unique = true;
@@ -102,14 +100,15 @@ async function candleStickStockData(tickers, timeScale, yType) {
         }
       }
     });
+    stockData = await store.dispatch(dataActions.retrieveBatchStockData(tickersToPull, 'candleStick', timeScales));
+    var series = [];
+    Object.keys(tickers).forEach(tickerKey => {
+      var ticker = tickers[tickerKey];
+      series.push(stockData[ticker[0]]['candleStick'+yType][timeScale])
+    });
+    return cleanStockData(series)
   }
-  stockData = await store.dispatch(dataActions.retrieveBatchStockData(tickersToPull, 'candlestick', timeScales));
-  var series = [];
-  Object.keys(tickers).forEach(tickerKey => {
-    var ticker = tickers[tickerKey];
-    series.push(stockData[ticker[0]]['candlestick'+yType][timeScale])
-  });
-  return cleanStockData(series)
+  return [];
 }
 
 function cleanStockData(series) {
@@ -209,7 +208,7 @@ function getFirebaseWidgets(view) {
       });
       Object.keys(widgets).forEach(widgetKey => {
         var widget = widgets[widgetKey];
-        if(widget.widgetType === 'candleStick') dispatch(updateCandleStickWidget(widgetKey, widget, view))
+        if(widget.widgetType === 'candleStick') updateCandleStickWidget(widgetKey, widget, view)
         else dispatch(updateWidget(widgetKey, widget, view))
       })
     }

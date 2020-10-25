@@ -70,52 +70,56 @@ export default function Footer(props) {
           <SubmitIssue handleClose={handleClose} />
         </div>
       </Modal>
-      <GridContainer justify="center">
-        <GridItem xs={12} sm={12} md={4}>
-           <div className={classes.center}>
-            <Button
-              onClick={privacy}
-              className={classes.inlineBlock}
-              target="_blank"
-              simple
-              color="transparent"
-            >
-              Privacy Policy
-            </Button>
-            <Button
-              onClick={terms}
-              className={classes.inlineBlock}
-              target="_blank"
-              simple
-              color="transparent"
-            >
-              Terms and Conditions
-            </Button>
-          </div>
-        </GridItem>
-        { props.authenticated ?
-          <GridItem xs={12} sm={12} md={4}>
+      <div className={classes.gridContainer}>
+        <div className={classes.footerContainer}>
+        <GridContainer justify="center">
+          <GridItem xs={12} sm={12} md={4} lg={4}>
             <div className={classes.center}>
-              <i className="fa fa-bug"/>
-              <LowerCaseButton
-                onClick={handleOpen}
+              <Button
+                onClick={privacy}
                 className={classes.inlineBlock}
                 target="_blank"
                 simple
                 color="transparent"
               >
-                Submit a bug or feature request
-              </LowerCaseButton>
+                Privacy Policy
+              </Button>
+              <Button
+                onClick={terms}
+                className={classes.inlineBlock}
+                target="_blank"
+                simple
+                color="transparent"
+              >
+                Terms and Conditions
+              </Button>
             </div>
-          </GridItem> :
-          <GridItem xs={12} sm={12} md={4}/>
-        }
-        <GridItem xs={12} sm={12} md={4}>
-          <div className={classes.center}>
-            &copy; {1900 + new Date().getYear()} Atlas One Incorporated
-          </div>
-        </GridItem>
-      </GridContainer>
+          </GridItem>
+          { props.authenticated ?
+            <GridItem xs={12} sm={12} md={4}>
+              <div className={classes.center}>
+                <i className="fa fa-bug"/>
+                <LowerCaseButton
+                  onClick={handleOpen}
+                  className={classes.inlineBlock}
+                  target="_blank"
+                  simple
+                  color="transparent"
+                >
+                  Submit a bug or feature request
+                </LowerCaseButton>
+              </div>
+            </GridItem> :
+            <GridItem xs={12} sm={12} md={4} lg={4}/>
+          }
+          <GridItem xs={12} sm={12} md={4} lg={4}>
+            <div className={classes.center}>
+              &copy; {1900 + new Date().getYear()} Atlas One Incorporated
+            </div>
+          </GridItem>
+        </GridContainer>
+      </div>
+      </div>
     </footer>
   );
 }

@@ -40,13 +40,20 @@ const colourStyles = {
 };
 
 export default function CustomSelect(props) {
+
+  const handleOnMouseDown = async (e) => {
+    e.stopPropagation();
+  }
+
   return (
-    <Select
-      closeMenuOnSelect={true}
-      defaultValue={props.defaultValue}
-      options={props.options}
-      styles={colourStyles}
-      onChange={props.onSelectChange}
-    />
+    <div onMouseDown={handleOnMouseDown}>
+      <Select
+        closeMenuOnSelect={true}
+        defaultValue={props.defaultValue}
+        options={props.options}
+        styles={colourStyles}
+        onChange={props.onSelectChange}
+      />
+    </div>
   )
 }

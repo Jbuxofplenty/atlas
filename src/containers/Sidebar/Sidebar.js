@@ -40,7 +40,9 @@ class Sidebar extends React.Component {
       } else {
         this.element.classList.remove(s.sidebarOpen);
         setTimeout(() => {
-          this.element.style.height = '';
+          if(this.element) {
+            this.element.style.height = '';
+          }
         }, 0);
       }
     }

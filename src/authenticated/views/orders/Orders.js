@@ -36,7 +36,7 @@ class Orders extends React.Component {
     this._isMounted = false;
   }
 
-  componentDidUpdate(nextProps) {
+  componentWillUpdate(nextProps) {
     if(this.props.data !== nextProps.data) {
       this.updateAccounts();
     }

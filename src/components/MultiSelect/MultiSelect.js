@@ -51,15 +51,22 @@ const colourStyles = {
 };
 
 export default function MultiSelect(props) {
+
+  const handleOnMouseDown = async (e) => {
+    e.stopPropagation();
+  }
+
   return (
-    <Select
-    menuContainerStyle={{ zIndex: 99999 }}
-      closeMenuOnSelect={true}
-      defaultValue={props.defaultValues}
-      isMulti
-      options={props.options}
-      styles={colourStyles}
-      onChange={props.onSelectChange}
-    />
+    <div onMouseDown={handleOnMouseDown}>
+      <Select
+        menuContainerStyle={{ zIndex: 99999 }}
+        closeMenuOnSelect={true}
+        defaultValue={props.defaultValues}
+        isMulti
+        options={props.options}
+        styles={colourStyles}
+        onChange={props.onSelectChange}
+      />
+    </div>
   )
 }

@@ -1,10 +1,27 @@
 import { widgetConstants } from '../constants';
-import { candlestickOptions } from 'charts';
+import { candleStickOptions } from 'charts';
+import { cryptoCurrencies } from 'components/MultiSelect/data';
+
+// const dataSets = [
+//   { value: 'crypto', label: 'Crypto Currencies' },
+//   { value: 'heldTickers', label: 'Held Symbols' },
+//   { value: 'indices', label: "Indices" },
+//   { value: 'usStocks', label: 'US Stocks' },
+//   { value: 'gspc', label: 'S&P 500' },
+//   { value: 'ndx', label: 'Nasdaq 100' },
+//   { value: 'dji', label: 'Dow Jones' },
+// ]
 
 const dataSets = [
   { value: 'crypto', label: 'Crypto Currencies' },
-  { value: 'heldTickers', label: 'Held Tickers' }
+  { value: 'heldTickers', label: 'Held Symbols' },
+  { value: 'usStocks', label: 'US Stocks' },
+  { value: 'gspc', label: 'S&P 500' },
+  { value: 'ndx', label: 'Nasdaq 100' },
+  { value: 'dji', label: 'Dow Jones' },
 ]
+
+const defaultTicker = [cryptoCurrencies[0].value, cryptoCurrencies[0].label, cryptoCurrencies[0].color, cryptoCurrencies[0].tickerType]
 
 const initialState = {
   'dashboard': {
@@ -20,12 +37,12 @@ const initialState = {
     },
     "2": {
       widgetType: 'candleStick',
-      widgetName: 'Candle Stick (Price)',
+      chartName: 'Candle Stick (Price)',
       dataGrid: {x: 0, y: 0, w: 12, h: 16, minH: 14, minW: 6, i: "2"},
       collapsed: false,
       height: 444,
-      tickers: {1: ['BINANCE:BTCUSDT', 'Bitcoin (BTC)', '#00B8D9']},
-      chartOptions: candlestickOptions,
+      tickers: {1: defaultTicker},
+      chartOptions: candleStickOptions,
       name: 'Crypto Currencies Candlestick Chart',
       timeScale: '1M',
       yType: 'Price',

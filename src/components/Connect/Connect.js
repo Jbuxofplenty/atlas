@@ -81,6 +81,7 @@ function Connect(props) {
   const openSignInWindow = (url, name) => {
     // remove any existing event listeners
     window.removeEventListener('message', receiveMessage);
+    windowObjectReference = null;
 
     // window features
     const strWindowFeatures =
@@ -103,9 +104,9 @@ function Connect(props) {
         the window or to reload the referenced resource. */
       windowObjectReference.focus();
     }
+
     popupTick.current = setInterval(function() {
-      if (windowObjectReference.closed) {
-        clearInterval(popupTick);
+      if (windowObjectReference !== null && windowObjectReference.closed) {
         if(mounted.current && authCode === '') {
           setIsPending(false);
           setIsError(true);
@@ -142,17 +143,13 @@ function Connect(props) {
         }).then(response => response.json()).then(async data => { 
           data.institution = props.institution.displayName;
           setMessage('Successfully validated your credentials! Setting up your account in Atlas One...')
-          await props.storeFinancialDataFirestore(props.institution.displayName, "accessTokens", data);
-          await oAuth.pullAccountData();
+          await dataActions.storeFinancialDataFirestore(props.institution.displayName, "accessTokens", data);
+          await oAuth.pullAccountData(oAuth.pullConfig, data);
           setMessage(`You successfully connected your ${props.institution.displayName} account!`);
           setIsError(false);
           setIsPending(false);
           setIsSuccess(true);
-        }).catch(error => {
-          setIsPending(false);
-          setIsError(true);
-          setMessage(error);
-        });
+        })
       }
       else {
         setIsPending(false);
@@ -164,12 +161,14 @@ function Connect(props) {
 
   const oAuthFlow = async () => {
     if(isSuccess) {
-      window.location.reload(false);
+      props.handleClose();
     }
     else {
       setIsPending(true);
-      setSignInWindowOpen(true);
+      setIsError(false);
       if(oAuth.type === "OAuth") {
+        setSignInWindowOpen(true);
+        if(popupTick && popupTick.current) clearInterval(popupTick);
         oAuth.state = randomState();
         const authRequest = oAuth.buildAuthRequest(oAuth.state);
         openSignInWindow(authRequest, props.institution.displayName);
@@ -258,7 +257,7 @@ function Connect(props) {
                     Cancel
                   </SimpleButton>
                   <Button disabled={isInvalid} color="primary" size="lg" onClick={oAuthFlow}>
-                    {isSuccess ? "Reload" : "Connect"}
+                    {isSuccess ? "Close" : "Connect"}
                   </Button>
                 </div>
               </CardFooter>

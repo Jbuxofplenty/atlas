@@ -19,11 +19,16 @@ import s from './Coinbase.module.scss'
 function Coinbase(props) {
   useEffect(() => {
     props.visible(false);
-    var accountObject = OAuthObject[props.account.displayName];
-    accountObject.getPercentDifference();
+    // Guard for when linking an account and pulling in the data
+    if(props.account.totalBalance !== undefined 
+        && props.account.orders !== undefined 
+        && props.account.percentDifference !== undefined) {
+      var accountObject = OAuthObject[props.account.displayName];
+      accountObject.getPercentDifference();
+    }
     // eslint-disable-next-line
   }, []);
-
+  
   return (
     <>
       {props.account.totalBalance !== undefined && props.account.percentDifference !== undefined &&

@@ -45,15 +45,19 @@ function SyncAccount(props) {
     setIsLoad(true);
     var minimal = !allOrders;
     var success = true;
-    if(!accountObject) {
+    if(!accountObject && props.accounts) {
       await asyncForEach(props.accounts, async account => {
         var tempAccountObject = OAuthObject[account.displayName];
-        var tempSuccess = await tempAccountObject.pullAccountData(minimal);
+        var pullConfig = JSON.parse(JSON.stringify(tempAccountObject.pullConfig));
+        pullConfig.minimal = minimal;
+        var tempSuccess = await tempAccountObject.pullAccountData(pullConfig);
         if(!tempSuccess) success = false;
       })
     }
     else {
-      success = await accountObject.pullAccountData(minimal);
+      var pullConfig = JSON.parse(JSON.stringify(accountObject.pullConfig));
+      pullConfig.minimal = minimal;
+      success = await accountObject.pullAccountData(pullConfig);
     }
     if(success) {
       setIsLoad(false);

@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import GridItem from "components/Grid/GridItem.js";
 import MultiSelect from 'components/MultiSelect/MultiSelect';
 import Select from 'components/Select/Select';
-import { cryptoCurrencies } from 'components/MultiSelect/data';
+import { cryptoCurrencies, indices, gspc, ndx, dji, usStocks } from 'components/MultiSelect/data';
 
 import { alertActions, widgetActions, dataActions } from 'actions';
 import { dataSets } from 'reducers/widget.reducer';
@@ -56,23 +56,37 @@ function ChartTickers(props) {
     let updatedTickers = [];
     let tempTickers = {};
     if(selectedValues) {
+      var containsAllTicker = false;
       selectedValues.forEach((ticker, index) => {
-        tempTickers[index] = [ticker.value, ticker.label, ticker.color];
-        updatedTickers.push([ticker.value, ticker.label, ticker.color]);
+        if(ticker.value === 'all') {
+          containsAllTicker = true;
+        }
+        else {
+          tempTickers[index] = [ticker.value, ticker.label, ticker.color, ticker.tickerType];
+          updatedTickers.push([ticker.value, ticker.label, ticker.color, ticker.tickerType]);
+        }
       })
+      if(containsAllTicker) {
+        tickerOptions.forEach((ticker, index) => { 
+          if(ticker.value !== 'all') {
+            tempTickers[index] = [ticker.value, ticker.label, ticker.color, ticker.tickerType];
+            updatedTickers.push([ticker.value, ticker.label, ticker.color, ticker.tickerType]);
+          }
+        });
+      }
     }
     setTickers(updatedTickers);
     props.setTickers(updatedTickers);
     var tempWidget = JSON.parse(JSON.stringify(props.widget));
     tempWidget.tickers = tempTickers;
-    props.updateCandleStickWidget(props.widgetId, tempWidget, props.view);
+    widgetActions.updateCandleStickWidget(props.widgetId, tempWidget, props.view);
   }
 
   const updateOptions = async (dataSet) => {
     if(dataSet === 'heldTickers') {
       if(!heldTickers) {
         var accounts = await dataActions.getFinancialData("accounts");
-        var tempHeldTickers = [];
+        var tempHeldTickers = [{ value: 'all', label: 'All Held Tickers', color: '#000000' }];
         await asyncForEach(Object.keys(accounts), async key => {
           var accountObject = OAuthObject[accounts[key].displayName];
           var temp = await accountObject.getFinnhubTickers();
@@ -83,8 +97,23 @@ function ChartTickers(props) {
       }
       else setTickerOptions(heldTickers);
     }
-    else {
+    else if(dataSet === 'crypto') {
       setTickerOptions(cryptoCurrencies)
+    }
+    else if(dataSet === 'indices') {
+      setTickerOptions(indices)
+    }
+    else if(dataSet === 'dji') {
+      setTickerOptions(dji)
+    }
+    else if(dataSet === 'ndx') {
+      setTickerOptions(ndx)
+    }
+    else if(dataSet === 'gspc') {
+      setTickerOptions(gspc)
+    }
+    else if(dataSet === 'usStocks') {
+      setTickerOptions(usStocks)
     }
   }
 
@@ -92,7 +121,7 @@ function ChartTickers(props) {
     updateOptions(selectedValue.value);
     var tempWidget = JSON.parse(JSON.stringify(props.widget));
     tempWidget.dataSet = selectedValue;
-    props.updateCandleStickWidget(props.widgetId, tempWidget, props.view);
+    widgetActions.updateCandleStickWidget(props.widgetId, tempWidget, props.view);
   } 
 
   return (
@@ -141,7 +170,6 @@ const mapDispatchToProps = (dispatch, history) => {
     clear: () => dispatch(alertActions.clear()),
     setComponent: (component) => dispatch(alertActions.component(component)),
     resetWidgets: () => dispatch(widgetActions.resetWidgets()),
-    updateCandleStickWidget: (key, widget, view) => dispatch(widgetActions.updateCandleStickWidget(key, widget, view)),
   };
 }
 

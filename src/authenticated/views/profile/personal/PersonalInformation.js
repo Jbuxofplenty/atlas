@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { connect } from 'react-redux';
-import { db } from "../../../../helpers/firebase";
 
 // core components
 import GridContainer from "components/Grid/GridContainer.js";
@@ -12,7 +11,7 @@ import Button from "components/CustomButtons/Button.js";
 
 import s from '../Profile.module.scss';
 import { userActions, alertActions } from "actions";
-import { auth } from "../../../../helpers/firebase";
+import { auth, db } from "helpers/firebase";
 
 function PersonalInformation(props) {
   const [firstName, setFirstName] = useState(props.firstName);
@@ -37,6 +36,7 @@ function PersonalInformation(props) {
     props.clear();
     // eslint-disable-next-line
   }, []);
+
   return (
     <div>
       <h3 className={`${s.header} mb-3`}>Personal Information</h3>

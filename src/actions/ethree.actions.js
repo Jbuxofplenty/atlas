@@ -3,7 +3,7 @@ import { eThreeConstants } from '../constants';
 import { alertActions, dataActions } from 'actions';
 import { db, functions, auth } from '../helpers/firebase';
 import { EThree, KeyPairType } from '@virgilsecurity/e3kit-browser';
-import { p, } from 'helpers';
+import { p, asyncForEach, store } from 'helpers';
 
 const algorithm = 'aes-256-ctr';
 
@@ -24,6 +24,7 @@ export const eThreeActions = {
   eThreeDecrypt,
   eThreeEncrypt,
   convertE2EE,
+  instantLocalKeyPresent,
 };
 
 // Virgil Security
@@ -102,24 +103,25 @@ function registerNewUser() {
 function convertE2EE(nextE2EE) {
   return async (dispatch) => {
     var financialDataTypes = ["accessTokens", "accounts"];
-    financialDataTypes.forEach(async type => {
+    await asyncForEach(financialDataTypes, async dataType => {
       var encryptedObject;
       var password = await cryptoPassword();
-      var encryptedAccessTokensString = await cryptoEncrypt("accessTokens", password);
-      var accessTokens = await dispatch(dataActions.getFinancialDataFirestore("accessTokens", !nextE2EE));
+      var encryptedAccessTokensString = await cryptoEncrypt(dataType, password);
+      var data = await dataActions.getFinancialData(dataType);
       if(nextE2EE) {
-        encryptedObject = await eThreeEncrypt(accessTokens);
+        encryptedObject = await eThreeEncrypt(data);
       }
       else {
-        encryptedObject = await cryptoEncrypt(accessTokens, password);
+        encryptedObject = await cryptoEncrypt(data, password);
       }
       var uid = auth.currentUser.uid;
-      await db.collection("users").doc(uid).update({
-        "financialData" : {
-          [encryptedAccessTokensString]: encryptedObject
-        }
-      });
-      dispatch(dataActions.financialDataTypeMap[type].storeUpdateFunction(encryptedAccessTokensString, encryptedObject));
+      var object = {
+        [encryptedAccessTokensString]: encryptedObject,
+      }
+      await db.collection("users").doc(uid).set({
+        "financialData" : object
+      }, {merge: true});
+      dispatch(dataActions.financialDataTypeMap[dataType].storeUpdateFunction(encryptedAccessTokensString, encryptedObject));
     });
   }
 }
@@ -199,6 +201,19 @@ function localKeyPresent() {
   function complete(privateKeyPresent) { return { type: eThreeConstants.UPDATE_PRIVATE_KEY_PRESENT, privateKeyPresent } }
 }
 
+async function instantLocalKeyPresent() {
+  const eThree = await initializeEThree().catch( e => {
+    return false;
+  });
+  if(!eThree) {
+    return false;
+  }
+  const hasLocalPrivateKey = await eThree.hasLocalPrivateKey().catch( e => {
+    return false;
+  });
+  return hasLocalPrivateKey;
+}
+
 async function unregister() {
   const eThree = await initializeEThree();
   if(!eThree) {
@@ -207,6 +222,7 @@ async function unregister() {
   }
   return await eThree.unregister()
   .then(async () => {
+    store.dispatch(alertActions.success("Successfully deleted your E2EE account!"));
     p('Successfully unregistered your EThree account!')
     return true;
   })
@@ -311,6 +327,8 @@ function restoreKey(keyPassword) {
         p('Successfully retrieved your private key from the cloud!')
         dispatch(complete(true));
         dispatch(alertActions.success("Successfully retrieved your private key from the cloud!"));
+        dispatch(dataActions.getFinancialDataFirestore("accessTokens", true));
+        dispatch(dataActions.getFinancialDataFirestore("accounts", true));
       })
       .catch(e => {
         console.error('error: ', e)
@@ -322,6 +340,8 @@ function restoreKey(keyPassword) {
       p('Private key is already stored locally!')
       dispatch(alertActions.success("Private key is already stored locally!"));
       dispatch(complete(true));
+      dispatch(dataActions.getFinancialDataFirestore("accessTokens", false));
+      dispatch(dataActions.getFinancialDataFirestore("accounts", false));
     }
   }
 

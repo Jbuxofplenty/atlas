@@ -58,7 +58,7 @@ function AccountsWidget(props) {
                   <tr className={s.lineItem} key={index}>
                     <td className={s.cell}>{index+1}</td>
                     <td className={s.cell}>{account.displayName}</td>
-                    <td className={s.cell}>${account.totalBalance.toFixed(2)}</td>
+                    <td className={s.cell}>${account.totalBalance && account.totalBalance.toFixed(2)}</td>
                     <td className={['thumb-sm w-100', s.cell].join(' ')}>
                       <i className={`status ${new Date(account.lastSynced+1000*60*60*2) > now ? "bg-success" : "bg-danger"}`} />
                     </td>
