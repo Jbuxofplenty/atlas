@@ -291,7 +291,8 @@ function stockCandles(ticker, finnhubTypes, timeStart, timeEnd, dataType, timeSc
     finnhubTypes[dataType][timeScale], 
     parseInt(timeStart.toString().slice(0, -3)), 
     parseInt(timeEnd.toString().slice(0, -3)), 
-    (error, data, response) => handleFinnhubResponse(error, data, response, ticker, dataType, timeScale, stockData, dispatch, resolve));
+    {},
+    (error, data, response) => {console.log(error, data, response); handleFinnhubResponse(error, data, response, ticker, dataType, timeScale, stockData, dispatch, resolve)});
 }
 
 function cryptoCandles(ticker, finnhubTypes, timeStart, timeEnd, dataType, timeScale, stockData, dispatch, resolve) {
@@ -313,7 +314,7 @@ function handleFinnhubResponse(error, data, response, ticker, dataType, timeScal
   if(data && data.s === 'no_data') {
     resolve();
   }
-  else if(data && data.o) {
+  else if(data && data.o && data.v) {
     if(!stockData[ticker][dataType+"Price"]) {
       stockData[ticker][dataType+"Price"] = {};
       stockData[ticker][dataType+"Percent"] = {};
@@ -330,6 +331,7 @@ function handleFinnhubResponse(error, data, response, ticker, dataType, timeScal
 
 function computePercent(data) {
   var firstPrice = data.o[0];
+  var firstVolume = data.v[0];
   var percentData = {};
   percentData.t = data.t;
   percentData.v = data.v;
@@ -344,6 +346,9 @@ function computePercent(data) {
   })
   percentData.l = data.l.map(datum => {
     return (datum - firstPrice) / firstPrice * 100.;
+  })
+  percentData.v = data.v.map(datum => {
+    return (datum - firstVolume) / firstVolume * 100.;
   })
   return percentData;
 }

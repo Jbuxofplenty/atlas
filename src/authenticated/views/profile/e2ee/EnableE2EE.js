@@ -56,6 +56,7 @@ function EnableE2EE(props) {
     setIsPending(true);
     props.clear();
     props.setComponent('e2ee');
+    props.pending(true);
     var e2ee = event.target.checked;
     // Enabled
     if(e2ee) {
@@ -77,7 +78,7 @@ function EnableE2EE(props) {
     }
     setE2EE(e2ee);
     await db.collection("users").doc(auth.currentUser.uid).update({ e2ee });
-
+    if(e2ee) props.pending(false);
     // Update redux store after all operations have been performed
     var userData = {};
     Object.assign(userData, props.userData);
@@ -137,6 +138,7 @@ const mapDispatchToProps = (dispatch, history) => {
     clear: () => dispatch(alertActions.clear()),
     success: (message) => dispatch(alertActions.success(message)),
     error: (message) => dispatch(alertActions.error(message)),
+    pending: (show) => dispatch(alertActions.pending(show)),
     setComponent: (component) => dispatch(alertActions.component(component)),
     registerNewUser: () => dispatch(eThreeActions.registerNewUser()),
     convertE2EE: (nextE2EE) => dispatch(eThreeActions.convertE2EE(nextE2EE)),

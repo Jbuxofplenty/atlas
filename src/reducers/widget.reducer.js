@@ -49,7 +49,26 @@ const initialState = {
       dataSet: dataSets[0],
     },
   },
-  'charts': {},
+  'charts': {
+    "0": {
+      widgetType: 'customize',
+      dataGrid: {x: 6, y: 13, w: 6, h: 7, minW: 5, minH: 7, isBounded: true, i: "0"},
+      collapsed: false,
+    },
+    "2": {
+      widgetType: 'candleStick',
+      chartName: 'Candle Stick (Price)',
+      dataGrid: {x: 0, y: 0, w: 12, h: 16, minH: 14, minW: 6, i: "2"},
+      collapsed: false,
+      height: 444,
+      tickers: {1: defaultTicker},
+      chartOptions: candleStickOptions,
+      name: 'Crypto Currencies Candlestick Chart',
+      timeScale: '1M',
+      yType: 'Price',
+      dataSet: dataSets[0],
+    },
+  },
 }
 
 function widget(state = initialState, action) {

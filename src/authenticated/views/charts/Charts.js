@@ -1,210 +1,139 @@
 import React, { useState, useEffect } from 'react';
+import { connect } from 'react-redux';
+import { Responsive, WidthProvider } from 'react-grid-layout';
+import _ from 'lodash';
 
-import {
-  Row, Col
-} from 'reactstrap';
-
-import Widget from 'components/Widget';
-import ApexChart from 'react-apexcharts';
-
-import s from './Charts.module.scss';
-import {chartData, liveChart, liveChartInterval} from './mock';
-import Sparklines from '../../../components/Sparklines';
-
-import ReactEchartsCore from 'echarts-for-react/lib/core';
- 
-import echarts from 'echarts/lib/echarts';
-
-import 'echarts/lib/chart/line';
-import 'echarts/lib/chart/pie';
-import 'echarts/lib/chart/themeRiver';
-import 'echarts/lib/component/tooltip';
-import 'echarts/lib/component/legend';
-
-import Highcharts from 'highcharts';
-import HighchartsReact from 'highcharts-react-official'
-import exporting from 'highcharts/modules/exporting';
-import exportData from 'highcharts/modules/export-data';
+import AddWidget from 'components/AddWidget/AddWidget';
+import ChartWidget from '../dashboard/components/ChartWidget';
 
 import { widgetActions } from 'actions';
 
-exporting(Highcharts);
-exportData(Highcharts);
+import s from './Charts.module.scss';
 
+const strComponentMap = {
+  'customize': AddWidget,
+  'candleStick': ChartWidget,
+}
 
-{/* <Col lg={12} xs={12}>
-<Widget
-  title={<h5>Highcharts <span className="fw-semi-bold">Live Chart</span></h5>}
-  close collapse
->
-  <HighchartsReact options={ld} />
-</Widget>
-</Col> */}
-
+const GridLayout = WidthProvider(Responsive);
 
 function Charts(props) {
   const [gridWidth, setGridWidth] = useState(null);
+  const [layout, setLayout] = useState(null);
+  const [layouts, setLayouts] = useState(null);
+  const breakpoints = {lg: 1000, md: 750, sm: 500, xs: 300, xxs: 0};
 
   useEffect(() => {
-    // var tempGridWidth = document.getElementById('dashboardContainer').clientWidth;
-    // setGridWidth(tempGridWidth);
+    buildLayout(props.widgets)
+    var tempGridWidth = document.getElementById('chartsContainer').clientWidth;
+    setGridWidth(tempGridWidth);
     return function cleanup() {
       widgetActions.saveFirebaseWidgets('charts');
     };
     // eslint-disable-next-line
   }, []);
 
-  const state = {
-    cd: chartData,
-    ld: liveChart,
-    initEchartsOptions: {
-      renderer: 'canvas'
-    },
-    sparklineData: {
-      series: [{data: [1,7,3,5,7,8]}],
-      options1: {
-        colors: ['#ffc247'],
-        plotOptions: {
-          bar: {
-            columnWidth: '50%'
-          }
-        }
-      },
-      options2: {
-        colors: ['#ffc0d9'],
-        plotOptions: {
-          bar: {
-            columnWidth: '50%'
-          }
-        }
-      }
+  const buildLayout = (widgets) => {
+    if(widgets && !_.isEmpty(widgets)) {
+      var newLayout = [];
+      Object.keys(widgets).forEach(key => {
+        newLayout.push(widgets[key].dataGrid);
+      })
+      var newLayouts = {};
+      Object.keys(breakpoints).forEach(key => {
+        newLayouts[key] = newLayout;
+        return;
+      })
+      setLayout(newLayout);
+      setLayouts(newLayouts);
     }
   }
-  const { cd, ld, initEchartsOptions, sparklineData } = state;
+
+  useEffect(() => {
+    buildLayout(props.widgets)
+    // eslint-disable-next-line
+  }, [props.widgets]);
+
+  const widgetResizeStop = async (layout, oldItem, newItem, placeholder, e, element) => {
+    var height = document.getElementById(newItem.i).clientHeight;
+    var widgetTitleElement = document.getElementById(newItem.i+'-widgetTitle');
+    var timeScaleElement = document.getElementById(newItem.i+'-timeScale');
+      layout.forEach(data => {
+        var widget = JSON.parse(JSON.stringify(props.widgets[data.i]));
+        widget.dataGrid.x = data.x;
+        widget.dataGrid.y = data.y;
+        widget.dataGrid.w = data.w;
+        widget.dataGrid.h = data.h;
+        if(widgetTitleElement && timeScaleElement) {
+          if(data.i === newItem.i) {
+            var widgetTitleHeight = widgetTitleElement.clientHeight;
+            var timeScaleHeight = timeScaleElement.clientHeight;
+            widget.height = height-widgetTitleHeight-100-timeScaleHeight;
+          }
+        }
+        props.updateWidget(data.i, widget);
+      })
+  }
+
+  const widgetDragStop = (layout, oldItem, newItem, placeholder, e, element) => {
+    layout.forEach(data => {
+      var widget = JSON.parse(JSON.stringify(props.widgets[data.i]));
+      widget.dataGrid.x = data.x;
+      widget.dataGrid.y = data.y;
+      widget.dataGrid.w = data.w;
+      widget.dataGrid.h = data.h;
+      props.updateWidget(data.i, widget);
+    })
+  }
+
+  const renderWidgets = () => {
+    return Object.keys(props.widgets).map(key => {
+      const widgetObject = JSON.parse(JSON.stringify(props.widgets[key]));
+      const ComponentInMap = strComponentMap[widgetObject.widgetType];
+      return (
+        <div key={key} data-grid={widgetObject.dataGrid} id={key} >
+          <ComponentInMap widget={widgetObject} widgetId={key} view={'charts'} />
+        </div>
+      )
+    })
+  }
 
   return (
-    <div className={s.root}>
-      <h1 className="page-title"><span className="fw-semi-bold">Charts</span></h1>
-      <div>
-        <Row>
-          <Col lg={7} xs={12}>
-            <Widget
-              title={<h5>Apex <span className='fw-semi-bold'>Column Chart</span></h5>}
-              close collapse
-            >
-              <ApexChart 
-                className="sparkline-chart" 
-                height={350} 
-                series={cd.apex.column.series}
-                options={cd.apex.column.options}
-                type={"bar"}
-              />
-            </Widget>
-          </Col>
-          <Col lg={5} xs={12}>
-            <Widget
-              title={<h5>Echarts <span className='fw-semi-bold'>Line Chart</span></h5>}
-              close collapse
-            >
-              <ReactEchartsCore
-                echarts={echarts}
-                option={cd.echarts.line}
-                opts={initEchartsOptions}
-                style={{height: "365px"}}
-              />
-            </Widget>
-          </Col>
-          <Col lg={5} xs={12}>
-            <Widget
-              title={<h5>Highcharts <span className='fw-semi-bold'>Line Chart</span></h5>}
-              close collapse
-            >
-              <HighchartsReact options={cd.highcharts.mixed}/>
-              <h5 className="mt">Interactive <span className="fw-semi-bold">Sparklines</span></h5>
-              <Row className="mt">
-                <Col md={6} xs={12}>
-                  <div className="stats-row">
-                    <div className="stat-item">
-                      <p className="value5 fw-thin">34 567</p>
-                      <h6 className="name text-muted m0 fs-mini">Overall Values</h6>
-                    </div>
-                    <div className="stat-item stat-item-mini-chart">
-                      <Sparklines 
-                        options={sparklineData.options2}
-                        width={80}
-                        height={25}
-                        data={sparklineData.series}
-                      />
-                    </div>
-                  </div>
-                </Col>
-                <Col md={6} xs={12}>
-                  <div className="stats-row">
-                    <div className="stat-item">
-                      <p className="value5 fw-thin">34 567</p>
-                      <h6 className="name text-muted m0 fs-mini">Overall Values</h6>
-                    </div>
-                    <div className="stat-item stat-item-mini-chart">
-                      <Sparklines 
-                        options={sparklineData.options1}
-                        width={80}
-                        height={25}
-                        data={sparklineData.series}
-                      />
-                    </div>
-                  </div>
-                </Col>
-              </Row>
-            </Widget>
-          </Col>
-          <Col lg={7} xs={12}>
-            <Row>
-              <Col lg={6} xs={12}>
-                <Widget
-                  title={<h5>Apex <span className="fw-semi-bold">Monochrome Pie</span></h5>}
-                  close collapse
-                >
-                  <ApexChart 
-                    className="sparkline-chart"
-                    type={"pie"} 
-                    height={200} 
-                    series={cd.apex.pie.series}
-                    options={cd.apex.pie.options}
-                  />
-                </Widget>
-              </Col>
-              <Col lg={6} xs={12}>
-                <Widget
-                  title={<h5>Chart <span className="fw-semi-bold">Donut Chart</span></h5>}
-                  close collapse
-                >
-                  <ReactEchartsCore
-                    echarts={echarts}
-                    option={cd.echarts.donut}
-                    opts={initEchartsOptions}
-                    style={{height: "170px"}}
-                  />
-                </Widget>
-              </Col>
-            </Row>
-          </Col>
-          <Col lg={12} xs={12}>
-            <Widget
-              title={<h5>Echarts <span className="fw-semi-bold">River Chart</span></h5>}
-              close collapse
-            >
-              <ReactEchartsCore
-                echarts={echarts}
-                option={cd.echarts.river}
-                opts={initEchartsOptions}
-                style={{height: "350px"}}
-              />
-            </Widget>
-          </Col>
-        </Row>
-      </div>
+    <div id="chartsContainer" className={s.root}>
+      {gridWidth && props.widgets && layout &&
+        <>
+          <h1 className="page-title">Charts &nbsp;</h1>
+          <GridLayout 
+              className="w-100"
+              rowHeight={30} 
+              width={gridWidth}
+              onResizeStop={widgetResizeStop}
+              onDragStop={widgetDragStop}
+              layout={layout}
+              layouts={layouts}
+              breakpoints={breakpoints}
+              cols={{lg: 12, md: 10, sm: 6, xs: 4, xxs: 2}}>
+            {renderWidgets()}
+          </GridLayout>
+        </>
+      }
     </div>
   );
 }
 
-export default Charts;
+const mapStateToProps = (store) => {
+  return {
+    widgets: store.widget.charts,
+    stockData: store.data.stockData,
+  };
+}
+
+const mapDispatchToProps = (dispatch, history) => {
+  return {
+    resetWidgets: () => dispatch(widgetActions.resetWidgets()),
+    updateWidgets: (widgets) => dispatch(widgetActions.updateWidgets(widgets, 'charts')),
+    updateWidget: (key, widget) => dispatch(widgetActions.updateWidget(key, widget, 'charts')),
+  };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Charts);

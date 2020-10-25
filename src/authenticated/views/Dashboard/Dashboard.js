@@ -5,7 +5,7 @@ import _ from 'lodash';
 
 import AddWidget from 'components/AddWidget/AddWidget';
 import AccountsWidget from './components/AccountsWidget';
-import CandlestickWidget from './components/CandlestickWidget';
+import ChartWidget from './components/ChartWidget';
 import CalculatorWidget from './components/CalculatorWidget';
 
 import { widgetActions } from 'actions';
@@ -15,7 +15,7 @@ import s from './Dashboard.module.scss';
 const strComponentMap = {
   'customize': AddWidget,
   'accountSummary': AccountsWidget,
-  'candleStick': CandlestickWidget,
+  'candleStick': ChartWidget,
   'compoundInterestCalculator': CalculatorWidget,
   'loanInterestCalculator': CalculatorWidget,
 }

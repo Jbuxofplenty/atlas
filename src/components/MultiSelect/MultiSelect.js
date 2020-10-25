@@ -15,13 +15,9 @@ const colourStyles = {
       ...styles,
       zIndex: 999,
       backgroundColor: data.color,
-      color: isDisabled
-        ? '#ccc'
-        : isSelected
-        ? chroma.contrast(color, 'white') > 2
+      color: chroma.contrast(color, 'white') > 2
           ? 'white'
-          : 'black'
-        : 'white',
+          : 'black',
       cursor: isDisabled ? 'not-allowed' : 'default',
       ':active': {
         ...styles[':active'],

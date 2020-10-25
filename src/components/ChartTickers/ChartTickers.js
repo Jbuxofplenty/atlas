@@ -79,7 +79,7 @@ function ChartTickers(props) {
     props.setTickers(updatedTickers);
     var tempWidget = JSON.parse(JSON.stringify(props.widget));
     tempWidget.tickers = tempTickers;
-    widgetActions.updateCandleStickWidget(props.widgetId, tempWidget, props.view);
+    widgetActions.updateChartWidget(props.widgetId, tempWidget, props.view);
   }
 
   const updateOptions = async (dataSet) => {
@@ -121,7 +121,7 @@ function ChartTickers(props) {
     updateOptions(selectedValue.value);
     var tempWidget = JSON.parse(JSON.stringify(props.widget));
     tempWidget.dataSet = selectedValue;
-    widgetActions.updateCandleStickWidget(props.widgetId, tempWidget, props.view);
+    widgetActions.updateChartWidget(props.widgetId, tempWidget, props.view);
   } 
 
   return (
@@ -129,7 +129,7 @@ function ChartTickers(props) {
       {defaultValues &&
         <>
           <div className="mt-3 d-flex flex-column">
-            <p className={`${s.title}`}>Ticker Sets</p>
+            <p className={`${s.title}`}>Symbol Sets</p>
             <div className={`${s.inputContainer}`}>
               <Select 
                 onSelectChange={onDataSetChange}
@@ -139,7 +139,7 @@ function ChartTickers(props) {
             </div>
           </div>
           <div className="d-flex flex-column">
-            <p className={`${s.title}`}>Tickers</p>
+            <p className={`${s.title}`}>Symbols</p>
             <div className={`${s.inputContainer}`}>
               <MultiSelect 
                 onSelectChange={onDataSelectChange}

@@ -49,7 +49,7 @@ function AddWidget(props) {
     newChart.dataGrid.x = xy.x;
     newChart.dataGrid.y = xy.y;
     newChart.dataGrid.i = key;
-    widgetActions.updateCandleStickWidget(key, newChart, props.view);
+    widgetActions.updateChartWidget(key, newChart, props.view);
   }
 
   const addCalculator = async () => {

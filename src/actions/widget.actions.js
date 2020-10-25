@@ -16,7 +16,7 @@ export const widgetActions = {
   getOpenSlot,
   getAllFirebaseWidgets,
   saveAllFirebaseWidgets,
-  updateCandleStickWidget,
+  updateChartWidget,
 };
 
 function addWidget(key, widget, view) {
@@ -35,13 +35,13 @@ function deleteWidget(key, view) {
   return { type: widgetConstants.DELETE_WIDGET, key, view };
 }
 
-async function updateCandleStickWidget(key, widget, view) {
+async function updateChartWidget(key, widget, view) {
   var timeScale = widget.timeScale;
   var tickers = widget.tickers;
   var yType = widget.yType;
   var stockData = await candleStickStockData(tickers, timeScale, yType);
   var chartOptions = JSON.parse(JSON.stringify(candleStickOptions));
-  if(stockData.length > 0) {
+  if(stockData.length > 0 && stockData[0]) {
     var timeStamps = [];
     stockData[0].t.forEach(timeStamp => {
       timeStamps.push(new Date(timeStamp*1000).toLocaleString('en-US'));
@@ -104,7 +104,9 @@ async function candleStickStockData(tickers, timeScale, yType) {
     var series = [];
     Object.keys(tickers).forEach(tickerKey => {
       var ticker = tickers[tickerKey];
-      series.push(stockData[ticker[0]]['candleStick'+yType][timeScale])
+      if(stockData[ticker[0]] && stockData[ticker[0]]['candleStick'+yType]) {
+        series.push(stockData[ticker[0]]['candleStick'+yType][timeScale])
+      }
     });
     return cleanStockData(series)
   }
@@ -112,7 +114,7 @@ async function candleStickStockData(tickers, timeScale, yType) {
 }
 
 function cleanStockData(series) {
-  if(series.length > 0) {
+  if(series.length > 0 && series[0]) {
     let newSeries = [];
     var firstSharedTime = 0;
     var lastSharedTime = series[0].t[series[0].t.length-1];
@@ -208,7 +210,7 @@ function getFirebaseWidgets(view) {
       });
       Object.keys(widgets).forEach(widgetKey => {
         var widget = widgets[widgetKey];
-        if(widget.widgetType === 'candleStick') updateCandleStickWidget(widgetKey, widget, view)
+        if(widget.widgetType === 'candleStick') updateChartWidget(widgetKey, widget, view)
         else dispatch(updateWidget(widgetKey, widget, view))
       })
     }
