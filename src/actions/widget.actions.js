@@ -2,7 +2,7 @@ import { widgetConstants } from '../constants';
 import { initialState } from '../reducers/widget.reducer';
 import { db, auth } from 'helpers/firebase';
 import { store, asyncForEach } from 'helpers';
-import { candleStickOptions, defaultXAxis, defaultSeries } from 'charts';
+import { candleStickOptions, defaultXAxis, defaultSeries, riverOptions } from 'charts';
 import { dataActions } from './';
 
 export const widgetActions = {
@@ -36,6 +36,49 @@ function deleteWidget(key, view) {
 }
 
 async function updateChartWidget(key, widget, view) {
+  if(widget.widgetType === 'candleStick') updateCandleStick(key, widget, view);
+  if(widget.widgetType === 'river') updateRiver(key, widget, view);
+}
+
+async function updateRiver(key, widget, view) {
+  var timeScale = widget.timeScale;
+  var tickers = widget.tickers;
+  var yType = widget.yType;
+  var stockData = await candleStickStockData(tickers, timeScale, yType);
+  var chartOptions = JSON.parse(JSON.stringify(riverOptions));
+  if(stockData.length > 0 && stockData[0]) {
+    var timeStamps = [];
+    stockData[0].t.forEach(timeStamp => {
+      timeStamps.push(new Date(timeStamp*1000));
+    })
+    Object.keys(tickers).forEach(tickerKey => {
+      var ticker = tickers[tickerKey];
+      chartOptions.legend.data.push(ticker[1]);
+      chartOptions.color.push(ticker[2]);
+    });
+    var data = [];
+    Object.keys(tickers).forEach((tickerKey, index) => {
+      var riverData = stockData[index];
+      if(riverData) {
+        for(var i=0; i < riverData.v.length; i++) {
+          var datum = [];
+          var ticker = tickers[tickerKey];
+          datum.push(timeStamps[i]);
+          datum.push(riverData.v[i]);
+          datum.push(ticker[1]);
+          data.push(datum);
+        }
+      }
+    });
+    chartOptions.series[0].data = data;
+    chartOptions.series[0].type = 'themeRiver';
+  }
+  widget.chartOptions = chartOptions;
+  console.log(chartOptions)
+  store.dispatch(updateWidget(key, widget, view));
+}
+
+async function updateCandleStick(key, widget, view) {
   var timeScale = widget.timeScale;
   var tickers = widget.tickers;
   var yType = widget.yType;
@@ -174,6 +217,11 @@ function purgeWidgets(widgets) {
       newWidgets[widgetKey].chartOptions.legend.data = [];
       delete newWidgets[widgetKey].chartOptions.tooltip.position;
     }
+    if(newWidgets[widgetKey].widgetType === 'river') {
+      newWidgets[widgetKey].chartOptions.color = [];
+      newWidgets[widgetKey].chartOptions.series[0].data = [];
+      newWidgets[widgetKey].chartOptions.legend.data = [];
+    }
   })
   return newWidgets;
 }
@@ -210,7 +258,8 @@ function getFirebaseWidgets(view) {
       });
       Object.keys(widgets).forEach(widgetKey => {
         var widget = widgets[widgetKey];
-        if(widget.widgetType === 'candleStick') updateChartWidget(widgetKey, widget, view)
+        if(widget.widgetType === 'candleStick'
+          || widget.widgetType === 'river') updateChartWidget(widgetKey, widget, view)
         else dispatch(updateWidget(widgetKey, widget, view))
       })
     }

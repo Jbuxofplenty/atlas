@@ -22,10 +22,16 @@ import 'echarts/lib/component/dataZoom';
 import { positionFunction } from 'charts';
 
 import { chartTypes, chartTypesMap } from 'components/Select/data';
+import { initialState } from 'reducers/widget.reducer';
 
 import { alertActions, widgetActions, dataActions } from 'actions';
 
 import s from '../Dashboard.module.scss';
+
+const defaultChartsMap = {
+  'candleStick': initialState['dashboard']['2'],
+  'river': initialState['charts']['1'],
+}
 
 const initEchartsOptions = {
   renderer: 'canvas',
@@ -59,7 +65,7 @@ function ChartWidget(props) {
   }, [eChartsRef, options]);
 
   const updateOptions = (tempOptions) => {
-    if(tempOptions && tempOptions.xAxis.length !== 0) {
+    if(tempOptions && tempOptions.series && tempOptions.series.length !== 0) {
       tempOptions.tooltip.position = positionFunction;
       setOptions(JSON.parse(JSON.stringify(tempOptions)));
       if (eChartsRef && eChartsRef.current) {
@@ -94,7 +100,17 @@ function ChartWidget(props) {
     var tempWidget = JSON.parse(JSON.stringify(props.widget));
     tempWidget.widgetName = selectedValue.label;
     tempWidget.yType = selectedValue.yType;
-    widgetActions.updateChartWidget(props.widgetId, tempWidget, props.view);
+    var widgetType = selectedValue.chartType;
+    // Insert code to save widget (implement in widgetActions and hook up calculatorwidget too)
+    if(widgetType !== tempWidget.widgetType) {
+      var newChartWidget = JSON.parse(JSON.stringify(defaultChartsMap[widgetType]));
+      newChartWidget.dataGrid.x = tempWidget.dataGrid.x;
+      newChartWidget.dataGrid.y = tempWidget.dataGrid.y;
+      newChartWidget.dataGrid.h = tempWidget.dataGrid.h;
+      newChartWidget.dataGrid.w = tempWidget.dataGrid.w;
+      widgetActions.updateChartWidget(props.widgetId, newChartWidget, props.view);
+    }
+    else widgetActions.updateChartWidget(props.widgetId, tempWidget, props.view);
   }
 
   const handleMore = async () => {
@@ -111,8 +127,6 @@ function ChartWidget(props) {
   const handleOnMouseDown = async (e) => {
     e.stopPropagation();
   }
-
-  console.log(options)
 
   return (
     <Widget 

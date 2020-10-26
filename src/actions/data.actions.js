@@ -292,7 +292,7 @@ function stockCandles(ticker, finnhubTypes, timeStart, timeEnd, dataType, timeSc
     parseInt(timeStart.toString().slice(0, -3)), 
     parseInt(timeEnd.toString().slice(0, -3)), 
     {},
-    (error, data, response) => {console.log(error, data, response); handleFinnhubResponse(error, data, response, ticker, dataType, timeScale, stockData, dispatch, resolve)});
+    (error, data, response) => handleFinnhubResponse(error, data, response, ticker, dataType, timeScale, stockData, dispatch, resolve));
 }
 
 function cryptoCandles(ticker, finnhubTypes, timeStart, timeEnd, dataType, timeScale, stockData, dispatch, resolve) {

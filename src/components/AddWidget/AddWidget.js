@@ -101,21 +101,23 @@ function AddWidget(props) {
             </Card.Body>
           </Card>
         </GridItem>
-        <GridItem xs={12} sm={12} lg={12}>      
-          <Card
-            key={1}
-            className="my-2 bg-atlas-input text-white clickable"
-            onClick={addCalculator}
-            onMouseDown={handleOnMouseDown}
-          >
-            <Card.Body>
-              <Card.Text className="d-flex flex-row align-items-center justify-content-center">
-                <i className={`${s.addWidgetIcon} text-white fa fa-calculator`}/>
-                <span className={`${s.addText} text-white`}>Add Calculator</span>
-              </Card.Text>
-            </Card.Body>
-          </Card>
-        </GridItem>
+        {props.view === 'dashboard' &&
+          <GridItem xs={12} sm={12} lg={12}>      
+            <Card
+              key={1}
+              className="my-2 bg-atlas-input text-white clickable"
+              onClick={addCalculator}
+              onMouseDown={handleOnMouseDown}
+            >
+              <Card.Body>
+                <Card.Text className="d-flex flex-row align-items-center justify-content-center">
+                  <i className={`${s.addWidgetIcon} text-white fa fa-calculator`}/>
+                  <span className={`${s.addText} text-white`}>Add Calculator</span>
+                </Card.Text>
+              </Card.Body>
+            </Card>
+          </GridItem>
+        }
         {!accountSummaryVisible &&
           <GridItem xs={12} sm={12} lg={12} >          
             <Card
@@ -147,8 +149,7 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch, history) => {
   return {
     resetWidgets: () => dispatch(widgetActions.resetWidgets()),
-    updateWidgets: (widgets) => dispatch(widgetActions.updateWidgets(widgets, 'dashboard')),
-    updateWidget: (key, widget) => dispatch(widgetActions.updateWidget(key, widget, 'dashboard')),
+    updateWidget: (key, widget, view) => dispatch(widgetActions.updateWidget(key, widget, view)),
   };
 }
 
