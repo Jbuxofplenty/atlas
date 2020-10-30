@@ -18,6 +18,7 @@ const colourStyles = {
     ...styles, 
     zIndex: '100000 !important',
     backgroundColor: 'rgba(0,0,0,.24)',
+    height: 20,
   }),
   option: (styles, { isDisabled, isFocused, isSelected }) => {
     return {
@@ -28,6 +29,7 @@ const colourStyles = {
         ? '#ccc'
         : 'white',
       cursor: isDisabled ? 'not-allowed' : 'default',
+      zIndex: 9999,
       ':active': {
         ...styles[':active'],
         backgroundColor: !isDisabled && (isFocused ? '#10111A' : '#10111A'),
@@ -53,6 +55,8 @@ export default function CustomSelect(props) {
         options={props.options}
         styles={colourStyles}
         onChange={props.onSelectChange}
+        onMouseDown={handleOnMouseDown}
+        maxMenuHeight={100}
       />
     </div>
   )

@@ -1,9 +1,16 @@
 import { dataConstants } from '../constants';
 import { db, auth } from 'helpers/firebase';
 import { eThreeActions, alertActions } from 'actions';
-import { store, finnhubClient, p } from 'helpers';
+import { 
+  store, 
+  finnhubClient, 
+  p, 
+  losersUrl, 
+  gainersUrl, 
+  asyncForEach 
+} from 'helpers';
 import OAuthObject from 'oauth2';
-import { asyncForEach } from 'helpers';
+import { usStocks } from 'components/MultiSelect/data';
 
 const financialDataTypeMap = {
   "accessTokens": {
@@ -25,6 +32,7 @@ export const dataActions = {
   financialDataTypeMap,
   retrieveBatchStockData,
   storeAllFinancialDataFirestore,
+  getMovers,
 };
 
 function dataReset() {
@@ -351,4 +359,36 @@ function computePercent(data) {
     return (datum - firstVolume) / firstVolume * 100.;
   })
   return percentData;
+}
+
+
+/////////////////////////////
+///////// IEX Cloud /////////
+/////////////////////////////
+
+async function getMovers(moverType) {
+  let apiUrl = gainersUrl();
+  if(moverType === 'losers') apiUrl = losersUrl();
+  var responseData = await fetch(apiUrl, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    }
+  })
+  .then((response) => response.json())
+  .then(async (responseJson) => {
+    return responseJson;
+  })
+  .catch((error) => {
+    p("Error in request from IEXCloud when retrieving data for " + moverType + "!")
+    p(error)
+    return false;
+  });
+  var tickers = [];
+  responseData.forEach(mover => {
+    usStocks.forEach(stock => {
+      if(stock.value === mover.symbol) tickers.push(stock);
+    })
+  })
+  return tickers;
 }

@@ -2,7 +2,15 @@ import { widgetConstants } from '../constants';
 import { initialState } from '../reducers/widget.reducer';
 import { db, auth } from 'helpers/firebase';
 import { store, asyncForEach } from 'helpers';
-import { candleStickOptions, defaultXAxis, defaultSeries, riverOptions } from 'charts';
+import { 
+  candleStickOptions, 
+  defaultXAxis, 
+  defaultSeries, 
+  riverOptions, 
+  lineOptions,
+  horizontalBarOptions,
+  defaultBarDatum,
+} from 'charts';
 import { dataActions } from './';
 
 export const widgetActions = {
@@ -38,6 +46,94 @@ function deleteWidget(key, view) {
 async function updateChartWidget(key, widget, view) {
   if(widget.widgetType === 'candleStick') updateCandleStick(key, widget, view);
   if(widget.widgetType === 'river') updateRiver(key, widget, view);
+  if(widget.widgetType === 'horizontalBar') updateHorizontalBar(key, widget, view);
+  if(widget.widgetType === 'line') updateLine(key, widget, view);
+}
+
+async function updateLine(key, widget, view) {
+  var timeScale = widget.timeScale;
+  var tickers = widget.tickers;
+  var yType = widget.yType;
+  var units = widget.units;
+  var stockData = await candleStickStockData(tickers, timeScale, yType);
+  var chartOptions = JSON.parse(JSON.stringify(lineOptions));
+  if(stockData.length > 0 && stockData[0]) {
+    var timeStamps = [];
+    stockData[0].t.forEach(timeStamp => {
+      timeStamps.push(new Date(timeStamp*1000).toLocaleString('en-US'));
+    })
+    chartOptions.xAxis.push(defaultXAxis);
+    chartOptions.xAxis[0].data = timeStamps;
+  }
+  Object.keys(tickers).forEach((tickerKey, index) => {
+    var ticker = tickers[tickerKey];
+    chartOptions.legend.data.push(ticker[1]);
+    var data = [];
+    var candleStickData = stockData[index];
+    if(candleStickData) {
+      for(var i=0; i < candleStickData.o.length; i++) {
+        if(units === 'Shares') {
+          data.push(candleStickData.v[i]);
+        }
+        else {
+          data.push(candleStickData.o[i]);
+        }
+      }
+    }
+    chartOptions.series.push(JSON.parse(JSON.stringify(defaultSeries)));
+    chartOptions.series[index].itemStyle.color = ticker[2];
+    chartOptions.series[index].data = data;
+    chartOptions.series[index].name = ticker[1];
+    chartOptions.series[index].type = 'line';
+  });
+  widget.chartOptions = chartOptions;
+  store.dispatch(updateWidget(key, widget, view));
+}
+
+async function updateHorizontalBar(key, widget, view) {
+  var timeScale = widget.timeScale;
+  var tickers = widget.tickers;
+  var yType = widget.yType;
+  var units = widget.units;
+  var stockData = await candleStickStockData(tickers, timeScale, yType);
+  var chartOptions = JSON.parse(JSON.stringify(horizontalBarOptions));
+  if(stockData.length > 0 && stockData[0]) {
+    Object.keys(tickers).forEach(tickerKey => {
+      var ticker = tickers[tickerKey];
+      chartOptions.yAxis.data.push(ticker[1]);
+    });
+    var data = [];
+    Object.keys(tickers).forEach((tickerKey, index) => {
+      var horizontalBarData = stockData[index];
+      if(horizontalBarData) {
+        let datum = JSON.parse(JSON.stringify(defaultBarDatum));
+        var lastDatumIndex = horizontalBarData.c.length - 1;
+        if(units === 'Percent') {
+          datum.value = horizontalBarData.c[lastDatumIndex];
+        }
+        else if(units === 'Price') {
+          datum.value = horizontalBarData.o[0] - horizontalBarData.c[lastDatumIndex];
+        }
+        else {
+          let summedVolume = 0;
+          for(var i in horizontalBarData.v) {
+            summedVolume += horizontalBarData.v[i];
+          }
+          datum.value = summedVolume;
+        }
+        datum.itemStyle.color = '#00ff80';
+        datum.label.position = 'left';
+        if(datum.value < 0) {
+          datum.itemStyle.color = '#ff8080';
+          datum.label.position = 'right';
+        }
+        data.push(datum);
+      }
+    });
+    chartOptions.series[0].data = data;
+  }
+  widget.chartOptions = chartOptions;
+  store.dispatch(updateWidget(key, widget, view));
 }
 
 async function updateRiver(key, widget, view) {
@@ -74,7 +170,6 @@ async function updateRiver(key, widget, view) {
     chartOptions.series[0].type = 'themeRiver';
   }
   widget.chartOptions = chartOptions;
-  console.log(chartOptions)
   store.dispatch(updateWidget(key, widget, view));
 }
 
@@ -211,7 +306,8 @@ async function saveAllFirebaseWidgets() {
 function purgeWidgets(widgets) {
   var newWidgets = JSON.parse(JSON.stringify(widgets));
   Object.keys(newWidgets).forEach(widgetKey => {
-    if(newWidgets[widgetKey].widgetType === 'candleStick') {
+    if(newWidgets[widgetKey].widgetType === 'candleStick'
+        || newWidgets[widgetKey].widgetType === 'line') {
       newWidgets[widgetKey].chartOptions.xAxis = [];
       newWidgets[widgetKey].chartOptions.series = [];
       newWidgets[widgetKey].chartOptions.legend.data = [];
@@ -259,7 +355,9 @@ function getFirebaseWidgets(view) {
       Object.keys(widgets).forEach(widgetKey => {
         var widget = widgets[widgetKey];
         if(widget.widgetType === 'candleStick'
-          || widget.widgetType === 'river') updateChartWidget(widgetKey, widget, view)
+          || widget.widgetType === 'river'
+          || widget.widgetType === 'horizontalBar'
+          || widget.widgetType === 'line') updateChartWidget(widgetKey, widget, view)
         else dispatch(updateWidget(widgetKey, widget, view))
       })
     }

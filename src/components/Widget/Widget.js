@@ -223,8 +223,6 @@ class Widget extends React.Component {
       modal,
     } = this.state;
 
-
-
     return (
     <div className="w-100 h-100">
       <section

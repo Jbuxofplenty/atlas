@@ -1,18 +1,19 @@
-import { 
+export { 
   candleStickOptions, 
   defaultXAxis, 
   defaultSeries, 
   positionFunction 
 } from './candleStick';
 
-import { 
+export { 
   riverOptions
 } from './river';
 
-export {
-  candleStickOptions,
-  defaultXAxis,
-  defaultSeries,
-  positionFunction,
-  riverOptions,
-}
+export { 
+  lineOptions
+} from './line';
+
+export { 
+  horizontalBarOptions,
+  defaultBarDatum
+} from './horizontalBar';

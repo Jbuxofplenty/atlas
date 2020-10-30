@@ -19,6 +19,8 @@ const strComponentMap = {
   'customize': AddWidget,
   'candleStick': ChartWidget,
   'river': ChartWidget,
+  'line': ChartWidget,
+  'horizontalBar': ChartWidget,
 }
 
 const GridLayout = WidthProvider(Responsive);

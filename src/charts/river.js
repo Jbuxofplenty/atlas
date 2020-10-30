@@ -13,6 +13,13 @@ export const riverOptions = {
       }
     }
   },
+  dataZoom: [
+    {
+      type: 'inside',
+      start: 0,
+      end: 100
+    },
+  ],
   legend: {
     data: [],
     textStyle: {
@@ -24,8 +31,11 @@ export const riverOptions = {
     top: 50,
     bottom: 50,
     axisTick: {},
+    nameTextStyle: {
+      color: colors.textColor,
+    },
     axisLabel: {
-      color: colors.textColor
+      color: colors.textColor,
     },
     type: 'time',
     axisPointer: {
@@ -58,6 +68,9 @@ export const riverOptions = {
           shadowBlur: 20,
           shadowColor: 'rgba(0, 0, 0, 0.8)'
         }
+      },
+      label: {
+        show: false
       },
       data: []
     }

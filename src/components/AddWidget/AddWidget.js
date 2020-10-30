@@ -34,9 +34,14 @@ function AddWidget(props) {
 
 
   useEffect(() => {
-    var customizeWidget = JSON.parse(JSON.stringify(initialState['dashboard']['0']));
+    var customizeWidget = JSON.parse(JSON.stringify(props.widget));
     if(!accountSummaryVisible) {
-      customizeWidget.dataGrid = {x: 6, y: 13, w: 6, h: 9, minW: 5, minH: 9, isBounded: true, i: "0"};
+      customizeWidget.dataGrid.h = 9;
+      customizeWidget.dataGrid.minH = 9;
+    }
+    else {
+      customizeWidget.dataGrid.h = 7;
+      customizeWidget.dataGrid.minH = 7;
     }
     props.updateWidget(props.widgetId, customizeWidget, props.view);
     // eslint-disable-next-line

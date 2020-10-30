@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 
 import AuthCustomInput from "components/AuthCustomInput/AuthCustomInput.js";
@@ -9,6 +9,11 @@ import { widgetActions } from 'actions';
  function EditableHeader(props) {
   const [title, setTitle] = useState(props.title);
   const [editing, setEditing] = useState(false);
+
+  useEffect(() => {
+    setTitle(props.widget.name);
+  }, [props.widget.name]);
+
   const submit = (e) => {
     e.preventDefault();
     setEditing(false);

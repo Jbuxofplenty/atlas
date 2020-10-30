@@ -147,14 +147,16 @@ async function eThreeDecrypt(item) {
 }
 
 async function cryptoPassword() {
-  var tempUserData;
   var uid = auth.currentUser.uid;
-  await db.collection("users").doc(uid).get().then(async function (snapshot) {
-    tempUserData = snapshot.data();
+  var tempUserData = await db.collection("users").doc(uid).get().then(async function (snapshot) {
+    return snapshot.data();
   });
-  var randomId = tempUserData.randomId;
-  var password = uid.concat(randomId);
-  return password;
+  if(tempUserData) {
+    var randomId = tempUserData.randomId;
+    var password = uid.concat(randomId);
+    return password;
+  }
+  return '';
 }
 
 async function cryptoEncrypt(item, password) {

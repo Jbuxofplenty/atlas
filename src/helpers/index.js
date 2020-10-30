@@ -10,6 +10,10 @@ export {
   asyncForEach,
   p,
 } from './util';
+export {
+  gainersUrl,
+  losersUrl,
+} from './iexcloud';
 export { store, persistor } from './store';
 export { 
   auth, 

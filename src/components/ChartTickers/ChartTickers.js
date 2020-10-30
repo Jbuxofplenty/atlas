@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import GridItem from "components/Grid/GridItem.js";
 import MultiSelect from 'components/MultiSelect/MultiSelect';
 import Select from 'components/Select/Select';
-import { cryptoCurrencies, indices, gspc, ndx, dji, usStocks } from 'components/MultiSelect/data';
+import { cryptoCurrencies, indices, gspc, ndx, dji, usStocks, nyse, nasdaq } from 'components/MultiSelect/data';
 
 import { alertActions, widgetActions, dataActions } from 'actions';
 import { dataSets } from 'reducers/widget.reducer';
@@ -19,6 +19,7 @@ function ChartTickers(props) {
   const [defaultValues, setDefaultValues] = useState(null);
   const [heldTickers, setHeldTickers] = useState(null);
   const [tickerOptions, setTickerOptions] = useState(null);
+  const [widgetType, setWidgetType] = useState(props.widget.widgetType);
 
   useEffect(() => {
     props.clear();
@@ -28,15 +29,19 @@ function ChartTickers(props) {
   }, []);
 
   useEffect(() => {
-    if(props.alertComponent === props.widgetId) {
+    checkTickers();
+    if(props.widget.widgetType !== widgetType) {
+      setTickers(null);
+      setDefaultValues(null);
       checkTickers();
     }
     // eslint-disable-next-line
-  }, [tickers, props.widget.yType]);
+  }, [tickers, props.widget.yType, props.widget.widgetType]);
 
   const checkTickers = () => {
     var tempTickers = tickers;
     if(!tickers)  {
+      setWidgetType(props.widget.widgetType);
       tempTickers = Object.values(JSON.parse(JSON.stringify(props.widget.tickers)));
       setTickers(tempTickers);
       props.setTickers(tempTickers);
@@ -97,6 +102,9 @@ function ChartTickers(props) {
       }
       else setTickerOptions(heldTickers);
     }
+    else if(dataSet === 'losers' || dataSet === 'gainers') {
+      updateTopMovers(dataSet);
+    }
     else if(dataSet === 'crypto') {
       setTickerOptions(cryptoCurrencies)
     }
@@ -105,6 +113,12 @@ function ChartTickers(props) {
     }
     else if(dataSet === 'dji') {
       setTickerOptions(dji)
+    }
+    else if(dataSet === 'nasdaq') {
+      setTickerOptions(nasdaq)
+    }
+    else if(dataSet === 'nyse') {
+      setTickerOptions(nyse)
     }
     else if(dataSet === 'ndx') {
       setTickerOptions(ndx)
@@ -115,6 +129,14 @@ function ChartTickers(props) {
     else if(dataSet === 'usStocks') {
       setTickerOptions(usStocks)
     }
+  }
+  
+  const updateTopMovers = async (dataSet) => {
+    var label = "All Gainers";
+    if(dataSet === 'losers') label = "All Losers";
+    var newTickers = [{ value: 'all', label, color: '#000000' }];
+    let tempTickers = await dataActions.getMovers(dataSet);
+    setTickerOptions(newTickers.concat(tempTickers));
   }
 
   const onDataSetChange = async (selectedValue) => {
