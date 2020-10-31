@@ -21,6 +21,8 @@ const defaultChartsMap = {
 
 function ChartTypes(props) {
   const [render, setRender] = useState(true);
+  const [selectedType, setSelectedType] = useState(chartTypes[chartTypesMap[props.widget.widgetType]]);
+  const [selectedUnits, setSelectedUnits] = useState(units[unitsMap[props.widget.units]]);
 
   useEffect(() => {
     setRender(true);
@@ -31,6 +33,7 @@ function ChartTypes(props) {
   }
 
   const onTypeSelectChange = (selectedValue) => {
+    setSelectedType(selectedValue)
     setRender(false);
     var tempWidget = JSON.parse(JSON.stringify(props.widget));
     tempWidget.yType = selectedValue.yType;
@@ -50,6 +53,7 @@ function ChartTypes(props) {
   }
 
   const onUnitsSelectChange = (selectedValue) => {
+    setSelectedUnits(selectedValue)
     var tempWidget = JSON.parse(JSON.stringify(props.widget));
     tempWidget.units = selectedValue.value;
     tempWidget.yType = selectedValue.yType;
@@ -58,14 +62,15 @@ function ChartTypes(props) {
 
   return (
     <GridItem xs={12} sm={12} lg={6} >
-      <div className="d-flex flex-column">
+      {selectedType && selectedUnits &&
+        <div className="d-flex flex-column">
         <div className="mt-3 d-flex flex-column">
           <p className={`${s.title}`}>Type</p>
           <div className={`${s.inputContainer}`} onMouseDown={handleOnMouseDown}>
             <Select 
               onSelectChange={onTypeSelectChange}
-              defaultValue={chartTypes[chartTypesMap[props.widget.widgetType]]}
               options={chartTypes}
+              value={selectedType}
             />
           </div>
         </div>
@@ -75,13 +80,14 @@ function ChartTypes(props) {
             <div className={`${s.inputContainer}`} onMouseDown={handleOnMouseDown}>
               <Select 
                 onSelectChange={onUnitsSelectChange}
-                defaultValue={units[unitsMap[props.widget.units]]}
                 options={chartUnitsMap[props.widget.widgetType]}
+                value={selectedUnits}
               />
             </div>
           </div>
         }
-      </div>
+        </div>
+      }
     </GridItem>
   );
 }

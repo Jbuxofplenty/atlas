@@ -139,7 +139,7 @@ async function getFinancialData(type) {
   var allFinancialData = store.getState().data;
   var password = await eThreeActions.cryptoPassword();
   var encryptedFinancialDataKey = await eThreeActions.cryptoEncrypt(type, password);
-  var encryptedFinancialData = allFinancialData[encryptedFinancialDataKey];
+  var encryptedFinancialData = allFinancialData[type][encryptedFinancialDataKey];
   var unEncryptedFinancialData;
   if(!encryptedFinancialData) {
     encryptedFinancialData = {};

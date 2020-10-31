@@ -281,7 +281,7 @@ function mapStateToProps(store) {
 
 const mapDispatchToProps = (dispatch, history) => {
   return {
-    storeFinancialDataFirestore: (institution, type, data) => dispatch(dataActions.storeFinancialDataFirestore(institution, type, data)),
+    storeFinancialDataFirestore: (institution, type, data) => dispatch(dataActions.storeFinancialDataFirestore(institution, type, data, true)),
     clear: () => dispatch(alertActions.clear()),
     setComponent: (component) => dispatch(alertActions.component(component)),
   };

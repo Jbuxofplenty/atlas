@@ -19,6 +19,10 @@ import { widgetActions } from 'actions';
     setEditing(false);
   }
 
+  const handleOnMouseDown = async (e) => {
+    e.stopPropagation();
+  }
+
   const handleChange = (e) => {
     e.stopPropagation();
     setTitle(e.target.value);
@@ -33,12 +37,15 @@ import { widgetActions } from 'actions';
         ? <h5 className={s.title} id={props.id}>{title}</h5>
         : <div onSubmit={submit} style={{width: '400px'}}>
             <AuthCustomInput
-                labelText=""
                 value={title}
                 white
                 onBlur={() => setEditing(false)}
                 onChange={handleChange}
                 fullWidth
+                inputRootCustomClasses={"editable-header mb-5"}
+                formControlProps={{
+                  className: "editable-header"
+                }}
                 inputProps={{
                   color: "secondary",
                   autoFocus: true,
@@ -46,7 +53,10 @@ import { widgetActions } from 'actions';
               />
           </div>
       }
-      <i className={`icon-pane fa fa-pencil clickable ${editing ? 'ml-2 mb-3' : 'mt-3'}`} onClick={() => setEditing(!editing)} />
+      <i className={`icon-pane fa fa-pencil clickable ${editing ? 'ml-2 mt-3' : 'mt-3'}`} 
+        onClick={() => setEditing(!editing)} 
+        onMouseDown={handleOnMouseDown}
+      />
     </div>
   )
 }

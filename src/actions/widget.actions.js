@@ -62,7 +62,7 @@ async function updateLine(key, widget, view) {
     stockData[0].t.forEach(timeStamp => {
       timeStamps.push(new Date(timeStamp*1000).toLocaleString('en-US'));
     })
-    chartOptions.xAxis.push(defaultXAxis);
+    chartOptions.xAxis.push(JSON.parse(JSON.stringify(defaultXAxis)));
     chartOptions.xAxis[0].data = timeStamps;
   }
   Object.keys(tickers).forEach((tickerKey, index) => {
@@ -184,7 +184,7 @@ async function updateCandleStick(key, widget, view) {
     stockData[0].t.forEach(timeStamp => {
       timeStamps.push(new Date(timeStamp*1000).toLocaleString('en-US'));
     })
-    chartOptions.xAxis.push(defaultXAxis);
+    chartOptions.xAxis.push(JSON.parse(JSON.stringify(defaultXAxis)));
     chartOptions.xAxis[0].data = timeStamps;
   }
   Object.keys(tickers).forEach((tickerKey, index) => {

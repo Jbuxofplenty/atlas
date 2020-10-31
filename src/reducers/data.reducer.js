@@ -3,6 +3,8 @@ import { dataConstants } from '../constants';
 const initialState = {
   institutions: {},
   stockData: {},
+  accounts: {},
+  tokens: {},
 };
 
 export function data(state = initialState, action) {
@@ -17,12 +19,16 @@ export function data(state = initialState, action) {
     case dataConstants.UPDATE_ACCESS_TOKENS:
       return {
         ...state,
-        [action.key]: action.accessTokens,
+        accessTokens: {
+          [action.key]: action.accessTokens,
+        }
       };
     case dataConstants.UPDATE_ACCOUNTS:
       return {
         ...state,
-        [action.key]: action.accounts,
+        accounts: {
+          [action.key]: action.accounts,
+        }
       };
     case dataConstants.UPDATE_STOCK_DATA:
       if(state.stockData[action.ticker] && state.stockData[action.ticker][action.dataType])

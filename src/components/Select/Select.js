@@ -1,6 +1,6 @@
 import React from 'react';
 
-import Select from 'react-select';
+import SelectAll from './SelectAll';
 
 const colourStyles = {
   control: styles => ({ 
@@ -49,9 +49,10 @@ export default function CustomSelect(props) {
 
   return (
     <div onMouseDown={handleOnMouseDown}>
-      <Select
+      <SelectAll
         closeMenuOnSelect={true}
         defaultValue={props.defaultValue}
+        value={props.value}
         options={props.options}
         styles={colourStyles}
         onChange={props.onSelectChange}

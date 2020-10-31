@@ -18,17 +18,19 @@ function AccountsWidget(props) {
   const [accounts, setAccounts] = useState([]);
 
   useEffect(() => {
-    async function fetchData() {
-      var tempAccounts = await dataActions.getFinancialData("accounts");
-      var financialAccounts = [];
-      for (var key in tempAccounts){
-        financialAccounts.push(tempAccounts[key]);
-      }
-      setAccounts(financialAccounts)
-    }
     fetchData();
     // eslint-disable-next-line
-  }, []);
+  }, [props.accounts]);
+
+
+  const fetchData = async () => {
+    var tempAccounts = await dataActions.getFinancialData("accounts");
+    var financialAccounts = [];
+    for (var key in tempAccounts){
+      financialAccounts.push(tempAccounts[key]);
+    }
+    setAccounts(financialAccounts)
+  }
 
   return (
     <Widget 
@@ -77,6 +79,7 @@ function AccountsWidget(props) {
 
 function mapStateToProps(store) {
   return {
+    accounts: store.data.accounts,
     alertType: store.alert.type,
   };
 }

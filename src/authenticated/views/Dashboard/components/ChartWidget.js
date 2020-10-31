@@ -60,9 +60,10 @@ function ChartWidget(props) {
   const updateOptions = (tempOptions) => {
     if(tempOptions && tempOptions.series && tempOptions.series.length !== 0) {
       tempOptions.tooltip.position = positionFunction;
-      setOptions(JSON.parse(JSON.stringify(tempOptions)));
+      var newOptions = JSON.parse(JSON.stringify(tempOptions))
+      setOptions(newOptions);
       if (eChartsRef && eChartsRef.current) {
-        eChartsRef.current.getEchartsInstance().setOption(tempOptions, true);
+        eChartsRef.current.getEchartsInstance().setOption(newOptions, true);
       }
     }
     else {
@@ -78,14 +79,15 @@ function ChartWidget(props) {
     var tempWidget = JSON.parse(JSON.stringify(props.widget));
     tempWidget.timeScale = name;
     if(tickers) {
-      var timeScales = Object.keys(tickers).map(_ => {
+      let timeScales = Object.keys(tickers).map(_ => {
         return name;
       })
-      var tickersArray = Object.keys(tickers).map(tickerKey => {
+      let tickersArray = Object.keys(tickers).map(tickerKey => {
         return tickers[tickerKey];
       })
       props.retrieveBatchStockData(tickersArray, 'candleStick', timeScales)
     }
+    console.log(props.widgetId)
     widgetActions.updateChartWidget(props.widgetId, tempWidget, props.view);
   }
 

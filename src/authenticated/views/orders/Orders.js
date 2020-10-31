@@ -109,7 +109,7 @@ class Orders extends React.Component {
 const mapStateToProps = (state) => {
   return {
     institutions: state.data.institutions,
-    data: state.data,
+    data: state.data.financialData,
   };
 }
 

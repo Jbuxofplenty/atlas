@@ -237,3 +237,8 @@ input:focus ~ label, input.used ~ label {
   position: fixed !important;
   bottom: 0;
 }
+
+.editable-header {
+  height: 50px;
+  position: relative;
+}

@@ -1,6 +1,6 @@
 import React from 'react';
 import chroma from 'chroma-js';
-import Select from 'react-select';
+import SelectAll from 'components/Select/SelectAll';
 import {createFilter} from 'react-select';
 
 const colourStyles = {
@@ -87,17 +87,24 @@ export default function MultiSelect(props) {
 
   return (
     <div onMouseDown={handleOnMouseDown}>
-      <Select
+      <SelectAll
         menuContainerStyle={{ zIndex: 99999 }}
         closeMenuOnSelect={true}
         defaultValue={props.defaultValues}
         isMulti
+        value={props.value}
         options={props.options}
         styles={colourStyles}
         onChange={props.onSelectChange}
         filterOption={createFilter({ignoreAccents: false})}
         components={props.options && props.options.length > 500 && { MenuList }}
         maxMenuHeight={100}
+        allowSelectAll={props.allowSelectAll}
+        allOption={{
+          label: 'All',
+          value: 'all',
+          color: '#000000'
+        }}
       />
     </div>
   )

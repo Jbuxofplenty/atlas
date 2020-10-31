@@ -25,6 +25,7 @@ async function pullAccountData(pullConfiguration=pullConfig, accessToken=null) {
     if(!accessToken) return;
   }
   accessToken = await refreshToken(accessToken.refresh_token, coin);
+  if(!accessToken) return;
   await storeAccount();
   var success = true;
   var exchangeRates = await getExchangeRates(accessToken);
@@ -61,7 +62,7 @@ async function storeAccount() {
   var account = accounts[coin];
   account.displayName = coin;
   account.lastSynced = new Date().getTime();
-  await dataActions.storeFinancialDataFirestore(coin, "accounts", account);
+  await dataActions.storeFinancialDataFirestore(coin, "accounts", account, true);
 }
 
 async function getExchangeRates(accessToken) {
@@ -149,11 +150,35 @@ async function getWalletsTotalBalance(accessToken, exchangeRates) {
 async function getOrders(accessToken, walletsTotalBalance, minimal=true) {
   var wallets = walletsTotalBalance.wallets;
   if(!minimal) wallets = walletsTotalBalance.allWallets;
-  var orders = {
-    buys: [],
-    sells: [],
+  var orders = walletsTotalBalance.orders;
+  var i, j;
+  if(!orders || !minimal) {
+    orders = {
+      buys: [],
+      sells: [],
+    }
   }
-  var i = 1;
+  else {
+    i = orders.buys.length;
+    while (i--) {
+      for(j in wallets) {
+        if (orders.buys[i].amount.currency === wallets[j].balance.currency) { 
+          orders.buys.splice(i, 1);
+          break;
+        } 
+      }
+    }
+    i = orders.sells.length
+    while (i--) {
+      for(j in wallets) {
+        if (orders.sells[i].amount.currency === wallets[j].balance.currency) { 
+          orders.sells.splice(i, 1);
+          break;
+        } 
+      }
+    }
+  }
+  i = 1;
   await asyncForEach(wallets, async wallet => {
     var walletId = wallet.id;
     var response = await apiRequest('accounts/' + walletId + '/buys ', coin, accessToken);

@@ -79,6 +79,10 @@ export async function refreshToken(refreshToken, institution) {
   })
   .then((response) => response.json())
   .then((responseJson) => {
+    if(responseJson.error) {
+      p(responseJson)
+      return false;
+    }
     return responseJson;
   })
   .catch((error) => {
@@ -86,6 +90,6 @@ export async function refreshToken(refreshToken, institution) {
     p(error)
     return false;
   });
-  await dataActions.storeFinancialDataFirestore(institution, "accessTokens", responseData)
+  if(responseData) await dataActions.storeFinancialDataFirestore(institution, "accessTokens", responseData, true)
   return responseData;
 }

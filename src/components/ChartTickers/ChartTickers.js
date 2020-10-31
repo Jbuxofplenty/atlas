@@ -15,10 +15,15 @@ import { asyncForEach } from 'helpers';
 import s from './ChartTickers.module.scss';
 
 function ChartTickers(props) {
+  // Formatted for widget
   const [tickers, setTickers] = useState(null);
+  // Formated for react-select component
+  const [selectedTicks, setSelectedTicks] = useState([]);
   const [defaultValues, setDefaultValues] = useState(null);
+  const [selectAll, setSelectAll] = useState(false);
   const [heldTickers, setHeldTickers] = useState(null);
   const [tickerOptions, setTickerOptions] = useState(null);
+  const [selectedDataSet, setSelectedDataSet] = useState(props.widget.dataSet);
   const [widgetType, setWidgetType] = useState(props.widget.widgetType);
 
   useEffect(() => {
@@ -54,31 +59,19 @@ function ChartTickers(props) {
         tempDefaultValues.push(tempTicker);
       })
       setDefaultValues(tempDefaultValues);
+      setSelectedTicks(tempDefaultValues);
     }
   }
 
   const onDataSelectChange = (selectedValues) => {
+    setSelectedTicks(selectedValues);
     let updatedTickers = [];
     let tempTickers = {};
     if(selectedValues) {
-      var containsAllTicker = false;
       selectedValues.forEach((ticker, index) => {
-        if(ticker.value === 'all') {
-          containsAllTicker = true;
-        }
-        else {
-          tempTickers[index] = [ticker.value, ticker.label, ticker.color, ticker.tickerType];
-          updatedTickers.push([ticker.value, ticker.label, ticker.color, ticker.tickerType]);
-        }
-      })
-      if(containsAllTicker) {
-        tickerOptions.forEach((ticker, index) => { 
-          if(ticker.value !== 'all') {
-            tempTickers[index] = [ticker.value, ticker.label, ticker.color, ticker.tickerType];
-            updatedTickers.push([ticker.value, ticker.label, ticker.color, ticker.tickerType]);
-          }
-        });
-      }
+        tempTickers[index] = [ticker.value, ticker.label, ticker.color, ticker.tickerType];
+        updatedTickers.push([ticker.value, ticker.label, ticker.color, ticker.tickerType]);
+      });
     }
     setTickers(updatedTickers);
     props.setTickers(updatedTickers);
@@ -91,7 +84,7 @@ function ChartTickers(props) {
     if(dataSet === 'heldTickers') {
       if(!heldTickers) {
         var accounts = await dataActions.getFinancialData("accounts");
-        var tempHeldTickers = [{ value: 'all', label: 'All Held Tickers', color: '#000000' }];
+        var tempHeldTickers = [];
         await asyncForEach(Object.keys(accounts), async key => {
           var accountObject = OAuthObject[accounts[key].displayName];
           var temp = await accountObject.getFinnhubTickers();
@@ -101,45 +94,53 @@ function ChartTickers(props) {
         setHeldTickers(tempHeldTickers);
       }
       else setTickerOptions(heldTickers);
+      setSelectAll(true);
     }
     else if(dataSet === 'losers' || dataSet === 'gainers') {
       updateTopMovers(dataSet);
+      setSelectAll(true);
     }
     else if(dataSet === 'crypto') {
       setTickerOptions(cryptoCurrencies)
+      setSelectAll(false);
     }
     else if(dataSet === 'indices') {
       setTickerOptions(indices)
+      setSelectAll(false);
     }
     else if(dataSet === 'dji') {
       setTickerOptions(dji)
+      setSelectAll(false);
     }
     else if(dataSet === 'nasdaq') {
       setTickerOptions(nasdaq)
+      setSelectAll(false);
     }
     else if(dataSet === 'nyse') {
       setTickerOptions(nyse)
+      setSelectAll(false);
     }
     else if(dataSet === 'ndx') {
       setTickerOptions(ndx)
+      setSelectAll(false);
     }
     else if(dataSet === 'gspc') {
       setTickerOptions(gspc)
+      setSelectAll(false);
     }
     else if(dataSet === 'usStocks') {
       setTickerOptions(usStocks)
+      setSelectAll(false);
     }
   }
   
   const updateTopMovers = async (dataSet) => {
-    var label = "All Gainers";
-    if(dataSet === 'losers') label = "All Losers";
-    var newTickers = [{ value: 'all', label, color: '#000000' }];
     let tempTickers = await dataActions.getMovers(dataSet);
-    setTickerOptions(newTickers.concat(tempTickers));
+    setTickerOptions(tempTickers);
   }
 
   const onDataSetChange = async (selectedValue) => {
+    setSelectedDataSet(selectedValue);
     updateOptions(selectedValue.value);
     var tempWidget = JSON.parse(JSON.stringify(props.widget));
     tempWidget.dataSet = selectedValue;
@@ -148,15 +149,16 @@ function ChartTickers(props) {
 
   return (
     <GridItem xs={12} sm={12} lg={6} >
-      {defaultValues &&
+      {defaultValues && tickerOptions &&
         <>
           <div className="mt-3 d-flex flex-column">
             <p className={`${s.title}`}>Symbol Sets</p>
             <div className={`${s.inputContainer}`}>
               <Select 
                 onSelectChange={onDataSetChange}
-                defaultValue={props.widget.dataSet}
+                defaultValue={selectedDataSet}
                 options={dataSets}
+                value={selectedDataSet}
               />
             </div>
           </div>
@@ -167,6 +169,8 @@ function ChartTickers(props) {
                 onSelectChange={onDataSelectChange}
                 defaultValues={defaultValues}
                 options={tickerOptions}
+                value={selectedTicks}
+                allowSelectAll={selectAll}
               />
             </div>
           </div>

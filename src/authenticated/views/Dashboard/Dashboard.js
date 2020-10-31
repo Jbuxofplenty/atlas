@@ -18,6 +18,7 @@ const strComponentMap = {
   'candleStick': ChartWidget,
   'river': ChartWidget,
   'horizontalBar': ChartWidget,
+  'line': ChartWidget,
   'compoundInterestCalculator': CalculatorWidget,
   'loanInterestCalculator': CalculatorWidget,
 }

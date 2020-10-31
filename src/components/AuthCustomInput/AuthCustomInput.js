@@ -94,11 +94,6 @@ export default function AuthCustomInput(props) {
             fullWidth={fullWidth}
             error={error}
             success={success}
-            classes={{
-              input: inputClasses,
-              root: marginTop,
-              disabled: classes.disabled
-            }}
             startAdornment={money && 
               <ThemeProvider theme={theme}>
                 <InputAdornment position="start">$</InputAdornment>
@@ -118,6 +113,11 @@ export default function AuthCustomInput(props) {
             onMouseDown={handleOnClick}
             id={id}
             {...inputProps}
+            classes={{
+              input: inputClasses,
+              root: marginTop,
+              disabled: classes.disabled
+            }}
           />
         </FormControl>
       </form>
