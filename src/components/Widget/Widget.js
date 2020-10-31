@@ -89,6 +89,7 @@ class Widget extends React.Component {
       modal: false,
       apiData: '',
     }
+    this.handleOnMouseDown = this.handleOnMouseDown.bind(this);
     // console.log(props.widgets[props.widgetId])
   }
 
@@ -171,6 +172,10 @@ class Widget extends React.Component {
     }
   }
 
+  handleOnMouseDown(e) {
+    e.stopPropagation();
+  }
+
   handleFullscreen = () => {
     this.setState({ fullscreened: !this.state.fullscreened });
   }
@@ -243,7 +248,7 @@ class Widget extends React.Component {
           !customControls && mainControls && (
             <div className={`${s.widgetControls} widget-controls`}>
               {settings && (
-                <button onClick={settingsClick}><i className="la la-cog" /></button>
+                <button onClick={settingsClick}><i className="la la-cog" onMouseDown={this.handleOnMouseDown} /></button>
               )}
               {settingsInverse && (
                 <button className={`bg-gray-transparent ${s.inverse}`}><i
@@ -277,7 +282,7 @@ class Widget extends React.Component {
               {!fullscreened &&
                 collapse && (
                   <span>
-                    <button onClick={this.handleCollapse} id={`collapseId-${randomId}`}>
+                    <button onClick={this.handleCollapse} id={`collapseId-${randomId}`} onMouseDown={this.handleOnMouseDown} >
                     <i className={`la la-angle-${!collapseWidget ? 'down' : 'up'}`} />
                       {showTooltip && (
                         <UncontrolledTooltip
@@ -291,7 +296,7 @@ class Widget extends React.Component {
               }
               {!fullscreened && (
                 (close && !prompt) ? (
-                <button onClick={this.handleClose} id={`closeId-${randomId}`}>
+                <button onClick={this.handleClose} id={`closeId-${randomId}`} onMouseDown={this.handleOnMouseDown} >
                   {typeof close === 'string' ?
                     <strong className="text-gray-light">{close}</strong> :
                     <i className="la la-remove" />}

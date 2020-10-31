@@ -31,9 +31,6 @@ export const riverOptions = {
     top: 50,
     bottom: 50,
     axisTick: {},
-    nameTextStyle: {
-      color: colors.textColor,
-    },
     axisLabel: {
       color: colors.textColor,
     },
@@ -57,6 +54,13 @@ export const riverOptions = {
       lineStyle: {
         color: colors.textColor
       }
+    },
+    name: 'adsfasdf',
+    nameGap: 35,
+    nameLocation: 'middle',
+    nameRotation: 90,
+    nameTextStyle: {
+      color: '#fff'
     },
   },
 

@@ -26,9 +26,12 @@ export const userActions = {
 // Helpers
 /////////////////////
 function loginReset() {
-  return {
-    type: userConstants.LOGIN_RESET
+  return dispatch => {
+    dispatch(widgetActions.resetWidgets());
+    dispatch(dataActions.dataReset());
+    dispatch(reset());
   }
+  function reset() { return { type: userConstants.LOGIN_RESET } }
 }
 
 function updateBackedUp(backedUp) { 

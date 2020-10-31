@@ -15,6 +15,12 @@ export const horizontalBarOptions = {
   xAxis: {
     type: 'value',
     position: 'top',
+    name: '',
+    nameGap: 35,
+    nameLocation: 'middle',
+    nameTextStyle: {
+      color: '#fff'
+    },
     axisLabel: {
       color: colors.textColor,
     },
@@ -49,5 +55,6 @@ export const defaultBarDatum = {
   },
   label: {
     position: '',
+    color: '#000'
   }
 }

@@ -6,7 +6,7 @@ import GridItem from "components/Grid/GridItem.js";
 import Select from 'components/Select/Select';
 import { chartTypes, chartTypesMap, units, unitsMap, chartUnitsMap } from 'components/Select/data';
 
-import { initialState } from 'reducers/widget.reducer';
+import { initialState, defaultAccountsPie, dataSets } from 'reducers/widget.reducer';
 
 import { widgetActions, alertActions } from 'actions';
 
@@ -17,6 +17,7 @@ const defaultChartsMap = {
   'river': initialState['charts']['3'],
   'line': initialState['charts']['4'],
   'horizontalBar': initialState['charts']['1'],
+  'accountsPie': defaultAccountsPie,
 }
 
 function ChartTypes(props) {
@@ -44,9 +45,10 @@ function ChartTypes(props) {
       var newChartWidget = JSON.parse(JSON.stringify(defaultChartsMap[widgetType]));
       newChartWidget.dataGrid.x = tempWidget.dataGrid.x;
       newChartWidget.dataGrid.y = tempWidget.dataGrid.y;
-      newChartWidget.dataGrid.h = tempWidget.dataGrid.h;
+      if(tempWidget.dataGrid.h >= newChartWidget.dataGrid.minH) newChartWidget.dataGrid.h = tempWidget.dataGrid.h;
       newChartWidget.dataGrid.w = tempWidget.dataGrid.w;
       newChartWidget.dataGrid.i = tempWidget.dataGrid.i;
+      newChartWidget.height = tempWidget.height;
       widgetActions.updateChartWidget(props.widgetId, newChartWidget, props.view);
     }
     else widgetActions.updateChartWidget(props.widgetId, tempWidget, props.view);
@@ -57,6 +59,9 @@ function ChartTypes(props) {
     var tempWidget = JSON.parse(JSON.stringify(props.widget));
     tempWidget.units = selectedValue.value;
     tempWidget.yType = selectedValue.yType;
+    if(selectedValue.value === "AccountsBalance") {
+      tempWidget.dataSet = dataSets[1];
+    }
     widgetActions.updateChartWidget(props.widgetId, tempWidget, props.view);
   }
 

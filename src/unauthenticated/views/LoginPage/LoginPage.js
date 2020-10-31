@@ -127,6 +127,8 @@ function LoginPage(props) {
   const submit = () => {
     props.error("");
     props.visible(false);
+    props.loginReset();
+    
     if(!human) {
       var errorMessage = "Please complete the captcha to prove you're a human!";
       props.error(errorMessage);

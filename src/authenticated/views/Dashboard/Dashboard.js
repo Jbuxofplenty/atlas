@@ -17,6 +17,7 @@ const strComponentMap = {
   'accountSummary': AccountsWidget,
   'candleStick': ChartWidget,
   'river': ChartWidget,
+  'accountsPie': ChartWidget,
   'horizontalBar': ChartWidget,
   'line': ChartWidget,
   'compoundInterestCalculator': CalculatorWidget,

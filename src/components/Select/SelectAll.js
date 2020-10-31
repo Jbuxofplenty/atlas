@@ -11,7 +11,7 @@ const Select = props => {
 
   if (props.allowSelectAll) {
     if (props.value && props.options) {
-      if (props.value.length === props.options.length) {
+      if (props.value.length >= props.options.length) {
         return (
           <ReactSelect
             {...props}

@@ -40,8 +40,12 @@ function ChartTickers(props) {
       setDefaultValues(null);
       checkTickers();
     }
+    if(props.widget.dataSet !== selectedDataSet) {
+      setSelectedDataSet(props.widget.dataSet);
+      updateOptions(props.widget.dataSet.value);
+    }
     // eslint-disable-next-line
-  }, [tickers, props.widget.yType, props.widget.widgetType]);
+  }, [tickers, props.widget.yType, props.widget.widgetType, props.widget.dataSet]);
 
   const checkTickers = () => {
     var tempTickers = tickers;
@@ -157,7 +161,7 @@ function ChartTickers(props) {
               <Select 
                 onSelectChange={onDataSetChange}
                 defaultValue={selectedDataSet}
-                options={dataSets}
+                options={props.widget.units === 'AccountsBalance' ? [dataSets[1]] : dataSets}
                 value={selectedDataSet}
               />
             </div>

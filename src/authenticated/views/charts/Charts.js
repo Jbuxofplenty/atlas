@@ -20,6 +20,7 @@ const strComponentMap = {
   'candleStick': ChartWidget,
   'river': ChartWidget,
   'line': ChartWidget,
+  'accountsPie': ChartWidget,
   'horizontalBar': ChartWidget,
 }
 

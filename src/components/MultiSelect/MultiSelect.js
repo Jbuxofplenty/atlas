@@ -10,7 +10,8 @@ const colourStyles = {
     'rgba(0,0,0,.24)', 
     marginTop: 0, 
     marginBottom: '2rem', 
-    borderColor: 'transparent'
+    borderColor: 'transparent',
+    zIndex: 9999,
   }),
   menu: styles => ({
     ...styles, 

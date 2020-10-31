@@ -51,7 +51,14 @@ export const lineOptions = {
         label: {
           color: colors.dark
         }
-      }
+      },
+      name: '',
+      nameGap: 40,
+      nameLocation: 'middle',
+      nameRotation: 90,
+      nameTextStyle: {
+        color: '#fff'
+      },
     }
   ],
   series: []

@@ -59,7 +59,7 @@ function ChartWidget(props) {
 
   const updateOptions = (tempOptions) => {
     if(tempOptions && tempOptions.series && tempOptions.series.length !== 0) {
-      tempOptions.tooltip.position = positionFunction;
+      if(tempOptions.tooltip) tempOptions.tooltip.position = positionFunction;
       var newOptions = JSON.parse(JSON.stringify(tempOptions))
       setOptions(newOptions);
       if (eChartsRef && eChartsRef.current) {
@@ -87,7 +87,6 @@ function ChartWidget(props) {
       })
       props.retrieveBatchStockData(tickersArray, 'candleStick', timeScales)
     }
-    console.log(props.widgetId)
     widgetActions.updateChartWidget(props.widgetId, tempWidget, props.view);
   }
 
@@ -144,13 +143,15 @@ function ChartWidget(props) {
           <i className={`fas fa-spinner fa-spin`} style={{fontSize: 40}}/>
         </div> 
       }
-      <TimeScale 
-        id={props.widgetId + '-timeScale'} 
-        widget={props.widget} 
-        widgetId={props.widgetId} 
-        view={props.view}
-        handleChange={onTimeScaleChange}
-      />
+      {props.widget.widgetType !== 'accountsPie' &&
+        <TimeScale 
+          id={props.widgetId + '-timeScale'} 
+          widget={props.widget} 
+          widgetId={props.widgetId} 
+          view={props.view}
+          handleChange={onTimeScaleChange}
+        />
+      }
       <div className="w-100 d-flex justify-content-center">
         <GridContainer justify="center" className={`${s.gridContainer}`}>
           <GridItem xs={12} sm={12} lg={12} className={`${s.instructionContainer}`}>

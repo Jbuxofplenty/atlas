@@ -1,5 +1,5 @@
 import { widgetConstants } from '../constants';
-import { candleStickOptions, riverOptions, horizontalBarOptions, lineOptions } from 'charts';
+import { candleStickOptions, riverOptions, horizontalBarOptions, lineOptions, accountsPieOptions } from 'charts';
 import { cryptoCurrencies, gspc, dji } from 'components/MultiSelect/data';
 
 // const dataSets = [
@@ -24,6 +24,20 @@ const dataSets = [
   { value: 'nyse', label: 'New York Stock Exchange' },
   { value: 'nasdaq', label: 'Nasdaq' },
 ]
+
+const defaultAccountsPie = {
+  widgetType: 'accountsPie',
+  dataGrid: {x: 0, y: 16, w: 6, h: 15, minH: 15, minW: 6, i: "3"},
+  collapsed: false,
+  height: 444,
+  tickers: {},
+  chartOptions: accountsPieOptions,
+  name: 'Accounts Balance Pie Chart',
+  timeScale: '1D',
+  yType: 'Price',
+  dataSet: dataSets[1],
+  units: 'AccountsBalance',
+}
 
 const bitcoinTicker = [cryptoCurrencies[0].value, cryptoCurrencies[0].label, cryptoCurrencies[0].color, cryptoCurrencies[0].tickerType];
 const ethereumTicker = [cryptoCurrencies[1].value, cryptoCurrencies[1].label, cryptoCurrencies[1].color, cryptoCurrencies[1].tickerType];
@@ -163,4 +177,5 @@ export {
   widget,
   initialState,
   dataSets,
+  defaultAccountsPie,
 }

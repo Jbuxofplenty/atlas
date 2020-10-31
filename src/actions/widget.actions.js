@@ -10,6 +10,7 @@ import {
   lineOptions,
   horizontalBarOptions,
   defaultBarDatum,
+  accountsPieOptions,
 } from 'charts';
 import { dataActions } from './';
 
@@ -48,6 +49,35 @@ async function updateChartWidget(key, widget, view) {
   if(widget.widgetType === 'river') updateRiver(key, widget, view);
   if(widget.widgetType === 'horizontalBar') updateHorizontalBar(key, widget, view);
   if(widget.widgetType === 'line') updateLine(key, widget, view);
+  if(widget.widgetType === 'accountsPie') updateAccountsPie(key, widget, view);
+}
+
+async function updateAccountsPie(key, widget, view) {
+  var accounts = await dataActions.getFinancialData("accounts");
+  let legendData = [];
+  let accountData = [];
+  let walletData = [];
+  Object.keys(accounts).forEach(accountKey => {
+    var account = accounts[accountKey];
+    var finnhubTickerBalanceMap = account.finnhubTickerBalanceMap;
+    var totalBalance = 0;
+    legendData.push(accountKey);
+    Object.keys(finnhubTickerBalanceMap).forEach(walletKey => {
+      var amount = finnhubTickerBalanceMap[walletKey].amount;
+      var color = finnhubTickerBalanceMap[walletKey].color;
+      var name = finnhubTickerBalanceMap[walletKey].name + ' (' + accountKey + ')';
+      totalBalance += amount;
+      walletData.push({value: amount, name, itemStyle: { color }});
+      legendData.push(name);
+    })
+    accountData.push({value: totalBalance, name: accountKey, itemStyle: { color: account.color }});
+  })
+  var chartOptions = JSON.parse(JSON.stringify(accountsPieOptions));
+  chartOptions.legend.data = legendData;
+  chartOptions.series[0].data = accountData;
+  chartOptions.series[1].data = walletData;
+  widget.chartOptions = chartOptions;
+  store.dispatch(updateWidget(key, widget, view));
 }
 
 async function updateLine(key, widget, view) {
@@ -57,6 +87,18 @@ async function updateLine(key, widget, view) {
   var units = widget.units;
   var stockData = await candleStickStockData(tickers, timeScale, yType);
   var chartOptions = JSON.parse(JSON.stringify(lineOptions));
+  var balanceMap = {};
+  if(units === 'AccountsBalance') {
+    var accounts = await dataActions.getFinancialData("accounts");
+    Object.keys(accounts).forEach(accountKey => {
+      var account = accounts[accountKey];
+      var finnhubTickerBalanceMap = account.finnhubTickerBalanceMap;
+      balanceMap = {
+        ...balanceMap,
+        ...finnhubTickerBalanceMap,
+      }
+    })
+  }
   if(stockData.length > 0 && stockData[0]) {
     var timeStamps = [];
     stockData[0].t.forEach(timeStamp => {
@@ -65,6 +107,7 @@ async function updateLine(key, widget, view) {
     chartOptions.xAxis.push(JSON.parse(JSON.stringify(defaultXAxis)));
     chartOptions.xAxis[0].data = timeStamps;
   }
+  var totalBalances = [];
   Object.keys(tickers).forEach((tickerKey, index) => {
     var ticker = tickers[tickerKey];
     chartOptions.legend.data.push(ticker[1]);
@@ -74,6 +117,17 @@ async function updateLine(key, widget, view) {
       for(var i=0; i < candleStickData.o.length; i++) {
         if(units === 'Shares') {
           data.push(candleStickData.v[i]);
+        }
+        if(units === 'AccountsBalance') {
+          var amount = 0;
+          if(balanceMap[ticker[0]]) amount = balanceMap[ticker[0]].amount;
+          data.push(candleStickData.o[i]*amount);
+          if(index === 0) {
+            totalBalances.push(candleStickData.o[i]*amount);
+          }
+          else {
+            totalBalances[i] += candleStickData.o[i]*amount;
+          }
         }
         else {
           data.push(candleStickData.o[i]);
@@ -86,6 +140,26 @@ async function updateLine(key, widget, view) {
     chartOptions.series[index].name = ticker[1];
     chartOptions.series[index].type = 'line';
   });
+  if(units === 'Percent') {
+    chartOptions.yAxis[0].name = "Percent Change (%)";
+  }
+  else if(units === 'Price' || units === 'AccountsBalance') {
+    chartOptions.yAxis[0].name = "Price per Share ($)";
+  }
+  else {
+    chartOptions.yAxis[0].name = "Volume (Shares)";
+    chartOptions.yAxis[0].nameLocation = "end";
+    chartOptions.yAxis[0].nameRotation = 0;
+    chartOptions.yAxis[0].nameGap = 20;
+  }
+  if(units === 'AccountsBalance' && chartOptions.series.length) {
+    chartOptions.series.push(JSON.parse(JSON.stringify(defaultSeries)));
+    chartOptions.legend.data.push("Total Balance of Tickers");
+    chartOptions.series[chartOptions.series.length-1].itemStyle.color = '#fff';
+    chartOptions.series[chartOptions.series.length-1].data = totalBalances;
+    chartOptions.series[chartOptions.series.length-1].name = "Total Balance of Tickers";
+    chartOptions.series[chartOptions.series.length-1].type = 'line';
+  }
   widget.chartOptions = chartOptions;
   store.dispatch(updateWidget(key, widget, view));
 }
@@ -122,15 +196,22 @@ async function updateHorizontalBar(key, widget, view) {
           datum.value = summedVolume;
         }
         datum.itemStyle.color = '#00ff80';
-        datum.label.position = 'left';
         if(datum.value < 0) {
           datum.itemStyle.color = '#ff8080';
-          datum.label.position = 'right';
         }
         data.push(datum);
       }
     });
     chartOptions.series[0].data = data;
+    if(units === 'Percent') {
+      chartOptions.xAxis.name = "Percent Change (%)";
+    }
+    else if(units === 'Price' || units === 'AccountsBalance') {
+      chartOptions.xAxis.name = "Change in Price ($)";
+    }
+    else {
+      chartOptions.xAxis.name = "Volume (Shares)";
+    }
   }
   widget.chartOptions = chartOptions;
   store.dispatch(updateWidget(key, widget, view));
@@ -177,6 +258,7 @@ async function updateCandleStick(key, widget, view) {
   var timeScale = widget.timeScale;
   var tickers = widget.tickers;
   var yType = widget.yType;
+  var units = widget.units;
   var stockData = await candleStickStockData(tickers, timeScale, yType);
   var chartOptions = JSON.parse(JSON.stringify(candleStickOptions));
   if(stockData.length > 0 && stockData[0]) {
@@ -208,6 +290,15 @@ async function updateCandleStick(key, widget, view) {
     chartOptions.series[index].name = ticker[1];
     chartOptions.series[index].type = 'candlestick';
   });
+  if(units === 'Percent') {
+    chartOptions.yAxis[0].name = "Percent Change (%)";
+  }
+  else if(units === 'Price' || units === 'AccountsBalance') {
+    chartOptions.yAxis[0].name = "Price per Share ($)";
+  }
+  else {
+    chartOptions.yAxis[0].name = "Volume (Shares)";
+  }
   widget.chartOptions = chartOptions;
   store.dispatch(updateWidget(key, widget, view));
 }
@@ -357,7 +448,8 @@ function getFirebaseWidgets(view) {
         if(widget.widgetType === 'candleStick'
           || widget.widgetType === 'river'
           || widget.widgetType === 'horizontalBar'
-          || widget.widgetType === 'line') updateChartWidget(widgetKey, widget, view)
+          || widget.widgetType === 'line'
+          || widget.widgetType === 'accountsPie') updateChartWidget(widgetKey, widget, view)
         else dispatch(updateWidget(widgetKey, widget, view))
       })
     }
@@ -386,5 +478,8 @@ function getOpenSlot(w, h, view) {
 }
 
 function resetWidgets() {
-  return { type: widgetConstants.RESET };
+  return dispatch => {
+    dispatch(reset());
+  }
+  function reset() { return { type: widgetConstants.RESET } }
 }

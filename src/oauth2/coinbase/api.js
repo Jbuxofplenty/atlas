@@ -61,6 +61,7 @@ async function storeAccount() {
   }
   var account = accounts[coin];
   account.displayName = coin;
+  account.color = '#0F70D8';
   account.lastSynced = new Date().getTime();
   await dataActions.storeFinancialDataFirestore(coin, "accounts", account, true);
 }
@@ -79,11 +80,17 @@ async function getTotalBalancePercentDifference(financialData) {
   var yesterdayTotalBalance = 0.;
   var { stockData } = store.getState().data;
   var dataAvailable = false;
+  var finnhubTickerBalanceMap = {};
   financialData.wallets.forEach(wallet => {
     var code = wallet.currency.code;
     if(finnhubTickers.map[code] && stockData[finnhubTickers.map[code].value]
           && stockData[finnhubTickers.map[code].value]["candleStickPrice"]
           && stockData[finnhubTickers.map[code].value]["candleStickPrice"]['1D']) {
+      finnhubTickerBalanceMap[finnhubTickers.map[code].value] = {
+        amount: parseFloat(wallet.balance.amount),
+        color: finnhubTickers.map[code].color,
+        name: code,
+      };
       var timeArray = stockData[finnhubTickers.map[code].value]["candleStickPrice"]['1D'].t;
       var openPriceArray = stockData[finnhubTickers.map[code].value]["candleStickPrice"]['1D'].o;
       var now = new Date();
@@ -109,6 +116,7 @@ async function getTotalBalancePercentDifference(financialData) {
   var newFinancialData = {
     ...financialData,
     percentDifference,
+    finnhubTickerBalanceMap,
   }
   return newFinancialData;
 }
@@ -205,7 +213,7 @@ async function getOrders(accessToken, walletsTotalBalance, minimal=true) {
   return financialData;
 }
 
-async function getFinnhubTickers(minimal=true) {
+async function getFinnhubTickers(minimal=true, retrieveData=true) {
   var { stockData } = store.getState().data;
   var accounts = await dataActions.getFinancialData("accounts");
   var account = accounts[coin];
@@ -254,7 +262,7 @@ async function getFinnhubTickers(minimal=true) {
       }
     }
   })
-  await store.dispatch(dataActions.retrieveBatchStockData(tickersToPull, 'candleStick', timeScales));
+  if(retrieveData) await store.dispatch(dataActions.retrieveBatchStockData(tickersToPull, 'candleStick', timeScales));
   return finnhubTickers;
 }
 

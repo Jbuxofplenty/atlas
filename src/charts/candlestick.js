@@ -51,7 +51,14 @@ const candleStickOptions = {
         label: {
           color: colors.dark
         }
-      }
+      },
+      name: '',
+      nameGap: 50,
+      nameLocation: 'middle',
+      nameRotation: 90,
+      nameTextStyle: {
+        color: '#fff'
+      },
     }
   ],
   series: []

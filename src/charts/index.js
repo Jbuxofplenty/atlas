@@ -14,6 +14,10 @@ export {
 } from './line';
 
 export { 
+  accountsPieOptions,
+} from './pie';
+
+export { 
   horizontalBarOptions,
   defaultBarDatum
 } from './horizontalBar';
