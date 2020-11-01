@@ -60,6 +60,7 @@ async function updateAccountsPie(key, widget, view) {
   Object.keys(accounts).forEach(accountKey => {
     var account = accounts[accountKey];
     var finnhubTickerBalanceMap = account.finnhubTickerBalanceMap;
+    console.log(finnhubTickerBalanceMap)
     var totalBalance = 0;
     legendData.push(accountKey);
     Object.keys(finnhubTickerBalanceMap).forEach(walletKey => {
@@ -407,6 +408,15 @@ function purgeWidgets(widgets) {
     if(newWidgets[widgetKey].widgetType === 'river') {
       newWidgets[widgetKey].chartOptions.color = [];
       newWidgets[widgetKey].chartOptions.series[0].data = [];
+      newWidgets[widgetKey].chartOptions.legend.data = [];
+    }
+    if(newWidgets[widgetKey].widgetType === 'horizontalBar') {
+      newWidgets[widgetKey].chartOptions.series[0].data = [];
+      newWidgets[widgetKey].chartOptions.yAxis.data = [];
+    }
+    if(newWidgets[widgetKey].widgetType === 'accountsPie') {
+      newWidgets[widgetKey].chartOptions.series[0].data = [];
+      newWidgets[widgetKey].chartOptions.series[1].data = [];
       newWidgets[widgetKey].chartOptions.legend.data = [];
     }
   })

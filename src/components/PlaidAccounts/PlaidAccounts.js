@@ -1,19 +1,15 @@
-import React, { useEffect }  from 'react'
+import React from 'react'
 import { connect } from 'react-redux';
 
 // core components
 import MuiTable from "components/MuiTable/MuiTable.js";
+import { numberWithCommas, capitalizeAll } from 'helpers';
 
 import { eThreeActions, alertActions } from "actions";
 
 
-function Wallets(props) {
-  const noItemsMessage = `No wallets are attached to your {props.account.displayName} account!`;
-
-  useEffect(() => {
-    props.visible(false);
-    // eslint-disable-next-line
-  }, []);
+function PlaidAccounts(props) {
+  const noItemsMessage = `No accounts to display!`;
 
   const columns = React.useMemo(
     () => [
@@ -23,24 +19,27 @@ function Wallets(props) {
         },
         {
           Header: 'Name',
-          accessor: 'currency.name',
+          accessor: 'name',
         },
         {
-          Header: 'Current Balance',
-          accessor: 'balance.amount',
-        Cell: (row) => {return (<div>{row.cell.value} {row.row.original.balance.currency}</div>)},
+          Header: 'Total Balance',
+          accessor: 'balances.current',
+        Cell: (row) => {return (<div>${numberWithCommas(row.cell.value)}</div>)},
         },
         {
-          Header: 'Last Updated',
-          accessor: 'updated_at',
-          Cell: ({ cell: { value } }) => (<div>{new Date(value).toLocaleString('en-US')}</div>),
+          Header: 'Available Balance',
+          accessor: 'balances.available',
+        Cell: (row) => {return (<div>{row.cell.value ? `$${numberWithCommas(row.cell.value)}` : 'N/A'}</div>)},
         },
         {
-          Header: 'Primary',
-          accessor: 'primary',
-          Cell: ({ cell: { value } }) => (<>{
-            value && (<i className={`successMessage icon-pane fa fa-check`}/>)}
-          </>),
+          Header: 'Type',
+          accessor: 'type',
+          Cell: (row) => {return (<div>{capitalizeAll(row.cell.value)}</div>)},
+        },
+        {
+          Header: 'Sub-Type',
+          accessor: 'subtype',
+          Cell: (row) => {return (<div>{capitalizeAll(row.cell.value)}</div>)},
         },
       ],
     []
@@ -49,9 +48,7 @@ function Wallets(props) {
   return (
     <>
       {props.account &&
-        <>
-          <MuiTable columns={columns} rows={props.account.wallets} noItemsMessage={noItemsMessage} />
-        </>
+        <MuiTable columns={columns} rows={props.account.balances} noItemsMessage={noItemsMessage} />
       }
     </>
   )
@@ -74,4 +71,4 @@ const mapDispatchToProps = (dispatch, history) => {
   };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Wallets);
+export default connect(mapStateToProps, mapDispatchToProps)(PlaidAccounts);

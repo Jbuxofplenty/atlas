@@ -1,9 +1,9 @@
-import { apiRequest, refreshToken } from 'oauth2/helpers';
+import { apiRequest } from 'oauth2/helpers';
 import { dataActions, alertActions } from 'actions';
-import { store, asyncForEach } from 'helpers';
+import { p, apiBaseUrl, store, asyncForEach, randomHex } from 'helpers';
 import { cryptoCurrencies } from 'components/MultiSelect/data';
 
-const coin = "Coinbase";
+const plaid = "Plaid";
 
 // Invocations to pull account data should use an object like this
 const pullConfig = {
@@ -11,41 +11,50 @@ const pullConfig = {
   wallets: true,
   orders: true,
   minimal: true,
+  name: '',
+  institution_id: '',
 }
 
 ////////////////////////////////////////////////////////////////
 /////////////////////////// Public /////////////////////////////
 ////////////////////////////////////////////////////////////////
 
+async function setupAccount(metaData, accessToken) {
+  var institution = metaData.institution;
+  await storeAccount(institution, metaData);
+  await dataActions.storeFinancialDataFirestore(institution.name, "accessTokens", accessToken);
+  var tempPullConfig = JSON.parse(JSON.stringify(pullConfig));
+  tempPullConfig.minimal = true;
+  tempPullConfig.name = institution.name;
+  tempPullConfig.institution_id = institution.institution_id;
+  await pullAccountData(tempPullConfig, accessToken.access_token);
+}
+
 async function pullAccountData(pullConfiguration=pullConfig, accessToken=null) {
   if(!accessToken) {
     var accessTokens = await dataActions.getFinancialData('accessTokens');
     if(!accessTokens) return;
-    accessToken = accessTokens[coin];
+    accessToken = accessTokens[pullConfiguration.name];
+    if(!accessToken) return;
+    accessToken = accessToken.access_token;
     if(!accessToken) return;
   }
-  accessToken = await refreshToken(accessToken.refresh_token, coin);
-  if(!accessToken) return;
-  await storeAccount();
-  var success = true;
-  var exchangeRates = await getExchangeRates(accessToken);
-  var walletsTotalBalance = await getWalletsTotalBalance(accessToken, exchangeRates);
-  if(!walletsTotalBalance) return false;
-  var financialData = await getTotalBalancePercentDifference(walletsTotalBalance);
-  success = await getOrders(accessToken, financialData, pullConfiguration.minimal);
-  await storeAccount();
-  return success;
+  var account = await getAccountsTotalBalance(pullConfiguration.name, accessToken);
+  // account = await getInvestments(account, pullConfiguration.name, accessToken);
+  // if(!walletsTotalBalance) return false;
+  // var financialData = await getTotalBalancePercentDifference(walletsTotalBalance);
+  // success = await getOrders(accessToken, financialData, pullConfiguration.minimal);
+  await storeAccount(pullConfiguration);
+  // return success;
 }
 
-async function getPercentDifference() {
+async function getPercentDifference(itemId) {
   var accounts = await dataActions.getFinancialData("accounts");
   var accessTokens = await dataActions.getFinancialData('accessTokens');
-  var accessToken = accessTokens[coin];
-  var exchangeRates = await getExchangeRates(accessToken);
-  var account = accounts[coin];
-  account.exchangeRates = exchangeRates;
+  var accessToken = accessTokens[plaid];
+  var account = accounts[itemId];
   var newFinancialData = await getTotalBalancePercentDifference(account);
-  if(newFinancialData) await store.dispatch(dataActions.storeFinancialData(coin, "accounts", newFinancialData));
+  if(newFinancialData) await store.dispatch(accessToken, dataActions.storeFinancialData(plaid, "accounts", newFinancialData));
   return newFinancialData;
 }
 
@@ -53,25 +62,22 @@ async function getPercentDifference() {
 /////////////////////////// Internal ///////////////////////////
 ////////////////////////////////////////////////////////////////
 
-async function storeAccount() {
+async function storeAccount(institution, metaData=null) {
   var accounts = await dataActions.getFinancialData("accounts");
-  console.log(accounts)
   if(!accounts) accounts = {};
-  if(!accounts[coin]) {
-    accounts[coin] = {};
+  if(!accounts[institution.name]) {
+    accounts[institution.name] = {};
+    var tempAccount = accounts[institution.name];
+    tempAccount.displayName = institution.name;
+    tempAccount.institutionId = institution.institution_id;
+    tempAccount.color = randomHex();
+    tempAccount.plaid = true;
+    tempAccount.finnhubTickerBalanceMap = {};
   }
-  var account = accounts[coin];
-  account.displayName = coin;
-  account.color = '#0F70D8';
-  account.plaid = false;
+  var account = accounts[institution.name];
   account.lastSynced = new Date().getTime();
-  await dataActions.storeFinancialDataFirestore(coin, "accounts", account, true);
-}
-
-async function getExchangeRates(accessToken) {
-  var response = await apiRequest('exchange-rates', coin, accessToken);
-  if(!response || !response.data) return false;
-  return response.data.rates;
+  if(metaData) account.subAccounts = metaData.accounts;
+  await dataActions.storeFinancialDataFirestore(institution.name, "accounts", account);
 }
 
 async function getTotalBalancePercentDifference(financialData) {
@@ -123,43 +129,100 @@ async function getTotalBalancePercentDifference(financialData) {
   return newFinancialData;
 }
 
-async function getWalletsTotalBalance(accessToken, exchangeRates) {
+async function getAccountsTotalBalance(accountName, accessToken) {
   await store.dispatch(alertActions.clear());
+  var balances = await fetch(apiBaseUrl() + 'plaid/getBalance/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      accessToken
+    })
+  })
+  .then((response) => response.json())
+  .then((responseJson) => {
+    p(responseJson);
+    return responseJson
+  })
+  .catch((error) => {
+    p("Error in request when trying to retrieve balances!")
+    p(error)
+    return false;
+  });
   var accounts = await dataActions.getFinancialData("accounts");
-  var account = accounts[coin];
-  var enter = true;
-  var allWallets = [];
-  var nextUri = 'accounts';
-  var response;
-  while(enter || (response && response.pagination && response.pagination.next_uri)) {
-    if(!enter) nextUri = response.pagination.next_uri.slice(4);
-    response = await apiRequest(nextUri, coin, accessToken);
-    if(!response || !response.data) return false;
-    allWallets = allWallets.concat(response.data);
-    enter = false;
-  }
-  var wallets = [];
-  allWallets.forEach(wallet => {
-    if(parseFloat(wallet.balance.amount) > 0) wallets.push(wallet);
+  var account = accounts[accountName];
+  console.log(account)
+  if(!balances || !account) return false;
+  balances = balances.accounts;
+  account.balances = balances;
+  var totalBalance = 0;
+  var totalAvailableBalance = 0;
+  balances.forEach(balanceAccount => {
+    var accountType = balanceAccount.type;
+    if(accountType === 'depository') {
+      account.finnhubTickerBalanceMap[balanceAccount.name] = {
+        amount: parseFloat(balanceAccount.balances.current),
+        color: randomHex,
+        name: balanceAccount.name,
+      };
+      totalBalance += balanceAccount.balances.current;
+      if(balanceAccount.balances.available) totalAvailableBalance += balanceAccount.balances.available;
+    }
+    else if(accountType === 'credit') {
+      totalBalance -= balanceAccount.balances.current;
+    }
+    else if(accountType === 'loan') {
+      totalBalance -= balanceAccount.balances.current;
+    }
+    else if(accountType === 'investment') {
+      account.finnhubTickerBalanceMap[balanceAccount.name] = {
+        amount: parseFloat(balanceAccount.balances.current),
+        color: randomHex,
+        name: balanceAccount.name,
+      };
+      totalBalance += balanceAccount.balances.current;
+    }
   })
-  var financialData = {
-    ...account,
-    allWallets,
-    wallets,
-    totalBalance: 0,
-    exchangeRates,
-  };
-  wallets.forEach(wallet => {
-    financialData.totalBalance += parseFloat(wallet.balance.amount) / parseFloat(exchangeRates[wallet.currency.code]);
+  account.totalAvailableBalance = totalAvailableBalance;
+  account.totalBalance = totalBalance;
+  await store.dispatch(dataActions.storeFinancialData(accountName, "accounts", account));
+  await store.dispatch(alertActions.progressSuccess(`Pulled in ${balances.length} accounts with a balance from ${accountName}!`));
+  return account;
+}
+
+async function getInvestments(account, accountName, accessToken) {
+  await store.dispatch(alertActions.clear());
+  var investments = await fetch(apiBaseUrl() + 'plaid/getHoldings/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      accessToken
+    })
   })
-  await store.dispatch(dataActions.storeFinancialData(coin, "accounts", financialData));
-  await store.dispatch(alertActions.progressSuccess(`Pulled in ${wallets.length} wallets with a balance from Coinbase!`));
-  return financialData;
+  .then((response) => response.json())
+  .then((responseJson) => {
+    p(responseJson);
+    return responseJson
+  })
+  .catch((error) => {
+    p("Error in request when trying to retrieve balances!")
+    p(error)
+    return false;
+  });
+  if(!investments || !account) return false;
+  console.log(investments);
+  return;
+  await store.dispatch(dataActions.storeFinancialData(accountName, "accounts", account));
+  await store.dispatch(alertActions.progressSuccess(`Pulled in ${investments.length} holdings with a balance from ${accountName}!`));
+  return account;
 }
 
 async function getOrders(accessToken, walletsTotalBalance, minimal=true) {
   var wallets = walletsTotalBalance.wallets;
-  if(!minimal) wallets = walletsTotalBalance.allWallets;
+  if(!minimal) wallets = walletsTotalBalance.allAccounts;
   var orders = walletsTotalBalance.orders;
   var i, j;
   if(!orders || !minimal) {
@@ -191,13 +254,13 @@ async function getOrders(accessToken, walletsTotalBalance, minimal=true) {
   i = 1;
   await asyncForEach(wallets, async wallet => {
     var walletId = wallet.id;
-    var response = await apiRequest('accounts/' + walletId + '/buys ', coin, accessToken);
+    var response = await apiRequest('accounts/' + walletId + '/buys ', plaid, accessToken);
     if(!response || !response.data) return false;
     var buys = response.data;
     buys.forEach(buy => {
       orders.buys.push(buy);
     });
-    response = await apiRequest('accounts/' + walletId + '/sells', coin, accessToken);
+    response = await apiRequest('accounts/' + walletId + '/sells', plaid, accessToken);
     if(!response || !response.data) return false;
     var sells = response.data;
     sells.forEach(sell => {
@@ -211,22 +274,23 @@ async function getOrders(accessToken, walletsTotalBalance, minimal=true) {
     ...walletsTotalBalance,
   }
   financialData.orders = orders;
-  await store.dispatch(dataActions.storeFinancialData(coin, "accounts", financialData));
+  await store.dispatch(dataActions.storeFinancialData(plaid, "accounts", financialData));
   return financialData;
 }
 
 async function getFinnhubTickers(minimal=true, retrieveData=true) {
+  var finnhubTickers = {array: [], map: {}};
+  return finnhubTickers;
   var { stockData } = store.getState().data;
   var accounts = await dataActions.getFinancialData("accounts");
-  var account = accounts[coin];
+  var account = accounts[plaid];
   var wallets = account.wallets;
   if(!wallets) return false;
   var tickersToPull = [];
   var timeScales = [];
   if(!minimal) {
-    wallets = account.allWallets;
+    wallets = account.allAccounts;
   }
-  var finnhubTickers = {array: [], map: {}};
   wallets.forEach(wallet => {
     var code = wallet.currency.code;
     for(var i in cryptoCurrencies) {
@@ -268,29 +332,38 @@ async function getFinnhubTickers(minimal=true, retrieveData=true) {
   return finnhubTickers;
 }
 
-async function revokeToken(token) {
-  return true;
-  // Currently issue with the revoke function, will contact coinbase
-  // var accessToken = { token };
-  // p(token);
-  // var response = await apiRequest('https://api.coinbase.com/oauth/revoke', coin, accessToken);
-  // if(!response) return false;
-  // return response;
+async function revokeToken(accessToken) {
+  return await fetch(apiBaseUrl() + 'plaid/removeItem/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      accessToken
+    })
+  })
+  .then((response) => response.json())
+  .then((responseJson) => {
+    p(responseJson);
+    return responseJson
+  })
+  .catch((error) => {
+    p("Error in request when trying to remove a plaid item!")
+    p(error)
+    return false;
+  });
 }
 
-const coinbaseAPI = {
+const plaidAPI = {
+  setupAccount: setupAccount,
   pullAccountData: pullAccountData,
-  getWalletsTotalBalance: getWalletsTotalBalance,
+  getAccountsTotalBalance: getAccountsTotalBalance,
   revokeToken: revokeToken,
   getOrders: getOrders,
   pullConfig: pullConfig,
-  getExchangeRates: getExchangeRates,
   getFinnhubTickers: getFinnhubTickers,
   getPercentDifference: getPercentDifference,
-  apiBaseUrl: "https://api.coinbase.com/v2/",
-  headers: {
-    "CB-VERSION": "2020-08-23"
-  }
+  apiBaseUrl: "https://api.plaid.com/v2/",
 }
 
-export default coinbaseAPI;
+export default plaidAPI;

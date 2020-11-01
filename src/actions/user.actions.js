@@ -86,8 +86,8 @@ const defaultUser = {
 
 function commonLogin(user, backedUp) {
   return async dispatch => {
-    await dispatch(dataActions.getFinancialDataFirestore("accessTokens", user.e2ee));
-    await dispatch(dataActions.getFinancialDataFirestore("accounts", user.e2ee));
+    await dataActions.getFinancialDataFirestore("accessTokens", user.e2ee);
+    await dataActions.getFinancialDataFirestore("accounts", user.e2ee);
     var localKeyPresent = true;
     if(user.e2ee) {
       localKeyPresent = await eThreeActions.instantLocalKeyPresent();
@@ -96,8 +96,14 @@ function commonLogin(user, backedUp) {
       var tempAccounts = await dataActions.getFinancialData("accounts");
       Object.keys(tempAccounts).forEach(key => {
         var accountName = tempAccounts[key].displayName;
-        var accountObject = OAuthObject[accountName];
-        accountObject.pullAccountData();
+        var accountObject = OAuthObject['Plaid'];
+        if(!tempAccounts[key].plaid) {
+          accountObject = OAuthObject[accountName];
+        }
+        var pullConfig = JSON.parse(JSON.stringify(accountObject.pullConfig));
+        pullConfig.minimal = true;
+        pullConfig.name = tempAccounts[key].displayName;
+        accountObject.pullAccountData(pullConfig);
       })
     }
     dispatch(widgetActions.getAllFirebaseWidgets());

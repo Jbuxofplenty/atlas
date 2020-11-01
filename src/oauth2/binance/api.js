@@ -1,9 +1,9 @@
 import { apiRequest, refreshToken } from 'oauth2/helpers';
 import { dataActions, alertActions } from 'actions';
 import { store, asyncForEach } from 'helpers';
-import { cryptoCurrencies } from 'components/MultiSelect/data';
+import { usStocks } from 'components/MultiSelect/data';
 
-const coin = "Coinbase";
+const binance = "Binance";
 
 // Invocations to pull account data should use an object like this
 const pullConfig = {
@@ -21,12 +21,15 @@ async function pullAccountData(pullConfiguration=pullConfig, accessToken=null) {
   if(!accessToken) {
     var accessTokens = await dataActions.getFinancialData('accessTokens');
     if(!accessTokens) return;
-    accessToken = accessTokens[coin];
+    accessToken = accessTokens[binance];
     if(!accessToken) return;
   }
-  accessToken = await refreshToken(accessToken.refresh_token, coin);
+  console.log(accessToken)
+  accessToken = await refreshToken(accessToken.refresh_token, binance);
+  console.log(accessToken)
   if(!accessToken) return;
   await storeAccount();
+  return;
   var success = true;
   var exchangeRates = await getExchangeRates(accessToken);
   var walletsTotalBalance = await getWalletsTotalBalance(accessToken, exchangeRates);
@@ -38,14 +41,15 @@ async function pullAccountData(pullConfiguration=pullConfig, accessToken=null) {
 }
 
 async function getPercentDifference() {
+  return;
   var accounts = await dataActions.getFinancialData("accounts");
   var accessTokens = await dataActions.getFinancialData('accessTokens');
-  var accessToken = accessTokens[coin];
+  var accessToken = accessTokens[binance];
   var exchangeRates = await getExchangeRates(accessToken);
-  var account = accounts[coin];
+  var account = accounts[binance];
   account.exchangeRates = exchangeRates;
   var newFinancialData = await getTotalBalancePercentDifference(account);
-  if(newFinancialData) await store.dispatch(dataActions.storeFinancialData(coin, "accounts", newFinancialData));
+  if(newFinancialData) await store.dispatch(dataActions.storeFinancialData(binance, "accounts", newFinancialData));
   return newFinancialData;
 }
 
@@ -55,21 +59,20 @@ async function getPercentDifference() {
 
 async function storeAccount() {
   var accounts = await dataActions.getFinancialData("accounts");
-  console.log(accounts)
-  if(!accounts) accounts = {};
-  if(!accounts[coin]) {
-    accounts[coin] = {};
+  if(!accounts || !accounts[binance]) {
+    accounts = {};
+    accounts[binance] = {};
   }
-  var account = accounts[coin];
-  account.displayName = coin;
-  account.color = '#0F70D8';
+  var account = accounts[binance];
+  account.displayName = binance;
+  account.color = '#00C805';
   account.plaid = false;
   account.lastSynced = new Date().getTime();
-  await dataActions.storeFinancialDataFirestore(coin, "accounts", account, true);
+  await dataActions.storeFinancialDataFirestore(binance, "accounts", account, true);
 }
 
 async function getExchangeRates(accessToken) {
-  var response = await apiRequest('exchange-rates', coin, accessToken);
+  var response = await apiRequest('exchange-rates', binance, accessToken);
   if(!response || !response.data) return false;
   return response.data.rates;
 }
@@ -126,14 +129,14 @@ async function getTotalBalancePercentDifference(financialData) {
 async function getWalletsTotalBalance(accessToken, exchangeRates) {
   await store.dispatch(alertActions.clear());
   var accounts = await dataActions.getFinancialData("accounts");
-  var account = accounts[coin];
+  var account = accounts[binance];
   var enter = true;
   var allWallets = [];
   var nextUri = 'accounts';
   var response;
   while(enter || (response && response.pagination && response.pagination.next_uri)) {
     if(!enter) nextUri = response.pagination.next_uri.slice(4);
-    response = await apiRequest(nextUri, coin, accessToken);
+    response = await apiRequest(nextUri, binance, accessToken);
     if(!response || !response.data) return false;
     allWallets = allWallets.concat(response.data);
     enter = false;
@@ -152,8 +155,8 @@ async function getWalletsTotalBalance(accessToken, exchangeRates) {
   wallets.forEach(wallet => {
     financialData.totalBalance += parseFloat(wallet.balance.amount) / parseFloat(exchangeRates[wallet.currency.code]);
   })
-  await store.dispatch(dataActions.storeFinancialData(coin, "accounts", financialData));
-  await store.dispatch(alertActions.progressSuccess(`Pulled in ${wallets.length} wallets with a balance from Coinbase!`));
+  await store.dispatch(dataActions.storeFinancialData(binance, "accounts", financialData));
+  await store.dispatch(alertActions.progressSuccess(`Pulled in ${wallets.length} wallets with a balance from Binance!`));
   return financialData;
 }
 
@@ -191,13 +194,13 @@ async function getOrders(accessToken, walletsTotalBalance, minimal=true) {
   i = 1;
   await asyncForEach(wallets, async wallet => {
     var walletId = wallet.id;
-    var response = await apiRequest('accounts/' + walletId + '/buys ', coin, accessToken);
+    var response = await apiRequest('accounts/' + walletId + '/buys ', binance, accessToken);
     if(!response || !response.data) return false;
     var buys = response.data;
     buys.forEach(buy => {
       orders.buys.push(buy);
     });
-    response = await apiRequest('accounts/' + walletId + '/sells', coin, accessToken);
+    response = await apiRequest('accounts/' + walletId + '/sells', binance, accessToken);
     if(!response || !response.data) return false;
     var sells = response.data;
     sells.forEach(sell => {
@@ -211,14 +214,14 @@ async function getOrders(accessToken, walletsTotalBalance, minimal=true) {
     ...walletsTotalBalance,
   }
   financialData.orders = orders;
-  await store.dispatch(dataActions.storeFinancialData(coin, "accounts", financialData));
+  await store.dispatch(dataActions.storeFinancialData(binance, "accounts", financialData));
   return financialData;
 }
 
 async function getFinnhubTickers(minimal=true, retrieveData=true) {
   var { stockData } = store.getState().data;
   var accounts = await dataActions.getFinancialData("accounts");
-  var account = accounts[coin];
+  var account = accounts[binance];
   var wallets = account.wallets;
   if(!wallets) return false;
   var tickersToPull = [];
@@ -229,16 +232,16 @@ async function getFinnhubTickers(minimal=true, retrieveData=true) {
   var finnhubTickers = {array: [], map: {}};
   wallets.forEach(wallet => {
     var code = wallet.currency.code;
-    for(var i in cryptoCurrencies) {
-      if(cryptoCurrencies[i].value.includes(code)) {
+    for(var i in usStocks) {
+      if(usStocks[i].value.includes(code)) {
         var staleOrNoData = true;
         if(stockData 
-            && stockData[cryptoCurrencies[i].value] 
-            && stockData[cryptoCurrencies[i].value]["candleStickPrice"] 
-            && stockData[cryptoCurrencies[i].value]["candleStickPrice"]['1D']) {
+            && stockData[usStocks[i].value] 
+            && stockData[usStocks[i].value]["candleStickPrice"] 
+            && stockData[usStocks[i].value]["candleStickPrice"]['1D']) {
           staleOrNoData = false;
           // Check for stale data
-          var timeArray = stockData[cryptoCurrencies[i].value]["candleStickPrice"]['1D'].t;
+          var timeArray = stockData[usStocks[i].value]["candleStickPrice"]['1D'].t;
           var now = new Date();
           var dayBefore = now.setDate(now.getDate() - 1);
           var lastDateInTimeArray = new Date(timeArray[timeArray.length-1]*1000);
@@ -248,19 +251,19 @@ async function getFinnhubTickers(minimal=true, retrieveData=true) {
         if(staleOrNoData) {
           var unique = true;
           for(var j in tickersToPull) { 
-            if(tickersToPull[j][0].includes(cryptoCurrencies[i].value) && timeScales[j] === '1D') {
+            if(tickersToPull[j][0].includes(usStocks[i].value) && timeScales[j] === '1D') {
               unique = false;
               break;
             }
           }
           if(unique) {
-            var newTicker = [cryptoCurrencies[i].value, cryptoCurrencies[i].label, cryptoCurrencies[i].color, cryptoCurrencies[i].tickerType];
+            var newTicker = [usStocks[i].value, usStocks[i].label, usStocks[i].color, usStocks[i].tickerType];
             tickersToPull.push(newTicker);
             timeScales.push('1D');
           }
         }
-        finnhubTickers.array.push(cryptoCurrencies[i]);
-        finnhubTickers.map[code] = cryptoCurrencies[i];
+        finnhubTickers.array.push(usStocks[i]);
+        finnhubTickers.map[code] = usStocks[i];
       }
     }
   })
@@ -270,15 +273,15 @@ async function getFinnhubTickers(minimal=true, retrieveData=true) {
 
 async function revokeToken(token) {
   return true;
-  // Currently issue with the revoke function, will contact coinbase
+  // Currently issue with the revoke function, will contact binance
   // var accessToken = { token };
   // p(token);
-  // var response = await apiRequest('https://api.coinbase.com/oauth/revoke', coin, accessToken);
+  // var response = await apiRequest('https://api.binance.com/oauth/revoke', binance, accessToken);
   // if(!response) return false;
   // return response;
 }
 
-const coinbaseAPI = {
+const binanceAPI = {
   pullAccountData: pullAccountData,
   getWalletsTotalBalance: getWalletsTotalBalance,
   revokeToken: revokeToken,
@@ -287,10 +290,10 @@ const coinbaseAPI = {
   getExchangeRates: getExchangeRates,
   getFinnhubTickers: getFinnhubTickers,
   getPercentDifference: getPercentDifference,
-  apiBaseUrl: "https://api.coinbase.com/v2/",
+  apiBaseUrl: "https://api.binance.com/v2/",
   headers: {
     "CB-VERSION": "2020-08-23"
   }
 }
 
-export default coinbaseAPI;
+export default binanceAPI;

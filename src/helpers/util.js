@@ -50,3 +50,19 @@ export function p(text) {
     console.log(text);
   }
 }
+
+export function numberWithCommas(x) {
+  return parseFloat(x).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+export function capitalizeAll(str) {
+  return str.split(' ').map(capitalize).join(' ');
+}
+
+export function randomHex() {
+  return '#' + Math.floor(Math.random()*16777215).toString(16);
+}

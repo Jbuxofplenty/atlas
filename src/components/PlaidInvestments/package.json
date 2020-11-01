@@ -1,0 +1,6 @@
+{
+  "name": "plaidInvestments",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./PlaidInvestments.js"
+}

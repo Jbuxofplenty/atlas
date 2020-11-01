@@ -9,7 +9,8 @@ import {
 import SyncAccount from "components/SyncAccount/SyncAccount.js";
 import Widget from 'components/Widget/Widget';
 
-import { dataActions } from 'actions';
+import { dataActions, widgetActions } from 'actions';
+import { numberWithCommas } from 'helpers';
 
 import s from '../Dashboard.module.scss';
 
@@ -29,6 +30,9 @@ function AccountsWidget(props) {
     for (var key in tempAccounts){
       financialAccounts.push(tempAccounts[key]);
     }
+    var tempWidget = JSON.parse(JSON.stringify(props.widget));
+    tempWidget.dataGrid.h = tempWidget.dataGrid.minH + financialAccounts.length / 2;
+    props.updateWidget(props.widgetId, tempWidget);
     setAccounts(financialAccounts)
   }
 
@@ -60,7 +64,7 @@ function AccountsWidget(props) {
                   <tr className={s.lineItem} key={index}>
                     <td className={s.cell}>{index+1}</td>
                     <td className={s.cell}>{account.displayName}</td>
-                    <td className={s.cell}>${account.totalBalance && account.totalBalance.toFixed(2)}</td>
+                    <td className={s.cell}>${account.totalBalance && numberWithCommas(account.totalBalance)}</td>
                     <td className={['thumb-sm w-100', s.cell].join(' ')}>
                       <i className={`status ${new Date(account.lastSynced+1000*60*60*2) > now ? "bg-success" : "bg-danger"}`} />
                     </td>
@@ -86,6 +90,7 @@ function mapStateToProps(store) {
 
 const mapDispatchToProps = (dispatch, history) => {
   return {
+    updateWidget: (key, widget) => dispatch(widgetActions.updateWidget(key, widget, 'dashboard')),
   };
 }
 

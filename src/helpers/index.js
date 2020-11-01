@@ -9,6 +9,9 @@ export {
   generateRandomId,
   asyncForEach,
   p,
+  numberWithCommas,
+  capitalizeAll,
+  randomHex,
 } from './util';
 export {
   gainersUrl,

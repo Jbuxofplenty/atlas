@@ -8,22 +8,22 @@ import { Card } from '@material-ui/core';
 // core components
 // import GridContainer from "components/Grid/GridContainer.js";
 // import GridItem from "components/Grid/GridItem.js";
-import Wallets from "components/Wallets/Wallets.js";
+import PlaidAccounts from "components/PlaidAccounts/PlaidAccounts.js";
+import PlaidInvestments from "components/PlaidInvestments/PlaidInvestments.js";
 
-// import s from './Coinbase.module.scss';
 import { eThreeActions, alertActions } from "actions";
+import { numberWithCommas } from 'helpers';
 import OAuthObject from 'oauth2';
 
-import s from './Coinbase.module.scss'
+import s from './Plaid.module.scss'
 
-function Coinbase(props) {
+function Plaid(props) {
   useEffect(() => {
     props.visible(false);
     // Guard for when linking an account and pulling in the data
     if(props.account.totalBalance !== undefined 
-        && props.account.orders !== undefined 
-        && props.account.percentDifference !== undefined) {
-      var accountObject = OAuthObject[props.account.displayName];
+        && props.account.orders !== undefined ) {
+      var accountObject = OAuthObject['Plaid'];
       accountObject.getPercentDifference();
     }
     // eslint-disable-next-line
@@ -31,30 +31,48 @@ function Coinbase(props) {
   
   return (
     <>
-      {props.account.totalBalance !== undefined && props.account.percentDifference !== undefined &&
+      {props.account.totalBalance !== undefined && 
         <div className="w-100 d-flex flex-column justify-content-center">
           <div className="w-100 d-flex flex-row justify-content-center">
             <Col lg={6} md={12} xs={12}>
               <Card className={`p-5 icon-list-item d-flex justify-content-center align-items-center my-3`} raised>
-                <span className={`${s.headerText}`}>Net Worth: ${props.account.totalBalance.toFixed(2)}</span>
+                <span className={`${s.headerText}`}>
+                  Net Worth: 
+                </span>
+                <span className={`${s.headerText} ${props.account.totalBalance < 0 ? 'errorMessage' : 'successMessage'} ml-3`}>
+                  ${numberWithCommas(props.account.totalBalance)}
+                </span>
               </Card>
             </Col>
             <Col lg={6} md={12} xs={12}>
               <Card className={`p-5 icon-list-item d-flex justify-content-center align-items-center my-3`} raised>
                 <span className={`${s.headerText}`}>
-                  Yesterday Percent Change: 
+                Total Buying Power: 
                 </span>
-                <span className={`${s.headerText} ${props.account.percentDifference < 0 ? 'errorMessage' : 'successMessage'} ml-3`}>
-                  {props.account.percentDifference.toFixed(2)}%
+                <span className={`${s.headerText} ${props.account.totalAvailableBalance < 0 ? 'errorMessage' : 'successMessage'} ml-3`}>
+                  ${numberWithCommas(props.account.totalAvailableBalance)}
                 </span>
               </Card>
             </Col>
           </div>
-          <h5 className={`${s.walletsTitle}`}>Wallets</h5>
-          <div className="d-flex flex-column justify-content-center w-100">
-            <div className={`${s.rounded}`}></div>
-            <Wallets account={props.account} />
-          </div>
+          {props.account.balances && props.account.balances.length &&
+            <>
+              <h5 className={`${s.walletsTitle}`}>Accounts</h5>
+              <div className="d-flex flex-column justify-content-center w-100">
+                <div className={`${s.rounded}`}></div>
+                <PlaidAccounts account={props.account} />
+              </div>
+            </>
+          }
+          {props.account.investments && props.account.investments.length &&
+            <>
+              <h5 className={`${s.walletsTitle}`}>Investments</h5>
+              <div className="d-flex flex-column justify-content-center w-100">
+                <div className={`${s.rounded}`}></div>
+                <PlaidInvestments account={props.account} />
+              </div>
+            </>
+          }
         </div>
       }
     </>
@@ -78,4 +96,4 @@ const mapDispatchToProps = (dispatch, history) => {
   };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Coinbase);
+export default connect(mapStateToProps, mapDispatchToProps)(Plaid);

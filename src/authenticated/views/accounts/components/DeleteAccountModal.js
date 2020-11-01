@@ -29,24 +29,17 @@ const SimpleButton = withStyles({
 function DeleteAccountModal(props) {
   const [cardAnimaton, setCardAnimation] = React.useState("cardHidden");
   const message = `Are you sure you would like to delete your ${props.account.displayName} account?`;
-  const [tempInvalid, setTempInvalid] = React.useState(false);
   setTimeout(function() {
     setCardAnimation("");
   }, 300);
 
   const classes = useStyles();
 
-  const isInvalid = (props.alertVisible && props.alertType === "alert-pending") || tempInvalid;
+  const isInvalid = (props.alertVisible && props.alertType === "alert-pending");
 
   const deleteAccount = (e) => {
-    e.preventDefault();
-    if(props.alertType === "alert-success") {
-      setTempInvalid(true);
-      props.clear();
-      window.location.reload(false);
-    }
-    else {
-      props.deleteAccount(props.account.displayName);
+    if(props.alertType !== "alert-success") {
+      props.deleteAccount(props.account.displayName, props.account.plaid);
     }
   }
 
@@ -54,6 +47,13 @@ function DeleteAccountModal(props) {
     props.clear();
     // eslint-disable-next-line
   }, []);
+
+  useEffect(() => {
+    if(props.alertType === "alert-success") {
+      props.handleClose();
+    }
+    // eslint-disable-next-line
+  }, [props.alertType]);
 
   return (
     <div className="twofa-modal">
@@ -108,7 +108,7 @@ function mapStateToProps(store) {
 
 const mapDispatchToProps = (dispatch, history) => {
   return {
-    deleteAccount: (institution) => dispatch(dataActions.deleteAccount(institution)),
+    deleteAccount: (institution, plaid) => dispatch(dataActions.deleteAccount(institution, plaid)),
     clear: () => dispatch(alertActions.clear()),
   };
 }

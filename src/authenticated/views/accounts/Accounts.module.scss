@@ -120,6 +120,22 @@
   margin-bottom: 2em;
 }
 
+.accountSeparator {
+  border-top: 3px solid #333;
+  border-radius: 5px;
+  width: 45%;
+  margin-left: 3em;
+  margin-right: 3em;
+  align-self: center;
+  margin-bottom: 2em;
+}
+
+.orText {
+  color: #bbb;
+  font-size: 2rem;
+  margin-bottom: 1em;
+}
+
 .cardFooter {
   height: 2em;
   padding-top: 2em;
@@ -148,6 +164,11 @@
   -moz-animation:spin 1s forwards;
   animation:spin 1s forwards;
   transition-property: transform;
+}
+
+.plaidLink {
+  background-color: transparent;
+  color: transparent;
 }
 
 @-moz-keyframes spin { 100% { -moz-transform: rotate(180deg); } }

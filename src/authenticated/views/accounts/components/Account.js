@@ -22,7 +22,12 @@ function Account(props) {
   }, []);
 
   useEffect(() => {
-    setAccountObject(OAuthObject[props.account.displayName])
+    if(props.account.plaid) {
+      setAccountObject(OAuthObject['Plaid'])
+    }
+    else {
+      setAccountObject(OAuthObject[props.account.displayName])
+    }
     // eslint-disable-next-line
   }, [props.account.displayName]);
 

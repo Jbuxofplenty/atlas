@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { dataActions } from 'actions';
 import {
@@ -14,102 +14,87 @@ import OrdersTable from "./components/OrdersTable.js";
 
 import s from './Orders.module.scss';
 
-class Orders extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      activeTab: 0,
-      accounts: null,
-    };
+function Orders (props) {
+  const [activeTab, setActiveTab] = useState(0);
+  const [accounts, setAccounts] = useState(null);
+  const [mounted, setMounted] = useState(true);
 
-    this.toggle = this.toggle.bind(this);
-    this.updateAccounts = this.updateAccounts.bind(this)
-    this._isMounted = false;
+
+  useEffect(() => {
+    mounted && updateAccounts();
+    return function cleanup() {
+      setMounted(false);
+    }
+  }, [props.data, mounted]);
+
+  const updateAccounts = async () => {
+    var accountsObject = await dataActions.getFinancialData("accounts");
+    var tempAccounts = [];
+    for (var key in accountsObject){
+      if(accountsObject[key].plaid) {
+        //TODO: Insert code to populate investment tabs
+      }
+      else {
+        tempAccounts.push(accountsObject[key]);
+      }
+    }
+    setAccounts(tempAccounts);
   }
 
-  async componentDidMount() {
-    this._isMounted = true;
-    this.updateAccounts()
-  }
-
-  componentWillUnmount() {
-    this._isMounted = false;
-  }
-
-  componentWillUpdate(nextProps) {
-    if(this.props.data !== nextProps.data) {
-      this.updateAccounts();
+  const toggle = (tab) => {
+    if (activeTab !== tab) {
+      setActiveTab(tab);
     }
   }
-
-  async updateAccounts() {
-    var tempAccounts = this._isMounted && await dataActions.getFinancialData("accounts");
-    var accounts = [];
-    for (var key in tempAccounts){
-      accounts.push(tempAccounts[key]);
-    }
-    this._isMounted && this.setState({ accounts });
-  }
-
-  toggle(tab) {
-    if (this.state.activeTab !== tab) {
-      this.setState({
-        activeTab: tab,
-      });
-    }
-  }
-
-  render() {
-    return (
-      <section className={`${s.root} mb-4`}>
-        <h1 className="page-title">Orders</h1>
-        {this.state.accounts &&
-          <>
-            <Nav className="bg-transparent" tabs>
-              <NavItem>
-                <NavLink
-                  className={classnames({ active: this.state.activeTab === 0 })}
-                  onClick={() => { this.toggle(0); }}
-                >
-                  <i className="icon-pane fa fa-globe-americas"/>
-                  <span className="ml-xs">All Orders</span>
-                </NavLink>
-              </NavItem>
-                {this.state.accounts.map((account, index) => 
-                  <NavItem key={index}>
-                    <NavLink
-                      className={classnames({ active: this.state.activeTab === index+1 })}
-                      onClick={() => { this.toggle(index+1); }}
-                    >
-                      <span className="ml-xs">{account.displayName}</span>
-                    </NavLink>
-                  </NavItem>
-                )}
-            </Nav>
-
-            {/* tab content */}
-
-            <TabContent activeTab={this.state.activeTab}>
-              {this.state.accounts.map((account, index) => 
-                <TabPane tabId={index+1} className="py-5" key={index}>
-                  <OrdersTable account={account} />
-                </TabPane>
+  return (
+    <section className={`${s.root} mb-4`}>
+      <h1 className="page-title">Orders</h1>
+      {accounts &&
+        <>
+          <Nav className="bg-transparent" tabs>
+            <NavItem>
+              <NavLink
+                className={classnames({ active: activeTab === 0 })}
+                onClick={() => { toggle(0); }}
+              >
+                <i className="icon-pane fa fa-globe-americas"/>
+                <span className="ml-xs">All Orders</span>
+              </NavLink>
+            </NavItem>
+              {accounts.map((account, index) => 
+                <NavItem key={index}>
+                  <NavLink
+                    className={classnames({ active: activeTab === index+1 })}
+                    onClick={() => { toggle(index+1); }}
+                  >
+                    <span className="ml-xs">{account.displayName}</span>
+                  </NavLink>
+                </NavItem>
               )}
-              <TabPane tabId={0} className="py-5">
-                <OrdersTable accounts={this.state.accounts} />
+          </Nav>
+
+          {/* tab content */}
+
+          <TabContent activeTab={activeTab}>
+            {accounts.map((account, index) => 
+              <TabPane tabId={index+1} className="py-5" key={index}>
+                <OrdersTable account={account} />
               </TabPane>
-            </TabContent>
-          </>
-        } 
-      </section>
-    );
-  }
+            )}
+            <TabPane tabId={0} className="py-5">
+              <OrdersTable accounts={accounts} />
+            </TabPane>
+          </TabContent>
+        </>
+      } 
+    </section>
+  );
 }
 
 const mapStateToProps = (state) => {
   return {
     institutions: state.data.institutions,
-    data: state.data.financialData,
+    data: state.data.accounts,
   };
 }
 

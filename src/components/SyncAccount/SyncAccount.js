@@ -20,7 +20,12 @@ function SyncAccount(props) {
   useEffect(() => {
     props.clear();
     if(props.account) {
-      setAccountObject(OAuthObject[props.account.displayName])
+      if(props.account.plaid) {
+        setAccountObject(OAuthObject['Plaid'])
+      }
+      else {
+        setAccountObject(OAuthObject[props.account.displayName])
+      }
       setUpdated(new Date(props.account.lastSynced));
     }
     else {
@@ -47,9 +52,13 @@ function SyncAccount(props) {
     var success = true;
     if(!accountObject && props.accounts) {
       await asyncForEach(props.accounts, async account => {
-        var tempAccountObject = OAuthObject[account.displayName];
+        var tempAccountObject = OAuthObject['Plaid'];
+        if(!account.plaid) {
+          tempAccountObject = OAuthObject[account.displayName];
+        }
         var pullConfig = JSON.parse(JSON.stringify(tempAccountObject.pullConfig));
         pullConfig.minimal = minimal;
+        pullConfig.name = account.displayName;
         var tempSuccess = await tempAccountObject.pullAccountData(pullConfig);
         if(!tempSuccess) success = false;
       })
@@ -57,6 +66,7 @@ function SyncAccount(props) {
     else {
       var pullConfig = JSON.parse(JSON.stringify(accountObject.pullConfig));
       pullConfig.minimal = minimal;
+      pullConfig.name = props.account.displayName;
       success = await accountObject.pullAccountData(pullConfig);
     }
     if(success) {

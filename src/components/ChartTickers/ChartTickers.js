@@ -90,7 +90,10 @@ function ChartTickers(props) {
         var accounts = await dataActions.getFinancialData("accounts");
         var tempHeldTickers = [];
         await asyncForEach(Object.keys(accounts), async key => {
-          var accountObject = OAuthObject[accounts[key].displayName];
+          var accountObject = OAuthObject['Plaid'];
+          if(!accounts[key].plaid) {
+            accountObject = OAuthObject[accounts[key].displayName];
+          }
           var temp = await accountObject.getFinnhubTickers();
           tempHeldTickers = tempHeldTickers.concat(temp.array);
         })

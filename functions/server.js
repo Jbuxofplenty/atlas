@@ -35,6 +35,27 @@ github.use('/whileYouWereAway', whileYouWereAway);
 github.use(getDefault);
 
 ///////////////////////////////////////////////////////////////////
+//////////////////////        PLAID          //////////////////////
+///////////////////////////////////////////////////////////////////
+
+const { 
+  createLinkToken,
+  getAccessToken,
+  removeItem,
+  getBalance,
+  getHoldings,
+} = require('./plaid');
+
+// Create an Express object and routes (in order)
+const plaid = express();
+plaid.use('/createLinkToken', createLinkToken);
+plaid.use('/getAccessToken', getAccessToken);
+plaid.use('/removeItem', removeItem);
+plaid.use('/getBalance', getBalance);
+plaid.use('/getHoldings', getHoldings);
+plaid.use(getDefault);
+
+///////////////////////////////////////////////////////////////////
 //////////////////////        COINBASE          ///////////////////
 ///////////////////////////////////////////////////////////////////
 
@@ -62,6 +83,7 @@ const v1 = express();
 v1.use('/auth', auth);
 v1.use('/github', github);
 v1.use('/coinbase', coinbase);
+v1.use('/plaid', plaid);
 v1.use(getDefault);
 
 

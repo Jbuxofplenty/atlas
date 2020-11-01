@@ -1,7 +1,6 @@
 export const accountsPieOptions = {
   legend: {
-    orient: 'vertical',
-    left: 10,
+    bottom: 0,
     textStyle: {
       color: 'white'
     },

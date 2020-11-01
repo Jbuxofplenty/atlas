@@ -147,6 +147,8 @@ async function eThreeDecrypt(item) {
 }
 
 async function cryptoPassword() {
+  var user = auth.currentUser;
+  if(!user) return '';
   var uid = auth.currentUser.uid;
   var tempUserData = await db.collection("users").doc(uid).get().then(async function (snapshot) {
     return snapshot.data();
@@ -329,8 +331,8 @@ function restoreKey(keyPassword) {
         p('Successfully retrieved your private key from the cloud!')
         dispatch(complete(true));
         dispatch(alertActions.success("Successfully retrieved your private key from the cloud!"));
-        dispatch(dataActions.getFinancialDataFirestore("accessTokens", true));
-        dispatch(dataActions.getFinancialDataFirestore("accounts", true));
+        await dataActions.getFinancialDataFirestore("accessTokens", true);
+        await dataActions.getFinancialDataFirestore("accounts", true);
       })
       .catch(e => {
         console.error('error: ', e)
@@ -342,8 +344,8 @@ function restoreKey(keyPassword) {
       p('Private key is already stored locally!')
       dispatch(alertActions.success("Private key is already stored locally!"));
       dispatch(complete(true));
-      dispatch(dataActions.getFinancialDataFirestore("accessTokens", false));
-      dispatch(dataActions.getFinancialDataFirestore("accounts", false));
+      await dataActions.getFinancialDataFirestore("accessTokens", false);
+      await dataActions.getFinancialDataFirestore("accounts", false);
     }
   }
 

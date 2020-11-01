@@ -46,8 +46,14 @@ class Accounts extends React.Component {
       isLoad: true,
     });
     this.state.accounts.forEach(async account => {
-      var accountObject = OAuthObject[account.displayName];
-      await accountObject.pullAccountData();
+      var accountObject = OAuthObject['Plaid'];
+      if(!account.plaid) {
+        accountObject = OAuthObject[account.displayName];
+      }
+      var pullConfig = JSON.parse(JSON.stringify(accountObject.pullConfig));
+      pullConfig.minimal = true;
+      pullConfig.name = account.displayName;
+      await accountObject.pullAccountData(pullConfig);
     });
     this.setState({
       isLoad: false,
