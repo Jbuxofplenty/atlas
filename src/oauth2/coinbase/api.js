@@ -55,7 +55,6 @@ async function getPercentDifference() {
 
 async function storeAccount() {
   var accounts = await dataActions.getFinancialData("accounts");
-  console.log(accounts)
   if(!accounts) accounts = {};
   if(!accounts[coin]) {
     accounts[coin] = {};

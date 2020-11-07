@@ -152,7 +152,6 @@ async function getAccountsTotalBalance(accountName, accessToken) {
   });
   var accounts = await dataActions.getFinancialData("accounts");
   var account = accounts[accountName];
-  console.log(account)
   if(!balances || !account) return false;
   balances = balances.accounts;
   account.balances = balances;
@@ -213,7 +212,6 @@ async function getInvestments(account, accountName, accessToken) {
     return false;
   });
   if(!investments || !account) return false;
-  console.log(investments);
   return;
   await store.dispatch(dataActions.storeFinancialData(accountName, "accounts", account));
   await store.dispatch(alertActions.progressSuccess(`Pulled in ${investments.length} holdings with a balance from ${accountName}!`));

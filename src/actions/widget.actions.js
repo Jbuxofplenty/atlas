@@ -60,7 +60,6 @@ async function updateAccountsPie(key, widget, view) {
   Object.keys(accounts).forEach(accountKey => {
     var account = accounts[accountKey];
     var finnhubTickerBalanceMap = account.finnhubTickerBalanceMap;
-    console.log(finnhubTickerBalanceMap)
     var totalBalance = 0;
     legendData.push(accountKey);
     Object.keys(finnhubTickerBalanceMap).forEach(walletKey => {

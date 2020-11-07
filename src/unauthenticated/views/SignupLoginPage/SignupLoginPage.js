@@ -263,7 +263,7 @@ function SignupLoginPage(props) {
                 <GridItem xs={12} sm={12} md={4}>
                   <Card className={classes[cardAnimaton]}>
                     <CardHeader color="primary" className={classes.cardHeader}>
-                      <h4>{props.signUpPage ? "Signup" : "Login"} with Provider</h4>
+                      <h4>{props.signUpPage ? "Sign Up" : "Login"} with Provider</h4>
                       <div className={classes.socialLine}>
                         <Button
                           justIcon

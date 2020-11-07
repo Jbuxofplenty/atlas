@@ -60,12 +60,11 @@ export default function WorkSection(props) {
     <div className={classes.section}>
       <GridContainer justify="center">
         <GridItem cs={12} sm={12} md={8}>
-          <h2 className={classes.title}>Get in touch</h2>
+          <h2 className={classes.title}>Ping Us</h2>
           <h4 className={classes.description}>
-            We're starting out and would love any feedback
-            on the idea.  Let us know if you have any 
-            questions or feature requests associated with
-            our platform.  We'll respond super quick.
+          We’ve unofficially soft-launched and are looking for user feedback! 
+          Shoot us a quick note below about your thoughts, questions, comments, concerns, or suggestions of new features you’d like to see. 
+          We’ll reciprocate the love and get back to you right away.
           </h4>
           <form>
             <GridContainer>

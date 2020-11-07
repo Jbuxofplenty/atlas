@@ -34,7 +34,7 @@ export default function TeamSection() {
   );
   return (
     <div className={classes.section}>
-      <h2 className={classes.title}>Here is our team</h2>
+      <h2 className={classes.title}>The Team</h2>
       <div>
         <GridContainer>
           <GridItem xs={12} sm={12} md={6}>
@@ -45,11 +45,11 @@ export default function TeamSection() {
               <h4 className={classes.cardTitle}>
                 Josiah Buxton
                 <br />
-                <small className={classes.smallTitle}>Designer</small>
+                <small className={classes.smallTitle}>Technology</small>
               </h4>
               <CardBody>
                 <p className={classes.description}>
-                  Boss programmer.  Does what he wants.
+                  Chief Technology Officer in charge of all things tech. Data, architecture, design, IT, support.
                 </p>
               </CardBody>
               <CardFooter className={classes.justifyCenter}>
@@ -80,11 +80,11 @@ export default function TeamSection() {
               <h4 className={classes.cardTitle}>
                 Matthew Jadro
                 <br />
-                <small className={classes.smallTitle}>Business Dude</small>
+                <small className={classes.smallTitle}>Development</small>
               </h4>
               <CardBody>
                 <p className={classes.description}>
-                  Kills it in the rap game. This guy's got a beard now.
+                  Chief Executive Officer in charge of all things business. Growth, branding, product, users.
                 </p>
               </CardBody>
               <CardFooter className={classes.justifyCenter}>

@@ -56,11 +56,10 @@ export default function LandingPage(props) {
         <div className={classes.container}>
           <GridContainer>
             <GridItem xs={12} sm={12} md={9}>
-              <h1 className={classes.title}>The Social Investing Platform</h1>
+              <h1 className={classes.title}>All Your Accounts in One Place</h1>
               <h4>
-                Atlas One is the premier investing platform for day traders.  
-                View all of your trading portfolios in one place and  
-                share your investment strategies with friends.
+              Atlas One is the premiere platform for the everyday investor. 
+              View all of your portfolios in One place, track performance, compare tickers and strategize with friends.
               </h4>
               <br />
               <Button

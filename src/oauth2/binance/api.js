@@ -24,9 +24,7 @@ async function pullAccountData(pullConfiguration=pullConfig, accessToken=null) {
     accessToken = accessTokens[binance];
     if(!accessToken) return;
   }
-  console.log(accessToken)
   accessToken = await refreshToken(accessToken.refresh_token, binance);
-  console.log(accessToken)
   if(!accessToken) return;
   await storeAccount();
   return;

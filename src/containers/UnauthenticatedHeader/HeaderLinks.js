@@ -38,7 +38,7 @@ export default function HeaderLinks(props) {
           classes={{ tooltip: classes.tooltip }}
         >
           <Button
-            href=""
+            href="https://twitter.com/AtlasOneFinn"
             target="_blank"
             color="transparent"
             className={classes.navLink}
@@ -56,7 +56,7 @@ export default function HeaderLinks(props) {
         >
           <Button
             color="transparent"
-            href=""
+            href="https://facebook.com/atlasonefinn"
             target="_blank"
             className={classes.navLink}
           >
@@ -73,7 +73,7 @@ export default function HeaderLinks(props) {
         >
           <Button
             color="transparent"
-            href=""
+            href="https://instagram.com/atlasonefinn"
             target="_blank"
             className={classes.navLink}
           >
@@ -103,7 +103,7 @@ export default function HeaderLinks(props) {
             target="_blank"
             rel="noopener noreferrer"
           >
-            Sign up
+            Sign Up
           </LowerCaseButton>
         </ListItem>
     </List>
