@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { connect } from 'react-redux';
 import { dataActions } from 'actions';
 import {
@@ -41,7 +41,8 @@ function Accounts(props) {
   const [connectOpen, setConnectOpen] = useState(false);
   const [activeInstitution, setActiveInstitution] = useState({});
   const [accounts, setAccounts] = useState(null);
-  const [linkToken, setLinkToken] = useState('temp');
+  const [linkToken, setLinkToken] = useState('null');
+  const mounted = useRef(true);
 
   const onSuccess = useCallback(async (publicToken, metadata) => {
     var accessToken = await getAccessToken(publicToken);
@@ -52,7 +53,7 @@ function Accounts(props) {
   const config = {
     token: linkToken,
     onSuccess,
-    // ...
+    env: 'development',
   };
  
   const { open, ready } = usePlaidLink(config);
@@ -65,6 +66,7 @@ function Accounts(props) {
   useEffect(() => {
     props.getInstitutions();
     getLinkToken();
+    return () => { mounted.current = false; };
   // eslint-disable-next-line
   }, []);
 
@@ -79,13 +81,13 @@ function Accounts(props) {
   }
 
   const updateAccounts = async () => {
-    var accountsObject = await dataActions.getFinancialData("accounts");
+    var accountsObject = mounted.current && await dataActions.getFinancialData("accounts");
     var tempAccounts = [];
     for (var key in accountsObject){
       tempAccounts.push(accountsObject[key]);
     }
-    setAccounts(tempAccounts);
-    populateInstitutions(tempAccounts);
+    mounted.current && setAccounts(tempAccounts);
+    mounted.current && populateInstitutions(tempAccounts);
   }
 
   const populateInstitutions = (tempAccounts) => {
@@ -196,48 +198,52 @@ function Accounts(props) {
                     </Card>
                   </Col>
                   </div>
-                  <div className="d-flex flex-row justify-content-center">
-                    <div className={`${s.accountSeparator}`}></div>
-                    <div className={`${s.orText}`}>Or</div>
-                    <div className={`${s.accountSeparator}`}></div>
-                  </div>
-                  <InputGroup className={`align-self-center col-md-9 mb-2 mt-5 ${s.navbarForm} ${searchFocused ? s.navbarFormFocused : ''}`}>
-                    <InputGroupAddon addonType="prepend" className={s.inputAddon}><InputGroupText><i className="fa fa-search" /></InputGroupText></InputGroupAddon>
-                    <Input
-                      id="search-input-2" placeholder="Enter trading platform or sign-in URL..." className="input-transparent"
-                      onFocus={() => setSearchFocused(true)}
-                      onBlur={() => setSearchFocused(false)}
-                      onChange={(e) => filterInstitutions(e)}
-                    />
-                  </InputGroup>
-                  {searchFilter === '' ?
-                    <Row className="icon-list d-flex justify-content-center align-items-center my-5">
-                      {popularInstitutions.map((institution, index) => (
-                          <Col lg={6} md={12} xs={12}  onClick={() => handleOpen(institution)} 
-                                key={index}>
-                            <Card className={`p-5 icon-list-item d-flex justify-content-center align-items-center my-3 ${s.iconListItem}`} raised>
-                              <img className={`${s.avatar} rounded-circle thumb-sm float-left mr-4`} alt="bs" src={institution.icon}/>
-                              {institution.displayName}
-                            </Card>
-                          </Col>
-                        ))
+                  {popularInstitutions.length > 0 && 
+                    <>
+                      <div className="d-flex flex-row justify-content-center">
+                        <div className={`${s.accountSeparator}`}></div>
+                        <div className={`${s.orText}`}>Or</div>
+                        <div className={`${s.accountSeparator}`}></div>
+                      </div>
+                      <InputGroup className={`align-self-center col-md-9 mb-2 mt-5 ${s.navbarForm} ${searchFocused ? s.navbarFormFocused : ''}`}>
+                        <InputGroupAddon addonType="prepend" className={s.inputAddon}><InputGroupText><i className="fa fa-search" /></InputGroupText></InputGroupAddon>
+                        <Input
+                          id="search-input-2" placeholder="Enter trading platform or sign-in URL..." className="input-transparent"
+                          onFocus={() => setSearchFocused(true)}
+                          onBlur={() => setSearchFocused(false)}
+                          onChange={(e) => filterInstitutions(e)}
+                        />
+                      </InputGroup>
+                      {searchFilter === '' ?
+                        <Row className="icon-list d-flex justify-content-center align-items-center my-5">
+                          {popularInstitutions.map((institution, index) => (
+                              <Col lg={6} md={12} xs={12}  onClick={() => handleOpen(institution)} 
+                                    key={index}>
+                                <Card className={`p-5 icon-list-item d-flex justify-content-center align-items-center my-3 ${s.iconListItem}`} raised>
+                                  <img className={`${s.avatar} rounded-circle thumb-sm float-left mr-4`} alt="bs" src={institution.icon}/>
+                                  {institution.displayName}
+                                </Card>
+                              </Col>
+                            ))
+                          }
+                        </Row> :
+                        <div className="align-self-center w-75">
+                          <Table className="table-dark-hover">
+                            <tbody>
+                            {filteredInstitutions.map((institution, index) => (
+                                <tr className={`${s.institutionListItem}`} key={index} onClick={() => handleOpen(institution)}>
+                                  <td><img className="align-self-center icon-list-item mr-2 mb-1" alt="bs" src={institution.icon}/></td>
+                                  <td>{institution.displayName}</td>
+                                  <td>{institution.url}</td>
+                                </tr>
+                              ))
+                            }
+                            </tbody>
+                            {/* eslint-enable */}
+                          </Table>
+                        </div>
                       }
-                    </Row> :
-                    <div className="align-self-center w-75">
-                      <Table className="table-dark-hover">
-                        <tbody>
-                        {filteredInstitutions.map((institution, index) => (
-                            <tr className={`${s.institutionListItem}`} key={index} onClick={() => handleOpen(institution)}>
-                              <td><img className="align-self-center icon-list-item mr-2 mb-1" alt="bs" src={institution.icon}/></td>
-                              <td>{institution.displayName}</td>
-                              <td>{institution.url}</td>
-                            </tr>
-                          ))
-                        }
-                        </tbody>
-                        {/* eslint-enable */}
-                      </Table>
-                    </div>
+                    </>
                   }
                 </div>
               </div>

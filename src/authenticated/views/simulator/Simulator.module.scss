@@ -1,0 +1,123 @@
+@import 'assets/scss/app';
+
+.root {
+  :global {
+    .stat-item .name {
+      margin-top: 10px;
+    }
+
+    .list-group-item:hover {
+      background-color: $bg-addition;
+    }
+
+    .detail {
+      .x_label {
+        background: $widget-bg-color !important;
+      }
+    }
+  }
+}
+
+.title {
+  margin-top: 0px;
+  color: $widget-title-color;
+  padding-left: 30px;
+
+  @include clearfix();
+}
+
+.settingsTitle {
+  margin-top: 20px;
+  color: $widget-title-color;
+  padding-left: 20px;
+}
+
+.inputContainer {
+  margin-top: 0;
+  padding-left: 30px;
+}
+
+.table {
+  :global(.table.table-sm) {
+    td {
+      font-size: 1rem;
+      vertical-align: middle;
+    }
+  }
+}
+
+.searchBtn {
+  border-top-left-radius: 0px;
+  border-bottom-left-radius: 0px;
+}
+  
+.notificationIcon {
+  bottom: 0.5em;
+  display: flex !important;
+  justify-content: center !important;
+  @include clearfix;
+}
+
+.lineItem:hover td {
+  color: white;
+}
+
+.cell {
+  text-align: center;
+  align-self: center;
+}
+
+.gridContainer {
+  width: 95% !important;
+  align-self: center;
+}
+
+.instructionContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  align-self: center !important;
+}
+
+.portfolioHeaderText {
+  font-size: 16px;
+}
+
+.rounded {
+  border-top: 3px solid #bbb;
+  border-radius: 5px;
+  width: 95%;
+  align-self: center;
+  margin-bottom: 2em;
+}
+
+.portfolioHeader {
+  margin-top: 1rem;
+}
+
+.profileTitle {
+  align-self: left;
+  text-align: left;
+  font-size: medium;
+  color: white;
+}
+
+.orderSummaryValue {
+  color: white;
+  font-weight: 500;
+}
+
+.orderSummaryTotal {
+  color: white;
+  font-weight: 800;
+}
+
+.errorPrice {
+  margin-top: 100px;
+}
+
+.transactionTableHeader {
+  margin-top: 2rem;
+  text-align: center;
+  width: 100%;
+}

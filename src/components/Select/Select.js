@@ -50,8 +50,8 @@ export default function CustomSelect(props) {
   return (
     <div onMouseDown={handleOnMouseDown}>
       <SelectAll
+        isClearable={false}
         closeMenuOnSelect={true}
-        defaultValue={props.defaultValue}
         value={props.value}
         options={props.options}
         styles={colourStyles}

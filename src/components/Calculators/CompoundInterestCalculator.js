@@ -14,6 +14,7 @@ import Button from "components/CustomButtons/Button.js";
 
 import s from './Calculators.module.scss';
 import { widgetActions, alertActions } from "actions";
+import { numberWithCommas } from 'helpers';
 
 export const compoundInterestCalculator = {
   widgetType: 'compoundInterestCalculator',
@@ -235,7 +236,7 @@ function CompoundInterestCalculator(props) {
             >
               <Card.Body>
                 <Card.Text className="d-flex flex-row align-items-center justify-content-center">
-                  <span className={`${s.addText} text-white`}>{`Future Value: $${futureValue.toFixed(2)}`}</span>
+                  <span className={`${s.addText} text-white`}>{`Future Value: $${numberWithCommas(futureValue)}`}</span>
                 </Card.Text>
               </Card.Body>
             </Card>

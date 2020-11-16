@@ -242,3 +242,18 @@ input:focus ~ label, input.used ~ label {
   height: 50px;
   position: relative;
 }
+
+.fast-option {
+  color: white !important;
+  word-wrap: none !important;
+  white-space: nowrap !important;
+  background-color: rgb(22, 21, 21) !important;
+}
+
+.fast-option-focused {
+  background-color: rgb(16, 16, 82) !important;
+}
+
+.fast-option-selected {
+  background-color: navy !important;
+}

@@ -7,6 +7,7 @@ import { data } from './data.reducer';
 import { navigation } from './navigation.reducer';
 import { eThree } from './ethree.reducer';
 import { widget } from './widget.reducer';
+import { simulator } from './simulator.reducer';
 
 const rootReducer = combineReducers({
   user,
@@ -16,6 +17,7 @@ const rootReducer = combineReducers({
   navigation,
   eThree,
   widget,
+  simulator,
 });
 
 export default rootReducer;

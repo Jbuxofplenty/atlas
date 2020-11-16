@@ -1,12 +1,14 @@
 import { userConstants, eThreeConstants } from '../constants';
-import { alertActions, dataActions, eThreeActions, widgetActions } from './';
+import { alertActions, dataActions, eThreeActions, widgetActions, simulatorActions } from './';
 import OAuthObject from 'oauth2';
 import { auth, db } from "../helpers/firebase";
 import { apiBaseUrl, generateRandomId, p } from 'helpers';
+import { initialState } from 'reducers/simulator.reducer';
 
 export const userActions = {
     login,
     logout,
+    saveState,
     reset,
     register,
     forgotPassword,
@@ -82,6 +84,7 @@ const defaultUser = {
   },
   financialData: {},
   e2ee: false,
+  simulator: initialState,
 }
 
 function commonLogin(user, backedUp) {
@@ -107,6 +110,7 @@ function commonLogin(user, backedUp) {
       })
     }
     dispatch(widgetActions.getAllFirebaseWidgets());
+    dispatch(simulatorActions.getSimulator());
     dispatch(request(false));
     dispatch(success(true, user));
     dispatch(updateBackedUp(backedUp));
@@ -359,9 +363,13 @@ function reCaptchaUpdate(human, signUp) {
 // Tear Down
 //////////////////////
 
+async function saveState() {
+  await widgetActions.saveAllFirebaseWidgets();
+  await simulatorActions.saveSimulator();
+}
+
 function logout() {
   return async (dispatch, getState) => {
-    await widgetActions.saveAllFirebaseWidgets();
     let eThreeLoggedOut = true;
     const { userData } = getState().user;
     if(userData.e2ee) {
@@ -373,6 +381,7 @@ function logout() {
       dispatch(ethreeReset());
       dispatch(dataActions.dataReset());
       dispatch(widgetActions.resetWidgets());
+      dispatch(simulatorActions.simulatorReset());
     }
     else {
       p("EThree unable to log out the user!");

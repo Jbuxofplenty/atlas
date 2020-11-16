@@ -27,7 +27,8 @@ const defaultCalculatorsMap = {
 
 function CalculatorWidget(props) {
   const [more, setMore] = useState(false);
-
+  const [calculatorType, setCalculatorType] = useState(calculatorTypes[calculatorTypesMap[props.widget.calculatorName]]);
+  
   useEffect(() => {
     props.clear();
     var calculatorWidget = JSON.parse(JSON.stringify(props.widget));
@@ -40,6 +41,7 @@ function CalculatorWidget(props) {
   }, []);
 
   const onTypeSelectChange = (selectedValue) => {
+    setCalculatorType(selectedValue);
     var calculatorWidget = JSON.parse(JSON.stringify(props.widget));
     var widgetType = selectedValue.value;
     var newCalculatorWidget = JSON.parse(JSON.stringify(defaultCalculatorsMap[widgetType]));
@@ -97,7 +99,7 @@ function CalculatorWidget(props) {
                 <div className={`${s.inputContainer}`} onMouseDown={handleOnMouseDown}>
                   <Select 
                     onSelectChange={onTypeSelectChange}
-                    defaultValue={calculatorTypes[calculatorTypesMap[props.widget.calculatorName]]}
+                    value={calculatorType}
                     options={calculatorTypes}
                   />
                 </div>

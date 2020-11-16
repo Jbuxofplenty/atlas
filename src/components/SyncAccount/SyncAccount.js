@@ -78,18 +78,23 @@ function SyncAccount(props) {
     }
   }
 
+  const handleOnMouseDown = async (e) => {
+    e.stopPropagation();
+  }
+
   return (
     <>
       {updated &&
         <footer className={[s.cardFooter, 'text-sm', 'text-right'].join(' ')}>
           <div className="d-flex flex-column">
-            {props.orders &&
+            {props.orders && !props.account.plaid &&
               <div className="text-right">
                 <span className="fs-mini text-right">Pull orders for all wallets</span>
                 <Checkbox
                   color="primary"
                   inputProps={{ 'aria-label': 'secondary checkbox' }}
                   onChange={handleChange}
+                  onMouseDown={handleOnMouseDown}
                 />
               </div>
             }
@@ -99,6 +104,7 @@ function SyncAccount(props) {
                 className={classnames({ disabled: isLoad }, s.btnNotificationsReload, 'btn-sm', 'float-right', 'py-0', 'ml-2')}
                 onClick={retrieveAccountData}
                 id="load-notifications-btn"
+                onMouseDown={handleOnMouseDown}
               >
                 {isLoad ? <span><i className="la la-refresh la-spin" /> Loading...</span> : <i className="la la-refresh" />}
               </Button>

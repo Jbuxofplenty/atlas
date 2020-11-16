@@ -44,6 +44,7 @@ const {
   removeItem,
   getBalance,
   getHoldings,
+  getInvestmentTransactions,
 } = require('./plaid');
 
 // Create an Express object and routes (in order)
@@ -53,6 +54,7 @@ plaid.use('/getAccessToken', getAccessToken);
 plaid.use('/removeItem', removeItem);
 plaid.use('/getBalance', getBalance);
 plaid.use('/getHoldings', getHoldings);
+plaid.use('/getInvestmentTransactions', getInvestmentTransactions);
 plaid.use(getDefault);
 
 ///////////////////////////////////////////////////////////////////

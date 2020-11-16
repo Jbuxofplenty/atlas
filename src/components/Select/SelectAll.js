@@ -2,7 +2,6 @@ import React from "react";
 import PropTypes from "prop-types";
 import { default as ReactSelect } from "react-select";
 
-// specify props.allowSelectAll = true to enable!
 const Select = props => {
 
   const handleOnMouseDown = async (e) => {

@@ -1,9 +1,6 @@
-import { apiRequest } from 'oauth2/helpers';
 import { dataActions, alertActions } from 'actions';
-import { p, apiBaseUrl, store, asyncForEach, randomHex } from 'helpers';
-import { cryptoCurrencies } from 'components/MultiSelect/data';
-
-const plaid = "Plaid";
+import { p, apiBaseUrl, store, randomHex } from 'helpers';
+import { usStocks } from 'components/MultiSelect/data';
 
 // Invocations to pull account data should use an object like this
 const pullConfig = {
@@ -21,7 +18,7 @@ const pullConfig = {
 
 async function setupAccount(metaData, accessToken) {
   var institution = metaData.institution;
-  await storeAccount(institution, metaData);
+  await storeAccount(institution, null, metaData);
   await dataActions.storeFinancialDataFirestore(institution.name, "accessTokens", accessToken);
   var tempPullConfig = JSON.parse(JSON.stringify(pullConfig));
   tempPullConfig.minimal = true;
@@ -40,62 +37,55 @@ async function pullAccountData(pullConfiguration=pullConfig, accessToken=null) {
     if(!accessToken) return;
   }
   var account = await getAccountsTotalBalance(pullConfiguration.name, accessToken);
+  account = await getTotalBalancePercentDifference(account);
+  account = await getOrders(account, accessToken);
   // account = await getInvestments(account, pullConfiguration.name, accessToken);
   // if(!walletsTotalBalance) return false;
   // var financialData = await getTotalBalancePercentDifference(walletsTotalBalance);
   // success = await getOrders(accessToken, financialData, pullConfiguration.minimal);
-  await storeAccount(pullConfiguration);
+  await storeAccount(pullConfiguration, account);
   // return success;
-}
-
-async function getPercentDifference(itemId) {
-  var accounts = await dataActions.getFinancialData("accounts");
-  var accessTokens = await dataActions.getFinancialData('accessTokens');
-  var accessToken = accessTokens[plaid];
-  var account = accounts[itemId];
-  var newFinancialData = await getTotalBalancePercentDifference(account);
-  if(newFinancialData) await store.dispatch(accessToken, dataActions.storeFinancialData(plaid, "accounts", newFinancialData));
-  return newFinancialData;
 }
 
 ////////////////////////////////////////////////////////////////
 /////////////////////////// Internal ///////////////////////////
 ////////////////////////////////////////////////////////////////
 
-async function storeAccount(institution, metaData=null) {
+async function storeAccount(institution, account=null, metaData=null) {
   var accounts = await dataActions.getFinancialData("accounts");
   if(!accounts) accounts = {};
-  if(!accounts[institution.name]) {
-    accounts[institution.name] = {};
-    var tempAccount = accounts[institution.name];
-    tempAccount.displayName = institution.name;
-    tempAccount.institutionId = institution.institution_id;
-    tempAccount.color = randomHex();
-    tempAccount.plaid = true;
-    tempAccount.finnhubTickerBalanceMap = {};
+  if(!account) {
+    if(!accounts[institution.name]) {
+      accounts[institution.name] = {};
+      var tempAccount = accounts[institution.name];
+      tempAccount.displayName = institution.name;
+      tempAccount.institutionId = institution.institution_id;
+      tempAccount.color = randomHex();
+      tempAccount.plaid = true;
+      tempAccount.finnhubTickerBalanceMap = {};
+    }
+    account = accounts[institution.name];
   }
-  var account = accounts[institution.name];
   account.lastSynced = new Date().getTime();
   if(metaData) account.subAccounts = metaData.accounts;
   await dataActions.storeFinancialDataFirestore(institution.name, "accounts", account);
 }
 
-async function getTotalBalancePercentDifference(financialData) {
-  var finnhubTickers = await getFinnhubTickers(financialData, true);
+async function getTotalBalancePercentDifference(account) {
+  var finnhubTickers = await getFinnhubTickers(account, true);
   if(!finnhubTickers) return null;
-  var exchangeRates = financialData.exchangeRates;
-  if(!exchangeRates) return null;
   var yesterdayTotalBalance = 0.;
   var { stockData } = store.getState().data;
   var dataAvailable = false;
-  var finnhubTickerBalanceMap = {};
-  financialData.wallets.forEach(wallet => {
-    var code = wallet.currency.code;
+  var finnhubTickerBalanceMap = account.finnhubTickerBalanceMap;
+  if(!finnhubTickerBalanceMap) finnhubTickerBalanceMap = {};
+  account.holdings.forEach(holding => {
+    var code = holding.security_id;
     if(finnhubTickers.map[code] && stockData[finnhubTickers.map[code].value]
           && stockData[finnhubTickers.map[code].value]["candleStickPrice"]
           && stockData[finnhubTickers.map[code].value]["candleStickPrice"]['1D']) {
       finnhubTickerBalanceMap[finnhubTickers.map[code].value] = {
-        amount: parseFloat(wallet.balance.amount),
+        amount: parseFloat(holding.institution_value),
         color: finnhubTickers.map[code].color,
         name: code,
       };
@@ -107,22 +97,29 @@ async function getTotalBalancePercentDifference(financialData) {
         var currentDate = new Date(timeArray[i]*1000);
         dayBefore = new Date(dayBefore);
         if(currentDate >= dayBefore) {
-          yesterdayTotalBalance += parseFloat(openPriceArray[i]) * parseFloat(wallet.balance.amount);
+          yesterdayTotalBalance += parseFloat(openPriceArray[i]) * parseFloat(holding.quantity);
           dataAvailable = true;
           break;
         }
       }
     }
     else {
-      yesterdayTotalBalance += parseFloat(wallet.balance.amount) / parseFloat(exchangeRates[code])
+      var security = null; 
+      if(account.securities) {
+        account.securities.forEach(tempSecurity => {
+          if(tempSecurity.security_id === holding.security_id) security = tempSecurity;
+        })
+      }
+      if(security) yesterdayTotalBalance += parseFloat(security.close_price) * parseFloat(holding.quantity);
+      else yesterdayTotalBalance += parseFloat(holding.institution_value);
     }
   })
   if(!dataAvailable) {
-    yesterdayTotalBalance = financialData.totalBalance;
+    yesterdayTotalBalance = account.totalBalance;
   }
-  var percentDifference = (financialData.totalBalance - yesterdayTotalBalance) / yesterdayTotalBalance * 100.;
+  var percentDifference = (account.totalBalance - yesterdayTotalBalance) / yesterdayTotalBalance * 100.;
   var newFinancialData = {
-    ...financialData,
+    ...account,
     percentDifference,
     finnhubTickerBalanceMap,
   }
@@ -131,7 +128,7 @@ async function getTotalBalancePercentDifference(financialData) {
 
 async function getAccountsTotalBalance(accountName, accessToken) {
   await store.dispatch(alertActions.clear());
-  var balances = await fetch(apiBaseUrl() + 'plaid/getBalance/', {
+  var investments = await fetch(apiBaseUrl() + 'plaid/getHoldings/', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -152,11 +149,12 @@ async function getAccountsTotalBalance(accountName, accessToken) {
   });
   var accounts = await dataActions.getFinancialData("accounts");
   var account = accounts[accountName];
-  if(!balances || !account) return false;
-  balances = balances.accounts;
+  if(!investments || !account) return false;
+  var balances = investments.accounts;
   account.balances = balances;
   var totalBalance = 0;
   var totalAvailableBalance = 0;
+  account.finnhubTickerBalanceMap = {};
   balances.forEach(balanceAccount => {
     var accountType = balanceAccount.type;
     if(accountType === 'depository') {
@@ -185,20 +183,26 @@ async function getAccountsTotalBalance(accountName, accessToken) {
   })
   account.totalAvailableBalance = totalAvailableBalance;
   account.totalBalance = totalBalance;
+  account.holdings = investments.holdings;
+  account.securities = investments.securities;
   await store.dispatch(dataActions.storeFinancialData(accountName, "accounts", account));
   await store.dispatch(alertActions.progressSuccess(`Pulled in ${balances.length} accounts with a balance from ${accountName}!`));
   return account;
 }
 
-async function getInvestments(account, accountName, accessToken) {
-  await store.dispatch(alertActions.clear());
-  var investments = await fetch(apiBaseUrl() + 'plaid/getHoldings/', {
+async function getOrders(account, accessToken) {
+  var startDate = new Date();
+  startDate.setMonth(startDate.getMonth() - 100);
+  var endDate = new Date();
+  var response = await fetch(apiBaseUrl() + 'plaid/getInvestmentTransactions/', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      accessToken
+      accessToken,
+      startDate,
+      endDate,
     })
   })
   .then((response) => response.json())
@@ -207,100 +211,86 @@ async function getInvestments(account, accountName, accessToken) {
     return responseJson
   })
   .catch((error) => {
-    p("Error in request when trying to retrieve balances!")
+    p("Error in request when trying to retrieve orders!")
     p(error)
     return false;
   });
-  if(!investments || !account) return false;
-  return;
-  await store.dispatch(dataActions.storeFinancialData(accountName, "accounts", account));
-  await store.dispatch(alertActions.progressSuccess(`Pulled in ${investments.length} holdings with a balance from ${accountName}!`));
-  return account;
-}
+  var transactions = response.investment_transactions;
+  var orders = {
+    buys: [],
+    sells: [],
+  }
+  transactions.forEach(transaction => {
+    var buySell = {};
+    buySell.created_at = transaction.date;
+    buySell.amount = {};
+    var security = null; 
+    if(account.securities) {
+      account.securities.forEach(tempSecurity => {
+        if(tempSecurity.security_id === transaction.security_id) security = tempSecurity;
+      })
+    }
+    if(security) buySell.amount.currency = security.name;
+    else buySell.amount.currency = transaction.name;
+    var balanceAccount = null; 
+    if(account.balances) {
+      account.balances.forEach(tempBalance => {
+        if(tempBalance.account_id === transaction.account_id) balanceAccount = tempBalance;
+      })
+    }
+    if(balanceAccount) buySell.account= balanceAccount.name;
+    else buySell.account = 'N/A';
+    buySell.resource = transaction.type;
+    buySell.total = {};
+    buySell.total.amount = Math.abs(transaction.amount);
+    buySell.unit_price = {};
+    buySell.unit_price.amount = Math.abs(transaction.price);
+    buySell.fee = {};
+    buySell.fee.amount = transaction.fees;
+    buySell.status = transaction.cancel_transaction_id ? 'cancelled' : 'completed';
+    if(transaction.type === 'buy' || transaction.type === 'cash') {
+      orders.buys.push(buySell);
+    }
+    if(transaction.type === 'sell' || transaction.type === 'fee') {
+      orders.sells.push(buySell);
+    }
+  });
 
-async function getOrders(accessToken, walletsTotalBalance, minimal=true) {
-  var wallets = walletsTotalBalance.wallets;
-  if(!minimal) wallets = walletsTotalBalance.allAccounts;
-  var orders = walletsTotalBalance.orders;
-  var i, j;
-  if(!orders || !minimal) {
-    orders = {
-      buys: [],
-      sells: [],
-    }
-  }
-  else {
-    i = orders.buys.length;
-    while (i--) {
-      for(j in wallets) {
-        if (orders.buys[i].amount.currency === wallets[j].balance.currency) { 
-          orders.buys.splice(i, 1);
-          break;
-        } 
-      }
-    }
-    i = orders.sells.length
-    while (i--) {
-      for(j in wallets) {
-        if (orders.sells[i].amount.currency === wallets[j].balance.currency) { 
-          orders.sells.splice(i, 1);
-          break;
-        } 
-      }
-    }
-  }
-  i = 1;
-  await asyncForEach(wallets, async wallet => {
-    var walletId = wallet.id;
-    var response = await apiRequest('accounts/' + walletId + '/buys ', plaid, accessToken);
-    if(!response || !response.data) return false;
-    var buys = response.data;
-    buys.forEach(buy => {
-      orders.buys.push(buy);
-    });
-    response = await apiRequest('accounts/' + walletId + '/sells', plaid, accessToken);
-    if(!response || !response.data) return false;
-    var sells = response.data;
-    sells.forEach(sell => {
-      orders.sells.push(sell);
-    });
-    await store.dispatch(alertActions.clear());
-    await store.dispatch(alertActions.progressSuccess(`Pulled in order data for your ${wallet.name} (${i}/${wallets.length})!`));
-    i += 1;
-  })
   var financialData = {
-    ...walletsTotalBalance,
+    ...account,
+    orders,
+    transactions,
   }
-  financialData.orders = orders;
-  await store.dispatch(dataActions.storeFinancialData(plaid, "accounts", financialData));
   return financialData;
 }
 
-async function getFinnhubTickers(minimal=true, retrieveData=true) {
+async function getFinnhubTickers(account, retrieveData=true) {
   var finnhubTickers = {array: [], map: {}};
-  return finnhubTickers;
   var { stockData } = store.getState().data;
-  var accounts = await dataActions.getFinancialData("accounts");
-  var account = accounts[plaid];
-  var wallets = account.wallets;
-  if(!wallets) return false;
+  var holdings = account.holdings;
+  if(!holdings) return false;
+  var securities = account.securities;
+  if(!securities) return false;
   var tickersToPull = [];
   var timeScales = [];
-  if(!minimal) {
-    wallets = account.allAccounts;
-  }
-  wallets.forEach(wallet => {
-    var code = wallet.currency.code;
-    for(var i in cryptoCurrencies) {
-      if(cryptoCurrencies[i].value.includes(code)) {
+  holdings.forEach(holding => {
+    var security = null; 
+    securities.forEach(tempSecurity => {
+      if(tempSecurity.security_id === holding.security_id) security = tempSecurity;
+    })
+    if(!security) p('Error! Security ID did not match any of the stored securities.')
+    var code = security.ticker_symbol;
+    store.dispatch(alertActions.progressSuccess(`Trying to populate stock data associated with your ${security.name} holding!`));
+    for(var i in usStocks) {
+      if(usStocks[i].value === code) {
         var staleOrNoData = true;
         if(stockData 
-            && stockData[cryptoCurrencies[i].value] 
-            && stockData[cryptoCurrencies[i].value]["candleStickPrice"] 
-            && stockData[cryptoCurrencies[i].value]["candleStickPrice"]['1D']) {
+            && stockData[usStocks[i].value] 
+            && stockData[usStocks[i].value]["candleStickPrice"] 
+            && stockData[usStocks[i].value]["candleStickPrice"]['1D']) {
           staleOrNoData = false;
           // Check for stale data
-          var timeArray = stockData[cryptoCurrencies[i].value]["candleStickPrice"]['1D'].t;
+          var timeArray = stockData[usStocks[i].value]["candleStickPrice"]['1D'].t;
           var now = new Date();
           var dayBefore = now.setDate(now.getDate() - 1);
           var lastDateInTimeArray = new Date(timeArray[timeArray.length-1]*1000);
@@ -310,19 +300,19 @@ async function getFinnhubTickers(minimal=true, retrieveData=true) {
         if(staleOrNoData) {
           var unique = true;
           for(var j in tickersToPull) { 
-            if(tickersToPull[j][0].includes(cryptoCurrencies[i].value) && timeScales[j] === '1D') {
+            if(tickersToPull[j][0].includes(usStocks[i].value) && timeScales[j] === '1D') {
               unique = false;
               break;
             }
           }
           if(unique) {
-            var newTicker = [cryptoCurrencies[i].value, cryptoCurrencies[i].label, cryptoCurrencies[i].color, cryptoCurrencies[i].tickerType];
+            var newTicker = [usStocks[i].value, usStocks[i].label, usStocks[i].color, usStocks[i].tickerType];
             tickersToPull.push(newTicker);
             timeScales.push('1D');
           }
         }
-        finnhubTickers.array.push(cryptoCurrencies[i]);
-        finnhubTickers.map[code] = cryptoCurrencies[i];
+        finnhubTickers.array.push(usStocks[i]);
+        finnhubTickers.map[code] = usStocks[i];
       }
     }
   })
@@ -360,7 +350,6 @@ const plaidAPI = {
   getOrders: getOrders,
   pullConfig: pullConfig,
   getFinnhubTickers: getFinnhubTickers,
-  getPercentDifference: getPercentDifference,
   apiBaseUrl: "https://api.plaid.com/v2/",
 }
 

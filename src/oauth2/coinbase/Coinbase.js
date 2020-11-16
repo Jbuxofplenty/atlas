@@ -12,6 +12,7 @@ import Wallets from "components/Wallets/Wallets.js";
 
 // import s from './Coinbase.module.scss';
 import { eThreeActions, alertActions } from "actions";
+import { numberWithCommas } from 'helpers';
 import OAuthObject from 'oauth2';
 
 import s from './Coinbase.module.scss'
@@ -36,7 +37,12 @@ function Coinbase(props) {
           <div className="w-100 d-flex flex-row justify-content-center">
             <Col lg={6} md={12} xs={12}>
               <Card className={`p-5 icon-list-item d-flex justify-content-center align-items-center my-3`} raised>
-                <span className={`${s.headerText}`}>Net Worth: ${props.account.totalBalance.toFixed(2)}</span>
+                <span className={`${s.headerText}`}>
+                  Net Worth: 
+                </span>
+                <span className={`${s.headerText} ${props.account.totalBalance < 0 ? 'errorMessage' : 'successMessage'} ml-3`}>
+                  ${numberWithCommas(props.account.totalBalance)}
+                </span>
               </Card>
             </Col>
             <Col lg={6} md={12} xs={12}>

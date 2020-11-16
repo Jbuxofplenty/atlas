@@ -6,14 +6,14 @@ import GridItem from "components/Grid/GridItem.js";
 import Select from 'components/Select/Select';
 import { chartTypes, chartTypesMap, units, unitsMap, chartUnitsMap } from 'components/Select/data';
 
-import { initialState, defaultAccountsPie, dataSets } from 'reducers/widget.reducer';
+import { initialState, defaultAccountsPie, dataSets, defaultCandleStickWidget } from 'reducers/widget.reducer';
 
 import { widgetActions, alertActions } from 'actions';
 
 import s from './ChartTypes.module.scss';
 
 const defaultChartsMap = {
-  'candleStick': initialState['dashboard']['2'],
+  'candleStick': defaultCandleStickWidget,
   'river': initialState['charts']['3'],
   'line': initialState['charts']['4'],
   'horizontalBar': initialState['charts']['1'],

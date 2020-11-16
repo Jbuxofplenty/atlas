@@ -24,7 +24,10 @@ function Plaid(props) {
     if(props.account.totalBalance !== undefined 
         && props.account.orders !== undefined ) {
       var accountObject = OAuthObject['Plaid'];
-      accountObject.getPercentDifference();
+      var pullConfig = JSON.parse(JSON.stringify(accountObject.pullConfig));
+      pullConfig.minimal = true;
+      pullConfig.name = props.account.displayName;
+      accountObject.pullAccountData(pullConfig);
     }
     // eslint-disable-next-line
   }, []);
@@ -61,12 +64,27 @@ function Plaid(props) {
               <div className="d-flex flex-column justify-content-center w-100">
                 <div className={`${s.rounded}`}></div>
                 <PlaidAccounts account={props.account} />
+                <div className={`${s.rounded}`}></div>
               </div>
             </>
           }
-          {props.account.investments && props.account.investments.length &&
+          {(props.account.percentDifference || props.account.percentDifference === 0) &&
+            <div className="w-100 d-flex flex-row justify-content-center">
+              <Col lg={9} md={12} xs={12}>
+                <Card className={`p-5 icon-list-item d-flex justify-content-center align-items-center my-3`} raised>
+                  <span className={`${s.headerText}`}>
+                  Yesterday Percent Change: 
+                  </span>
+                  <span className={`${s.headerText} ${props.account.percentDifference < 0 ? 'errorMessage' : 'successMessage'} ml-3`}>
+                    {numberWithCommas(props.account.percentDifference)}%
+                  </span>
+                </Card>
+              </Col>
+            </div>
+          }
+          {props.account.holdings && props.account.holdings.length &&
             <>
-              <h5 className={`${s.walletsTitle}`}>Investments</h5>
+              <h5 className={`${s.walletsTitle}`}>Holdings</h5>
               <div className="d-flex flex-column justify-content-center w-100">
                 <div className={`${s.rounded}`}></div>
                 <PlaidInvestments account={props.account} />

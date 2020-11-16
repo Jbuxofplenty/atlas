@@ -386,7 +386,7 @@ function cleanStockData(series) {
 }
 
 // Firebase
-const views = ['dashboard', 'charts'];
+const views = ['dashboard', 'charts', 'simulator'];
 
 async function saveAllFirebaseWidgets() {
   await asyncForEach(views, async view => {

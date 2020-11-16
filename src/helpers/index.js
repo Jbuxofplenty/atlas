@@ -12,6 +12,8 @@ export {
   numberWithCommas,
   capitalizeAll,
   randomHex,
+  formattedDate,
+  finnhubFormattedDate,
 } from './util';
 export {
   gainersUrl,

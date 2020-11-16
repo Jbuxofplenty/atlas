@@ -6,6 +6,7 @@ import _ from 'lodash';
 import AddWidget from 'components/AddWidget/AddWidget';
 import AccountsWidget from './components/AccountsWidget';
 import ChartWidget from './components/ChartWidget';
+import StockAnalyzer from 'components/StockAnalyzer/StockAnalyzer';
 import CalculatorWidget from './components/CalculatorWidget';
 
 import { widgetActions } from 'actions';
@@ -22,6 +23,7 @@ const strComponentMap = {
   'line': ChartWidget,
   'compoundInterestCalculator': CalculatorWidget,
   'loanInterestCalculator': CalculatorWidget,
+  'stockAnalyzer': StockAnalyzer,
 }
 
 const GridLayout = WidthProvider(Responsive);

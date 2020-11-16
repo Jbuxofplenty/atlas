@@ -1,0 +1,45 @@
+@import 'assets/scss/app';
+
+.finContainer {
+  height: 100%;
+  overflow: auto;
+  display: flex;
+  justify-content: flex-start;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.finContainer::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.finContainer {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.gridContainer {
+  width: 95% !important;
+  align-self: center;
+}
+
+.title {
+  font-size: medium;
+  color: white;
+}
+
+.value {
+  color: #dddddd;
+}
+
+.sectionTitle {
+  align-self: start !important;
+  text-align: left;
+  color: white;
+  font-size: medium;
+  width: 100%;
+}
+
+.valueContainer {
+  width: 90%;
+}

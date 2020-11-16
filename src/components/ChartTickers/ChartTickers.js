@@ -72,10 +72,16 @@ function ChartTickers(props) {
     let updatedTickers = [];
     let tempTickers = {};
     if(selectedValues) {
-      selectedValues.forEach((ticker, index) => {
-        tempTickers[index] = [ticker.value, ticker.label, ticker.color, ticker.tickerType];
-        updatedTickers.push([ticker.value, ticker.label, ticker.color, ticker.tickerType]);
-      });
+      if(Array.isArray(selectedValues)) {
+        selectedValues.forEach((ticker, index) => {
+          tempTickers[index] = [ticker.value, ticker.label, ticker.color, ticker.tickerType];
+          updatedTickers.push([ticker.value, ticker.label, ticker.color, ticker.tickerType]);
+        });
+      }
+      else {
+        tempTickers[0] = [selectedValues.value, selectedValues.label, selectedValues.color, selectedValues.tickerType];
+        updatedTickers.push([selectedValues.value, selectedValues.label, selectedValues.color, selectedValues.tickerType]);
+      }
     }
     setTickers(updatedTickers);
     props.setTickers(updatedTickers);
@@ -89,12 +95,14 @@ function ChartTickers(props) {
       if(!heldTickers) {
         var accounts = await dataActions.getFinancialData("accounts");
         var tempHeldTickers = [];
+        var temp;
         await asyncForEach(Object.keys(accounts), async key => {
           var accountObject = OAuthObject['Plaid'];
           if(!accounts[key].plaid) {
             accountObject = OAuthObject[accounts[key].displayName];
+            temp = await accountObject.getFinnhubTickers();
           }
-          var temp = await accountObject.getFinnhubTickers();
+          else temp = await accountObject.getFinnhubTickers(accounts[key]);
           tempHeldTickers = tempHeldTickers.concat(temp.array);
         })
         setTickerOptions(tempHeldTickers);
@@ -163,7 +171,6 @@ function ChartTickers(props) {
             <div className={`${s.inputContainer}`}>
               <Select 
                 onSelectChange={onDataSetChange}
-                defaultValue={selectedDataSet}
                 options={props.widget.units === 'AccountsBalance' ? [dataSets[1]] : dataSets}
                 value={selectedDataSet}
               />

@@ -1,0 +1,35 @@
+@import 'assets/scss/app';
+
+
+.profileTitle {
+  align-self: left;
+  text-align: left;
+  font-size: 1.5rem;
+  color: white;
+}
+
+.subTitle {
+  align-self: left;
+  text-align: left;
+  font-size: x-small;
+  color: grey;
+}
+
+.ticker {
+  align-self: left;
+  text-align: left;
+  font-size: small;
+  color: grey;
+}
+
+.logo {
+  align-self: flex-end;
+  margin-right: 2rem;
+  height: 5rem;
+  border-radius: 1rem;
+}
+
+.price {
+  color: white;
+  font-size: medium;
+}

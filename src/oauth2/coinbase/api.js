@@ -194,13 +194,17 @@ async function getOrders(accessToken, walletsTotalBalance, minimal=true) {
     if(!response || !response.data) return false;
     var buys = response.data;
     buys.forEach(buy => {
-      orders.buys.push(buy);
+      var tempBuy = JSON.parse(JSON.stringify(buy));
+      tempBuy.account = coin;
+      orders.buys.push(tempBuy);
     });
     response = await apiRequest('accounts/' + walletId + '/sells', coin, accessToken);
     if(!response || !response.data) return false;
     var sells = response.data;
     sells.forEach(sell => {
-      orders.sells.push(sell);
+      var tempSell = JSON.parse(JSON.stringify(sell));
+      tempSell.account = coin;
+      orders.sells.push(tempSell);
     });
     await store.dispatch(alertActions.clear());
     await store.dispatch(alertActions.progressSuccess(`Pulled in order data for your ${wallet.name} (${i}/${wallets.length})!`));

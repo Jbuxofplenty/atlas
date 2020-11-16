@@ -1,9 +1,12 @@
 import React from "react";
 import { useHistory } from "react-router";
+
 // nodejs library that concatenates classes
 import classNames from "classnames";
+
 // nodejs library to set properties for components
 import PropTypes from "prop-types";
+
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
 import AppBar from "@material-ui/core/AppBar";
@@ -12,9 +15,12 @@ import IconButton from "@material-ui/core/IconButton";
 import Button from "@material-ui/core/Button";
 import Hidden from "@material-ui/core/Hidden";
 import Drawer from "@material-ui/core/Drawer";
+
 // @material-ui/icons
 import Menu from "@material-ui/icons/Menu";
-// core components
+
+import Logo from 'assets/img/atlas_logo.png';
+
 import styles from "assets/jss/material-kit-react/components/headerStyle.js";
 
 const useStyles = makeStyles(styles);
@@ -56,14 +62,14 @@ export default function UnauthenticatedHeader(props) {
         .classList.remove(classes[changeColorOnScroll.color]);
     }
   };
-  const { color, rightLinks, leftLinks, brand, fixed, absolute } = props;
+  const { color, rightLinks, leftLinks, fixed, absolute } = props;
   const appBarClasses = classNames({
     [classes.appBar]: true,
     [classes[color]]: color,
     [classes.absolute]: absolute,
     [classes.fixed]: fixed
   });
-  const brandComponent = <Button className={classes.title} onClick={home}>{brand}</Button>;
+  const brandComponent = <Button className={classes.title} onClick={home}><img src={Logo} alt='logo' className={classes.logo} /></Button>;
   return (
     <AppBar className={appBarClasses}>
       <Toolbar className={classes.container}>

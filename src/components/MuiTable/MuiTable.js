@@ -194,7 +194,7 @@ function ReactTable({ columns, data }) {
         </TableBody>
       </Table>
       <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
+          rowsPerPageOptions={[5, 10, 25, 50]}
           component="div"
           count={rows.length}
           rowsPerPage={rowsPerPage}

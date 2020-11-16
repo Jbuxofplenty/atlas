@@ -92,7 +92,7 @@ function ChartWidget(props) {
 
   const handleMore = async () => {
     await setMore(!more);
-    if(!more) {
+    if(!more && document.getElementById('more')) {
       var height = document.getElementById('more').clientHeight;
       setMoreHeight(height);
     }

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { connect } from 'react-redux';
 
 // core components
@@ -10,6 +10,30 @@ import { eThreeActions, alertActions } from "actions";
 
 function PlaidInvestments(props) {
   const noItemsMessage = `No investments to display!`;
+  const [holdings, setHoldings] = useState(null);
+  useEffect(() => {
+    var newHoldings = [];
+    props.account.holdings.forEach(holding => {
+      var newHolding = JSON.parse(JSON.stringify(holding));
+      var security = null;
+      props.account.securities.forEach(tempSecurity => {
+        if(tempSecurity.security_id === holding.security_id) security = tempSecurity;
+      })
+      if(security) newHolding.security = security.name;
+      else newHolding.security = 'N/A';
+      if(security && security.close_price) newHolding.close_price = security.close_price;
+      else newHolding.close_price = 'N/A';
+      var account = null;
+      props.account.balances.forEach(tempAccount => {
+        if(tempAccount.account_id === holding.account_id) account = tempAccount;
+      })
+      if(account) newHolding.account = account.name;
+      else newHolding.account = 'N/A';
+      newHoldings.push(newHolding);
+    })
+    setHoldings(newHoldings);
+    // eslint-disable-next-line
+  }, []);
 
   const columns = React.useMemo(
     () => [
@@ -19,27 +43,27 @@ function PlaidInvestments(props) {
         },
         {
           Header: 'Name',
-          accessor: 'name',
+          accessor: 'security',
         },
         {
-          Header: 'Total Balance',
-          accessor: 'balances.current',
-        Cell: (row) => {return (<div>${numberWithCommas(row.cell.value)}</div>)},
+          Header: 'Shares',
+          accessor: 'quantity',
+        Cell: (row) => {return (<div>{numberWithCommas(row.cell.value)}</div>)},
         },
         {
-          Header: 'Available Balance',
-          accessor: 'balances.available',
+          Header: 'Total Value',
+          accessor: 'institution_value',
         Cell: (row) => {return (<div>{row.cell.value ? `$${numberWithCommas(row.cell.value)}` : 'N/A'}</div>)},
         },
         {
-          Header: 'Type',
-          accessor: 'type',
+          Header: 'Account',
+          accessor: 'account',
           Cell: (row) => {return (<div>{capitalizeAll(row.cell.value)}</div>)},
         },
         {
-          Header: 'Sub-Type',
-          accessor: 'subtype',
-          Cell: (row) => {return (<div>{capitalizeAll(row.cell.value)}</div>)},
+          Header: 'Close Price',
+          accessor: 'close_price',
+          Cell: (row) => {return (<div>{row.cell.value ? `$${numberWithCommas(row.cell.value)}` : 'N/A'}</div>)},
         },
       ],
     []
@@ -48,7 +72,7 @@ function PlaidInvestments(props) {
   return (
     <>
       {props.account &&
-        <MuiTable columns={columns} rows={props.account.investments} noItemsMessage={noItemsMessage} />
+        <MuiTable columns={columns} rows={holdings} noItemsMessage={noItemsMessage} />
       }
     </>
   )

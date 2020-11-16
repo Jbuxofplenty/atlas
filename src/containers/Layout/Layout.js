@@ -12,6 +12,7 @@ import Accounts from 'authenticated/views/accounts/Accounts';
 import Orders from 'authenticated/views/orders/Orders';
 import Charts from 'authenticated/views/charts/Charts';
 import Dashboard from 'authenticated/views/dashboard';
+import Simulator from 'authenticated/views/simulator/Simulator';
 import TermsAndConditions from 'views/TermsAndConditions/TermsAndConditions';
 import PrivacyPolicy from 'views/PrivacyPolicy/PrivacyPolicy';
 
@@ -170,6 +171,7 @@ class Layout extends React.Component {
                         <Route path="/app" exact render={() => <Redirect to="/app/dashboard" />} />
                         <Route path="/app/dashboard" exact component={Dashboard} />
                         <Route path="/app/profile" exact component={Profile} />
+                        <Route path="/app/simulator" exact component={Simulator} />
                         <Route path="/app/settings" exact component={Settings} />
                         <Route path="/app/accounts" exact component={Accounts} />
                         <Route path="/app/charts" exact component={Charts} />

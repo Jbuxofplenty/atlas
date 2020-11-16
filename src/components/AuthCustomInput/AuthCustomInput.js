@@ -108,7 +108,9 @@ export default function AuthCustomInput(props) {
             onBlur={props.onBlur}
             disabled={disabled}
             value={props.value}
-            inputProps={{ autoComplete: "on" }}
+            inputProps={{ 
+              autoComplete: "on" 
+            }}
             onChange={props.onChange}
             onMouseDown={handleOnClick}
             id={id}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import {
@@ -17,23 +17,29 @@ import s from '../Dashboard.module.scss';
 function AccountsWidget(props) {
   const now = new Date();
   const [accounts, setAccounts] = useState([]);
+  const mounted = useRef(true);
 
   useEffect(() => {
     fetchData();
     // eslint-disable-next-line
   }, [props.accounts]);
 
+  useEffect(() => {
+    return () => { mounted.current = false; };
+    // eslint-disable-next-line
+  }, []);
+
 
   const fetchData = async () => {
-    var tempAccounts = await dataActions.getFinancialData("accounts");
+    var tempAccounts = mounted.current && await dataActions.getFinancialData("accounts");
     var financialAccounts = [];
     for (var key in tempAccounts){
       financialAccounts.push(tempAccounts[key]);
     }
     var tempWidget = JSON.parse(JSON.stringify(props.widget));
     tempWidget.dataGrid.h = tempWidget.dataGrid.minH + financialAccounts.length / 2;
-    props.updateWidget(props.widgetId, tempWidget);
-    setAccounts(financialAccounts)
+    mounted.current && props.updateWidget(props.widgetId, tempWidget);
+    mounted.current && setAccounts(financialAccounts)
   }
 
   return (

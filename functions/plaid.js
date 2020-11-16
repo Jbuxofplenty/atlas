@@ -8,8 +8,7 @@ const plaid = require('plaid');
 
 var PLAID_CLIENT_ID = functions.config().plaid.client_id;
 var PLAID_SECRET = functions.config().plaid.secret;
-var PLAID_ENV = 'sandbox';
-var PLAID_PRODUCTS = ['investments, transactions'];
+var PLAID_ENV = 'development';
 var PLAID_COUNTRY_CODES = ['US']
 var PLAID_REDIRECT_URI = 'http://127.0.0.1:3000/oauth-callback';
 
@@ -39,7 +38,7 @@ createLinkToken.post('*', async (req, res) => {
       'client_user_id': 'unique-user-id'
     },
     'client_name': "Plaid Quickstart",
-    'products': ['auth'],
+    'products': ['investments'],
     'country_codes': PLAID_COUNTRY_CODES,
     'language': "en",
   }
@@ -129,10 +128,49 @@ getHoldings.post('*', async (req, res) => {
   res.send(response);
 });
 
+function formatDate(date) {
+  var d = new Date(date),
+      month = '' + (d.getMonth() + 1),
+      day = '' + d.getDate(),
+      year = d.getFullYear();
+
+  if (month.length < 2) 
+      month = '0' + month;
+  if (day.length < 2) 
+      day = '0' + day;
+
+  return [year, month, day].join('-');
+}
+
+var getInvestmentTransactions = express();
+
+getInvestmentTransactions.use(bodyParser.json()) // for parsing application/json
+getInvestmentTransactions.use(bodyParser.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
+
+// Automatically allow cross-origin requests
+getInvestmentTransactions.use(cors({ origin: true }));
+
+getInvestmentTransactions.post('*', async (req, res) => {
+  const accessToken = req.body.accessToken;
+  const startDate = formatDate(req.body.startDate);
+  const endDate = formatDate(req.body.endDate);
+  const response = await plaidClient.getInvestmentTransactions(accessToken, startDate, endDate, {
+      count: 500,
+      offset: 0,
+    })
+    .catch((err) => {
+      console.log(err.toString());
+      res.send(err.toString());
+    })
+  console.log(response)
+  res.send(response);
+});
+
 module.exports = {
   createLinkToken,
   getAccessToken,
   removeItem,
   getBalance,
   getHoldings,
+  getInvestmentTransactions,
 };

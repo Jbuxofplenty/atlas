@@ -229,11 +229,11 @@ class Widget extends React.Component {
     } = this.state;
 
     return (
-    <div className="w-100 h-100">
+    <div className={`w-100 h-100` }>
       <section
         style={{display: hideWidget ? 'none' : ''}}
         className={
-          classNames('widget', {'fullscreened' : !!fullscreened, 'collapsed' : !!collapseWidget}, s.widget, className, (reloading || fetchingData) ? s.reloading : '')
+          classNames('widget', s.widgetContainer, {'fullscreened' : !!fullscreened, 'collapsed' : !!collapseWidget}, s.widget, className, (reloading || fetchingData) ? s.reloading : '')
         } {...attributes}
         >
         {

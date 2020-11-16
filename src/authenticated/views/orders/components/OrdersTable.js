@@ -28,8 +28,14 @@ function OrdersTable(props) {
           tempOrders = tempOrders.concat(account.orders.buys).concat(account.orders.sells);
       })
     }
+    tempOrders.sort(function(a,b){
+      // Turn your strings into dates, and then subtract them
+      // to get a value that is either negative, positive, or zero.
+      return new Date(b.created_at) - new Date(a.created_at);
+    });
     setOrders(tempOrders);
-  }, [props, props.account]);
+    // eslint-disable-next-line
+  }, [props.account]);
 
   const columns = React.useMemo(
     () => [
@@ -39,12 +45,20 @@ function OrdersTable(props) {
           Cell: ({ cell: { value } }) => (<div>{new Date(value).toLocaleString('en-US')}</div>),
         },
         {
-          Header: 'Buy/Sell',
+          Header: 'Security',
+          accessor: 'amount.currency',
+        },
+        {
+          Header: 'Transaction Type',
           accessor: 'resource',
           Cell: ({ cell: { value } }) => (<>{
             value === "buy" ? 
-            (<div><i className={`successMessage icon-pane mr-1 fa fa-angle-double-up`}/>Buy</div>) : 
-            (<div><i className={`errorMessage icon-pane mr-1 fa fa-angle-double-down`}/>Sell</div>)}
+            (<div><i className={`successMessage icon-pane mr-1 fa fa-angle-double-up`}/>Buy</div>) 
+            : value === "sell" ? 
+            (<div><i className={`errorMessage icon-pane mr-1 fa fa-angle-double-down`}/>Sell</div>)
+            : value === "fee" ? 
+            (<div><i className={`errorMessage icon-pane mr-1 fa fa-angle-double-down`}/>Fee</div>) :
+            (<div><i className={`successMessage icon-pane mr-1 fa fa-angle-double-up`}/>Dividend</div>)}
           </>),
         },
         {
@@ -53,11 +67,7 @@ function OrdersTable(props) {
           Cell: ({ cell: { value } }) => (<div>${value}</div>),
         },
         {
-          Header: 'Currency',
-          accessor: 'amount.currency',
-        },
-        {
-          Header: 'Currency Price',
+          Header: 'Security Price',
           accessor: 'unit_price.amount',
           Cell: ({ cell: { value } }) => (<div>${value}</div>),
         },
@@ -74,6 +84,11 @@ function OrdersTable(props) {
           Header: 'Fee (USD)',
           accessor: 'fee.amount',
           Cell: ({ cell: { value } }) => (<div>${value}</div>),
+        },
+        {
+          Header: 'Account',
+          accessor: 'account',
+          Cell: ({ cell: { value } }) => (<div>{value}</div>),
         },
       ],
     []

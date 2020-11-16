@@ -91,7 +91,6 @@ export default function MultiSelect(props) {
       <SelectAll
         menuContainerStyle={{ zIndex: 99999 }}
         closeMenuOnSelect={true}
-        defaultValue={props.defaultValues}
         isMulti
         value={props.value}
         options={props.options}

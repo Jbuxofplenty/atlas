@@ -5,6 +5,8 @@ const initialState = {
   stockData: {},
   accounts: {},
   tokens: {},
+  symbolData: {},
+  newsData: {},
 };
 
 export function data(state = initialState, action) {
@@ -28,6 +30,25 @@ export function data(state = initialState, action) {
         ...state,
         accounts: {
           [action.key]: action.accounts,
+        }
+      };
+    case dataConstants.UPDATE_NEWS_DATA:
+      return {
+        ...state,
+        newsData: {
+          ...state.newsData,
+          [action.ticker]: action.newsData,
+        }
+      };
+    case dataConstants.UPDATE_SYMBOL_DATA:
+      return {
+        ...state,
+        symbolData: {
+          ...state.symbolData,
+          [action.ticker]: {
+            ...state.symbolData[action.ticker],
+            ...action.symbolData,
+          }
         }
       };
     case dataConstants.UPDATE_STOCK_DATA:

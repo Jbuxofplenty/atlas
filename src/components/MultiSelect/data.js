@@ -40,3 +40,4 @@ export {
 };
 
 export const usStocks = nasdaq.concat(nyse);
+export const allTickers = usStocks.concat(cryptoCurrencies);

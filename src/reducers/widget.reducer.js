@@ -47,31 +47,29 @@ const facebookTicker = [gspc[66].value, gspc[66].label, gspc[66].color, gspc[66]
 const googleTicker = [gspc[439].value, gspc[439].label, gspc[439].color, gspc[439].tickerType];
 const microsoftTicker = [dji[11].value, dji[11].label, dji[11].color, dji[11].tickerType];
 
+const defaultStockAnalyzerWidget = {
+  widgetType: 'stockAnalyzer',
+  dataGrid: {x: 0, y: 0, w: 12, h: 21, minW: 12, minH: 21, isBounded: true, i: "4"},
+  defaultMinH: 21,
+  collapsed: false,
+  selectedTicker: dji[7],
+  name: 'Stock Analyzer',
+  timeScales: ['Annual'],
+}
+
 const initialState = {
   'dashboard': {
     "0": {
       widgetType: 'customize',
-      dataGrid: {x: 6, y: 13, w: 6, h: 7, minW: 5, minH: 7, isBounded: true, i: "0"},
+      dataGrid: {x: 6, y: 21, w: 6, h: 7, minW: 5, minH: 7, isBounded: true, i: "0"},
       collapsed: false,
     },
     "1": {
       widgetType: 'accountSummary',
-      dataGrid: {x: 0, y: 13, w: 6, h: 6, minW: 5, minH: 6, i: "1"},
+      dataGrid: {x: 0, y: 21, w: 6, h: 6, minW: 5, minH: 6, i: "1"},
       collapsed: false,
     },
-    "2": {
-      widgetType: 'candleStick',
-      dataGrid: {x: 0, y: 0, w: 12, h: 16, minH: 14, minW: 6, i: "2"},
-      collapsed: false,
-      height: 444,
-      tickers: {1: bitcoinTicker},
-      chartOptions: candleStickOptions,
-      name: 'Crypto Currencies Candlestick Chart',
-      timeScale: '1M',
-      yType: 'Price',
-      dataSet: dataSets[0],
-      units: 'Price',
-    },
+    "2": defaultStockAnalyzerWidget
   },
   'charts': {
     "0": {
@@ -132,11 +130,65 @@ const initialState = {
       units: 'Percent',
     },
   },
+  'simulator': {
+    "0": {
+      widgetType: 'customize',
+      dataGrid: {x: 6, y: 19, w: 6, h: 7, minW: 5, minH: 7, isBounded: true, i: "0"},
+      collapsed: false,
+    },
+    "1": {
+      widgetType: 'overview',
+      dataGrid: {x: 0, y: 0, w: 6, h: 16, minW: 6, minH: 16, isBounded: true, i: "1"},
+      defaultMinH: 17,
+      collapsed: false,
+    },
+    "2": {
+      widgetType: 'simulatorSettings',
+      dataGrid: {x: 6, y: 0, w: 6, h: 3, minW: 6, minH: 3, isBounded: true, i: "2"},
+      collapsed: true,
+      savedH: 12,
+      savedMinH: 12,
+    },
+    "3": {
+      widgetType: 'buySell',
+      dataGrid: {x: 6, y: 3, w: 6, h: 15, minW: 6, minH: 15, isBounded: true, i: "3"},
+      collapsed: false,
+      numShares: 1,
+    },
+    "4": {
+      widgetType: 'portfolio',
+      dataGrid: {x: 0, y: 16, w: 6, h: 9, minW: 6, minH: 9, isBounded: true, i: "4"},
+      defaultMinH: 9,
+      collapsed: false,
+    },
+  }
+}
+
+const defaultCandleStickWidget = {
+  widgetType: 'candleStick',
+  dataGrid: {x: 0, y: 0, w: 12, h: 16, minH: 14, minW: 6, i: "2"},
+  collapsed: false,
+  height: 444,
+  tickers: {1: bitcoinTicker},
+  chartOptions: candleStickOptions,
+  name: 'Crypto Currencies Candlestick Chart',
+  timeScale: '1M',
+  yType: 'Price',
+  dataSet: dataSets[0],
+  units: 'Price',
+}
+
+const defaultTransactionsWidget = {
+  widgetType: 'transactions',
+  dataGrid: {x: 0, y: 16, w: 6, h: 9, minW: 6, minH: 9, isBounded: true, i: "4"},
+  defaultMinH: 9,
+  collapsed: false,
 }
 
 const emptyState = {
   'dashboard': {},
   'charts': {},
+  'simulator': {},
 }
 
 function widget(state = initialState, action) {
@@ -178,4 +230,7 @@ export {
   initialState,
   dataSets,
   defaultAccountsPie,
+  defaultStockAnalyzerWidget,
+  defaultTransactionsWidget,
+  defaultCandleStickWidget,
 }

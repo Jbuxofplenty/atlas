@@ -7,7 +7,8 @@ import {
   p, 
   losersUrl, 
   gainersUrl, 
-  asyncForEach 
+  asyncForEach,
+  finnhubFormattedDate,
 } from 'helpers';
 import OAuthObject from 'oauth2';
 import { usStocks } from 'components/MultiSelect/data';
@@ -33,6 +34,9 @@ export const dataActions = {
   retrieveBatchStockData,
   storeAllFinancialDataFirestore,
   getMovers,
+  pullSymbolData,
+  pullNewsData,
+  getQuotes,
 };
 
 function dataReset() {
@@ -233,6 +237,139 @@ function getInstitutions() {
 ////// Financial Data ///////
 /////////////////////////////
 
+function pullNewsData(ticker) {
+  return async dispatch => {
+    var newsData = JSON.parse(JSON.stringify(store.getState().data.newsData));
+    var promises = [];
+    promises.push(new Promise(async function(resolve) {
+      var startDate = new Date();
+      startDate.setDate(startDate.getDate() - 3);
+      var endDate = new Date();
+      finnhubClient.companyNews(ticker, finnhubFormattedDate(startDate), finnhubFormattedDate(endDate), (error, data, response) => {
+        if(!data && error.statusCode === 429) {
+          dispatch(alertActions.error("We've hit our free-tier limit for our financial data provider!  It should open back up in another minute."))
+          resolve();
+        }
+        if(data && data.s === 'no_data') {
+          resolve();
+        }
+        newsData[ticker] = data;
+        resolve();
+      });
+    }));
+    await Promise.allSettled(promises);
+    dispatch(updateNewsData(ticker, newsData[ticker]));
+    return newsData[ticker];
+  }
+}
+
+function updateNewsData(ticker, newsData) {
+  return dispatch => {
+    dispatch(newsDataSuccess(ticker, newsData));
+  }
+  function newsDataSuccess(ticker, newsData) { return { type: dataConstants.UPDATE_NEWS_DATA, ticker, newsData } }
+}
+
+function getQuotes(tickers) {
+  return async dispatch => {
+    var symbolData = JSON.parse(JSON.stringify(store.getState().data.symbolData));
+    var promises = [];
+    tickers.forEach(ticker => {
+      promises.push(new Promise(async function(resolve) {
+        finnhubClient.quote(ticker, (error, data, response) => {
+          if(!data && error.statusCode === 429) {
+            dispatch(alertActions.error("We've hit our free-tier limit for our financial data provider!  It should open back up in another minute."))
+            resolve();
+          }
+          if(data && data.s === 'no_data') {
+            resolve();
+          }
+          var percentChange = (data.c - data.pc) / data.pc;
+          if(isNaN(percentChange)) percentChange = 0.;
+          if(!symbolData[ticker]) symbolData[ticker] = {};
+          symbolData[ticker].quote = {
+            ...data,
+            percentChange,
+          }
+          dispatch(updateSymbolData(ticker, symbolData[ticker]));
+          resolve();
+        });
+      }));
+    })
+    await Promise.allSettled(promises);
+    return symbolData;
+  }
+}
+
+function pullSymbolData(ticker) {
+  return async dispatch => {
+    var symbolData = JSON.parse(JSON.stringify(store.getState().data.symbolData));
+    if(symbolData[ticker]) {
+      dispatch(updateSymbolData(ticker, symbolData[ticker]));
+      return symbolData[ticker];
+    }
+    var promises = [];
+    symbolData[ticker] = {};
+    var companyData = symbolData[ticker];
+    promises.push(new Promise(async function(resolve) {
+      finnhubClient.companyBasicFinancials(ticker, "all", (error, data, response) => {
+        if(!data && error.statusCode === 429) {
+          dispatch(alertActions.error("We've hit our free-tier limit for our financial data provider!  It should open back up in another minute."))
+          resolve();
+        }
+        if(data && data.s === 'no_data') {
+          resolve();
+        }
+        companyData.financialMetrics = data.metric;
+        resolve();
+      });
+    }));
+    promises.push(new Promise(async function(resolve) {
+      finnhubClient.companyProfile2({'symbol': ticker}, (error, data, response) => {
+        if(!data && error.statusCode === 429) {
+          dispatch(alertActions.error("We've hit our free-tier limit for our financial data provider!  It should open back up in another minute."))
+          resolve();
+        }
+        if(data && data.s === 'no_data') {
+          resolve();
+        }
+        companyData.profile = {
+          ...data,
+        }
+        resolve();
+      });
+    }));
+    promises.push(new Promise(async function(resolve) {
+      finnhubClient.quote(ticker, (error, data, response) => {
+        if(!data && error.statusCode === 429) {
+          dispatch(alertActions.error("We've hit our free-tier limit for our financial data provider!  It should open back up in another minute."))
+          resolve();
+        }
+        if(data && data.s === 'no_data') {
+          resolve();
+        }
+        var percentChange = (data.c - data.pc) / data.pc;
+        if(isNaN(percentChange)) percentChange = 0.;
+        companyData.quote = {
+          ...data,
+          percentChange,
+        }
+        resolve();
+      });
+    }));
+    await Promise.allSettled(promises);
+    dispatch(updateSymbolData(ticker, companyData));
+    return companyData;
+  }
+}
+
+function updateSymbolData(ticker, symbolData) {
+  return dispatch => {
+    dispatch(symbolDataSuccess(ticker, symbolData));
+  }
+  function symbolDataSuccess(ticker, symbolData) { return { type: dataConstants.UPDATE_SYMBOL_DATA, ticker, symbolData } }
+}
+
 const finnhubTypes = {
   "candleStick": {
     "1D": "5",
@@ -266,7 +403,6 @@ function timeScaleForDate(timeScale) {
   }
   return tempDate.getTime();
 }
-
 
 function retrieveBatchStockData(tickers, dataType, timeScales) {
   return async dispatch => {

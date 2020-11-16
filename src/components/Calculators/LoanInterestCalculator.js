@@ -14,11 +14,12 @@ import Button from "components/CustomButtons/Button.js";
 
 import s from './Calculators.module.scss';
 import { widgetActions, alertActions } from "actions";
+import { numberWithCommas } from 'helpers';
 
 export const loanInterestCalculator = {
   widgetType: 'loanInterestCalculator',
-  dataGrid: {x: 0, y: 19, w: 4, h: 15, minH: 15, maxW: 6, minW: 4, i: "2"},
-  defaultHeight: 15,
+  dataGrid: {x: 0, y: 19, w: 4, h: 17, minH: 17, maxW: 6, minW: 4, i: "2"},
+  defaultHeight: 17,
   more: false,
   collapsed: false,
   calculatorName: 'Loan Interest Calculator',
@@ -58,8 +59,8 @@ function LoanInterestCalculator(props) {
     calculatorWidget.loanAmount = loanAmount;
     calculatorWidget.loanTerm = loanTerm;
     calculatorWidget.interestRate = interestRate;
-    calculatorWidget.totalInterest = loanAmount - calculatedValue;
-    calculatorWidget.monthlyPayments = calculatedValue / loanTerm / 12;
+    calculatorWidget.totalInterest = calculatedValue*timeUnit - parseFloat(loanAmount);
+    calculatorWidget.monthlyPayments = calculatedValue;
     props.updateWidget(props.widgetId, calculatorWidget, props.view);
   }
 
@@ -177,7 +178,7 @@ function LoanInterestCalculator(props) {
             >
               <Card.Body>
                 <Card.Text className="d-flex flex-row align-items-center justify-content-center">
-                  <span className={`${s.addText} text-white`}>{`Monthly Payments: $${monthlyPayments.toFixed(2)}`}</span>
+                  <span className={`${s.addText} text-white`}>{`Monthly Payments: $${numberWithCommas(monthlyPayments)}`}</span>
                 </Card.Text>
               </Card.Body>
             </Card>
@@ -194,7 +195,26 @@ function LoanInterestCalculator(props) {
             >
               <Card.Body>
                 <Card.Text className="d-flex flex-row align-items-center justify-content-center">
-                  <span className={`${s.addText} text-white`}>{`Total Interest: $${totalInterest.toFixed(2)}`}</span>
+                  <span className={`${s.addText} text-white`}>{`Total Interest: $${numberWithCommas(totalInterest)}`}</span>
+                </Card.Text>
+              </Card.Body>
+            </Card>
+          </div>
+        </GridItem>
+      </GridContainer>
+      <GridContainer justify="center">
+        <GridItem xs={12} sm={12} lg={12}>    
+          <div className="d-flex flex-row align-items-center justify-content-center"> 
+            <Card
+              key={1}
+              className="my-2 bg-atlas-input text-white w-75"
+              onMouseDown={handleOnClick}
+            >
+              <Card.Body>
+                <Card.Text className="d-flex flex-row align-items-center justify-content-center">
+                  <span className={`${s.addText} text-white`}>
+                    {`Total Paid: $${isNaN(parseFloat(loanAmount)+parseFloat(totalInterest)) ? '0.00' : numberWithCommas(parseFloat(loanAmount)+parseFloat(totalInterest))}`}
+                  </span>
                 </Card.Text>
               </Card.Body>
             </Card>

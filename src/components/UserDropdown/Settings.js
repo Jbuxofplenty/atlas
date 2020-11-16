@@ -17,11 +17,12 @@ class Settings extends React.Component {
     this.logoutHandle = this.logoutHandle.bind(this);
   }
 
-  logoutHandle() {
+  async logoutHandle() {
     if(this.props.userData.e2ee && !isDev()) {
       this.props.openLogoutModal();
     }
     else {
+      await userActions.saveState();
       this.props.logout();
     }
   }

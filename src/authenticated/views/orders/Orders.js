@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { connect } from 'react-redux';
 import { dataActions } from 'actions';
 import {
@@ -17,26 +17,35 @@ import s from './Orders.module.scss';
 function Orders (props) {
   const [activeTab, setActiveTab] = useState(0);
   const [accounts, setAccounts] = useState(null);
-  const [mounted, setMounted] = useState(true);
+  const [timer, setTimer] = useState(null);
+  const mounted = useRef(true);
 
+  const startTimer = () => {
+    return setTimeout(() => {
+      mounted.current && updateAccounts();
+    }, 500);
+  }
 
   useEffect(() => {
-    mounted && updateAccounts();
-    return function cleanup() {
-      setMounted(false);
+    setTimer(startTimer());
+    return () => {
+      mounted.current = false;
+      clearTimeout(timer);
     }
-  }, [props.data, mounted]);
+    // eslint-disable-next-line
+  }, []);
+
+  useEffect(() => {
+    clearTimeout(timer);
+    mounted.current && setTimer(startTimer());
+    // eslint-disable-next-line
+  }, [props.accounts]);
 
   const updateAccounts = async () => {
     var accountsObject = await dataActions.getFinancialData("accounts");
     var tempAccounts = [];
     for (var key in accountsObject){
-      if(accountsObject[key].plaid) {
-        //TODO: Insert code to populate investment tabs
-      }
-      else {
-        tempAccounts.push(accountsObject[key]);
-      }
+      tempAccounts.push(accountsObject[key]);
     }
     setAccounts(tempAccounts);
   }
@@ -46,6 +55,7 @@ function Orders (props) {
       setActiveTab(tab);
     }
   }
+
   return (
     <section className={`${s.root} mb-4`}>
       <h1 className="page-title">Orders</h1>
@@ -94,7 +104,7 @@ function Orders (props) {
 const mapStateToProps = (state) => {
   return {
     institutions: state.data.institutions,
-    data: state.data.accounts,
+    accounts: state.data.accounts,
   };
 }
 

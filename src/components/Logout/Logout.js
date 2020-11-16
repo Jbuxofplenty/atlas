@@ -18,7 +18,6 @@ import CustomInput from "components/CustomInput/CustomInput.js";
 import styles from "assets/jss/material-kit-react/components/logoutModal.js";
 
 import { userActions, eThreeActions } from 'actions';
-import { widgetActions } from "actions";
 
 const useStyles = makeStyles(styles);
 
@@ -44,9 +43,7 @@ function Logout(props) {
   const logout = async (e) => {
     e.preventDefault();
     if(input === "LOGOUT" || props.backedUp) {
-      if(props.location.pathname === '/app/dashboard') {
-        await widgetActions.saveFirebaseWidgets('dashboard');
-      }
+      await userActions.saveState();
       props.logout();
     }
   }

@@ -6,6 +6,8 @@ import {withRouter} from 'react-router-dom';
 import s from './Sidebar.module.scss';
 import LinksGroup from './LinksGroup';
 
+import Logo from 'assets/img/atlas_logo.png';
+
 import { navigationActions} from 'actions';
 
 class Sidebar extends React.Component {
@@ -63,8 +65,9 @@ class Sidebar extends React.Component {
         }}
       >
         <header className={s.logo}>
-          <div onClick={() => this.props.history.push('/app/dashboard')}><span
-            className="fw-bold">Atlas</span> One</div>
+          <div onClick={() => this.props.history.push('/app/dashboard')}>
+            <img src={Logo} alt='logo' className={s.logoPic} />
+          </div>
         </header>
         <ul className={s.nav}>
           <LinksGroup
@@ -75,6 +78,16 @@ class Sidebar extends React.Component {
             iconName="fi flaticon-home"
             link="/app/dashboard"
             index="main"
+          />
+          <h5 className={[s.navTitle, s.groupTitle].join(' ')}>Social</h5>
+          <LinksGroup
+            onActiveSidebarItemChange={t => this.props.changeActiveSidebarItem(t)}
+            activeItem={this.props.activeItem}
+            header="Simulator"
+            isHeader
+            iconName="fas fa-chess"
+            link="/app/simulator"
+            index="simulator"
           />
           <h5 className={[s.navTitle, s.groupTitle].join(' ')}>Tools</h5>
           <LinksGroup

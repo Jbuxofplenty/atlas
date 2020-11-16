@@ -339,3 +339,20 @@
   top: 0;
   left: 0;
 }
+
+.widgetContainer {
+  height: 100vh;
+  clear: after;
+  overflow: auto;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.widgetContainer::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.widgetContainer {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
