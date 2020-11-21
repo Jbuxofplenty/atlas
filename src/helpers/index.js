@@ -14,6 +14,7 @@ export {
   randomHex,
   formattedDate,
   finnhubFormattedDate,
+  isTouchDevice,
 } from './util';
 export {
   gainersUrl,

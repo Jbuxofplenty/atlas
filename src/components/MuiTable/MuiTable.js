@@ -51,6 +51,9 @@ const theme = createMuiTheme({
           color: '#ffffff',
        },
       },
+      root: {
+        overflow: 'hidden !imporant',
+      }
     },
     MuiIconButton: {
       label: {

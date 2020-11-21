@@ -175,7 +175,7 @@ function updateReturns() {
       if(holding.symbol !== 'USD') {
         netWorth += symbolData[holding.symbol].quote.c * holding.quantity;
         holding.dailyChange.value = symbolData[holding.symbol].quote.c * holding.quantity - symbolData[holding.symbol].quote.pc * holding.quantity;
-        holding.dailyChange.percent = (holding.dailyChange.value) / symbolData[holding.symbol].quote.pc * holding.quantity;
+        holding.dailyChange.percent = (holding.dailyChange.value) / symbolData[holding.symbol].quote.pc / holding.quantity;
         holding.overallChange.value = symbolData[holding.symbol].quote.c * holding.quantity + overallGainsMap[holding.symbol].value;
         // TODO: Figure out what I'm trying to compute
         holding.overallChange.percent = (symbolData[holding.symbol].quote.c * holding.quantity - holding.overallChange.value) / (symbolData[holding.symbol].quote.c * holding.quantity) * 100;
@@ -186,6 +186,7 @@ function updateReturns() {
     })
     portfolio.todaysGains = netWorth - yesterdaysNetWorth;
     portfolio.todaysReturns = (netWorth - yesterdaysNetWorth) / yesterdaysNetWorth;
+    portfolio.netWorth = netWorth;
     dispatch(updateSimulatorPortfolio(portfolio));
   }
 }

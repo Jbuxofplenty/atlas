@@ -17808,6 +17808,79 @@ export const nyse = [
     "tickerType": "usStocks"
   },
   {
+    "value": "ZM",
+    "label": "Zoom Inc.",
+    "color": "#84b716",
+    "tickerType": "usStocks"
+  },
+  {
+    "value": "CIIC",
+    "label": "Ciig Merger Corp",
+    "color": "#84b716",
+    "tickerType": "usStocks"
+  },
+  {
+    "value": "PLTR",
+    "label": "Palantir Technologies Inc",
+    "color": "#d54873",
+    "tickerType": "usStocks"
+  },
+  {
+    "value": "AMWL",
+    "label": "American Well Corp",
+    "color": "#08de1f",
+    "tickerType": "usStocks"
+  },
+
+  {
+    "value": "FVRR",
+    "label": "Fiverr International Ltd",
+    "color": "#3185f2",
+    "tickerType": "usStocks"
+  },
+  {
+    "value": "ACB",
+    "label": "Aurora Cannabis Inc",
+    "color": "#301b04",
+    "tickerType": "usStocks"
+  },
+  {
+    "value": "EB",
+    "label": "Eventbrite Inc",
+    "color": "#aaa249",
+    "tickerType": "usStocks"
+  },
+  {
+    "value": "SNOW",
+    "label": "Snowflake Inc.",
+    "color": "#1db73c",
+    "tickerType": "usStocks"
+  },
+  {
+    "value": "SNAP",
+    "label": "Snap Inc",
+    "color": "#7dd0eb",
+    "tickerType": "usStocks"
+  },
+  {
+    "value": "DKNG",
+    "label": "Draftkings Inc",
+    "color": "#78f575",
+    "tickerType": "usStocks"
+  },
+  {
+    "value": "NIO",
+    "label": "NIO Inc",
+    "color": "#db3b00",
+    "tickerType": "usStocks"
+  },
+  {
+    "value": "MRNA",
+    "label": "Moderna Inc",
+    "color": "#eb9f50",
+    "tickerType": "usStocks"
+  },
+  {
     "value": "TR",
     "label": "Tootsie Roll Industries, Inc. Common Stock",
     "color": "#1b7674",

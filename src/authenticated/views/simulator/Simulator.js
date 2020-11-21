@@ -12,6 +12,7 @@ import BuySell from './components/BuySell';
 import SimulatorSettingsWidget from './components/SimulatorSettingsWidget';
 import TransactionsWidget from './components/TransactionsWidget';
 
+import { isTouchDevice } from 'helpers';
 import { widgetActions } from 'actions';
 
 import s from './Simulator.module.scss';
@@ -128,6 +129,8 @@ function Simulator(props) {
               className="w-100"
               rowHeight={30} 
               width={gridWidth}
+              isDraggable={!isTouchDevice()}
+              isResizable={!isTouchDevice()}
               onResizeStop={widgetResizeStop}
               onDragStop={widgetDragStop}
               layout={layout}

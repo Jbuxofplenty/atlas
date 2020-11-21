@@ -40,11 +40,11 @@ function SymbolFinData(props) {
       var addedKey = addedKeys[i];
       if(i > halfLength) {
         if(!newRenderedFields1[keys[addedKey][0]]) newRenderedFields1[keys[addedKey][0]] = [];
-        newRenderedFields1[keys[addedKey][0]].push([keys[addedKey][1], financialMetrics[addedKey]]);
+        newRenderedFields1[keys[addedKey][0]].push([keys[addedKey][1], financialMetrics[addedKey], keys[addedKey][2]]);
       }
       else {
         if(!newRenderedFields2[keys[addedKey][0]]) newRenderedFields2[keys[addedKey][0]] = [];
-        newRenderedFields2[keys[addedKey][0]].push([keys[addedKey][1], financialMetrics[addedKey]]);
+        newRenderedFields2[keys[addedKey][0]].push([keys[addedKey][1], financialMetrics[addedKey], keys[addedKey][2]]);
       }
     }
     setRenderedFields1(newRenderedFields1);
@@ -57,6 +57,30 @@ function SymbolFinData(props) {
     tempWidget.timeScales = newTimeScales;
     props.updateWidget(props.widgetId, tempWidget, props.view);
     setTimeScales(newTimeScales);
+  }
+
+  const formatValue = (value, type) => {
+    if(type === '$M') {
+      return '$' + numberWithCommas(value) + 'M'
+    }
+    else if(type === '$') {
+      return '$' + numberWithCommas(value)
+    }
+    else if(type === '') {
+      return value;
+    }
+    else if(type === '%') {
+      return numberWithCommas(value) + '%'
+    }
+    else if(type === '$/shares') {
+      return '$' + numberWithCommas(value)
+    }
+    else if(type === 'shares') {
+      return numberWithCommas(value) + 'M'
+    }
+    else{
+      return numberWithCommas(value)
+    }
   }
 
   return (
@@ -100,7 +124,7 @@ function SymbolFinData(props) {
               <div className={`d-flex justify-content-between mt-3 ${s.valueContainer}`}>
                 <div>Market Capitalization: </div>
                 <div className={s.value}>
-                  {profile.marketCapitalization ? '$' + numberWithCommas(profile.marketCapitalization) : 'N/A'}
+                  {profile.marketCapitalization ? '$' + numberWithCommas(profile.marketCapitalization) + 'M' : 'N/A'}
                 </div>
               </div>
               {Object.keys(renderedFields1) && 
@@ -112,11 +136,13 @@ function SymbolFinData(props) {
                         <div className={s.sectionTitle}>{section}</div>
                       </div>
                       {renderedFields1[section].map((lineItem, fieldIndex) => {
+                        const value = lineItem[1];
+                        const type = lineItem[2];
                         return (
                           <div key={(fieldIndex+1)*totalLength} className={`d-flex justify-content-between mt-3 ${s.valueContainer}`}>
                             <div>{lineItem[0]}: </div>
                             <div className={s.value}>
-                              {lineItem[1]}
+                              {formatValue(value, type)}
                             </div>
                           </div>
                         )
@@ -137,11 +163,13 @@ function SymbolFinData(props) {
                         <div className={s.sectionTitle}>{section}</div>
                       </div>
                       {renderedFields2[section].map((lineItem, fieldIndex) => {
+                        const value = lineItem[1];
+                        const type = lineItem[2];
                         return (
                           <div key={(fieldIndex+1)*totalLength} className={`d-flex justify-content-between mt-3 ${s.valueContainer}`}>
                             <div>{lineItem[0]}: </div>
                             <div className={s.value}>
-                              {lineItem[1]}
+                              {formatValue(value, type)}
                             </div>
                           </div>
                         )

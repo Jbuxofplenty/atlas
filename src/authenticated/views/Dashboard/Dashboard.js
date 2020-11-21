@@ -9,6 +9,7 @@ import ChartWidget from './components/ChartWidget';
 import StockAnalyzer from 'components/StockAnalyzer/StockAnalyzer';
 import CalculatorWidget from './components/CalculatorWidget';
 
+import { isTouchDevice } from 'helpers';
 import { widgetActions } from 'actions';
 
 import s from './Dashboard.module.scss';
@@ -115,6 +116,8 @@ function Dashboard(props) {
         <>
           <h1 className="page-title">Dashboard &nbsp;</h1>
           <GridLayout 
+              isDraggable={!isTouchDevice()}
+              isResizable={!isTouchDevice()}
               className="w-100"
               rowHeight={30} 
               width={gridWidth}

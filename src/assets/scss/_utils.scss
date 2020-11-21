@@ -24,6 +24,17 @@ $z-index-variants: (more: 1, less: -1, '10': 10, '-10': -10);
 
 @include property-variants('.z-index', 'z-index', $z-index-variants);
 
+
+$sizes: (
+  25: 25%,
+  50: 50%,
+  75: 75%,
+  100: 100%,
+  60px: 60px,
+  80px: 80px,
+  100px: 100px
+);
+
 .fw-semi-bold {
   font-weight: 600;
 }

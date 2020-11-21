@@ -57,7 +57,7 @@ function StockAnalyzer(props) {
       widgetId={props.widgetId}
     >
       <div className={`d-flex flex-column justify-content-center w-100`}>
-        <div className={`d-flex justify-content-center w-50 align-self-center`}>
+        <div className={`d-flex justify-content-center w-75 align-self-center`}>
           <GridContainer justify="center" className={`w-100`}>
             <GridItem lg={12} md={12} xs={12}>
               <TickerSelect 

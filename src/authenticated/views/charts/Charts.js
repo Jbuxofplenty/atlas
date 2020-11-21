@@ -6,6 +6,7 @@ import _ from 'lodash';
 import AddWidget from 'components/AddWidget/AddWidget';
 import ChartWidget from '../dashboard/components/ChartWidget';
 
+import { isTouchDevice } from 'helpers';
 import { widgetActions } from 'actions';
 
 import s from './Charts.module.scss';
@@ -115,6 +116,8 @@ function Charts(props) {
           <GridLayout 
               className="w-100"
               rowHeight={30} 
+              isDraggable={!isTouchDevice()}
+              isResizable={!isTouchDevice()}
               width={gridWidth}
               onResizeStop={widgetResizeStop}
               onDragStop={widgetDragStop}

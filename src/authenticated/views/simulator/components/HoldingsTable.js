@@ -36,7 +36,7 @@ function HoldingsTable(props) {
           Header: 'Daily Change/%',
           accessor: 'dailyChange',
           Cell: (row) => {return (
-            <div className={'d-flex flex-row justify-content-center'}>
+            <div className={'d-flex flex-row justify-content-start'}>
               <div className={`${row.cell.value.value < 0 && 'errorMessage'} ${row.cell.value.value > 0 && 'successMessage'}`}>
                 {row.cell.value ? `$${numberWithCommas(row.cell.value.value)}` : 'N/A'}
               </div>

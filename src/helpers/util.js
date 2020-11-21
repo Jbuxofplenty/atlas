@@ -90,3 +90,7 @@ export function finnhubFormattedDate(date) {
   
   return year + '-' + month + '-' + day;
 }
+
+export function isTouchDevice() {
+  return window.matchMedia("(pointer: coarse)").matches;
+};

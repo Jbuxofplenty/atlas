@@ -68,7 +68,6 @@ function PlaidInvestments(props) {
       ],
     []
   )
-
   return (
     <>
       {props.account &&
